@@ -3,15 +3,15 @@
 namespace Kronos\FileSystem\Adaptor;
 
 
-use Kronos\FileSystem\DTO\FileDTO;
+use Kronos\FileSystem\DTO\File;
 
 class AdaptorFactory {
 
 	/**
-	 * @param FileDTO $file
+	 * @param File $file
 	 * @return AdaptorInterface
 	 */
-	public function getAdaptor(FileDTO $file){
+	public function getAdaptor(File $file){
 
 	}
 }

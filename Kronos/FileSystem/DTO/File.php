@@ -9,6 +9,6 @@
 namespace Kronos\FileSystem\DTO;
 
 
-class FileDTO {
+class File {
 
 }
