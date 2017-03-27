@@ -52,22 +52,6 @@ class FileSystem implements FileSystemInterface {
 	}
 
 	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isFile($path) {
-
-	}
-
-	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isFolder($path) {
-
-	}
-
-	/**
 	 * @param MoveDTO $moveDTO
 	 */
 	public function move(MoveDTO $moveDTO) {
