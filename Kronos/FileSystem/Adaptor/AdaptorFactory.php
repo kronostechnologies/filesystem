@@ -2,8 +2,7 @@
 
 namespace Kronos\FileSystem\Adaptor;
 
-
-use Kronos\FileSystem\DTO\File;
+use Kronos\FileSystem\File\File;
 
 class AdaptorFactory {
 

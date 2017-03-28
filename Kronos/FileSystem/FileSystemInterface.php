@@ -2,52 +2,42 @@
 
 namespace Kronos\FileSystem;
 
-
-use Kronos\FileSystem\DTO\CopyDTO;
-use Kronos\FileSystem\DTO\File;
-use Kronos\FileSystem\DTO\FileMetadata;
-use Kronos\FileSystem\DTO\ImportationDTO;
-use Kronos\FileSystem\DTO\MoveDTO;
+use Kronos\FileSystem\Exception\FunctionnalityNotAvailable;
+use Kronos\FileSystem\File\File;
+use Kronos\FileSystem\File\Metadata;
 
 interface FileSystemInterface {
 
 	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function exist($path);
-
-	/**
-	 * @param int $file
-	 * @return File
-	 */
-	public function get($file);
-
-	/**
-	 * @param int $file
-	 * @return FileMetadata
-	 */
-	public function getMetadata($file);
-
-	/**
-	 * @param ImportationDTO $insertionFile
+	 * @param File $id
 	 * @return int
+	 * @throws FunctionnalityNotAvailable
 	 */
-	public function put(ImportationDTO $importationDTO);
+	public function put(File $file);
 
 	/**
-	 * @param MoveDTO $moveDTO
+	 * @param int $id
+	 * @return File
+	 * @throws FunctionnalityNotAvailable
 	 */
-	public function move(MoveDTO $moveDTO);
+	public function get($id);
 
 	/**
-	 * @param CopyDTO $moveDTO
+	 * @param int $id
+	 * @return Metadata
+	 * @throws FunctionnalityNotAvailable
 	 */
-	public function copy(CopyDTO $moveDTO);
+	public function getMetadata($id);
 
 	/**
-	 * @param $file
-	 * @return bool
+	 * @param int $id
+	 * @throws FunctionnalityNotAvailable
 	 */
-	public function delete($file);
+	public function delete($id);
+
+	/**
+	 * @param int $id
+	 * @throws FunctionnalityNotAvailable
+	 */
+	public function retrieve($id);
 }
