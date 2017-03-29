@@ -1,7 +1,7 @@
 <?php
-namespace Kronos\FileSystem\SecureMailAttachments;
+namespace Kronos\FileSystem\Service\SecureMailAttachments;
 
-use Kronos\FileSystem\BaseFileSystem;
+use Kronos\FileSystem\Service\BaseFileSystem;
 use Kronos\FileSystem\File\File;
 
 class FileSystem extends BaseFileSystem {

@@ -6,11 +6,11 @@
  * Time: 9:27 AM
  */
 
-namespace Kronos\FileSystem;
+namespace Kronos\FileSystem\Service;
 
 
-use Kronos\FileSystem\Adaptor\AdaptorFactory;
-use Kronos\FileSystem\Exception\FunctionnalityNotAvailable;
+use Kronos\FileSystem\Service\Adaptor\AdaptorFactory;
+use Kronos\FileSystem\Service\Exception\FunctionnalityNotAvailable;
 use Kronos\FileSystem\File\File;
 
 abstract class BaseFileSystem implements FileSystemInterface {

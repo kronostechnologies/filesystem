@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mdemers
- * Date: 2017-03-28
- * Time: 9:34 AM
- */
 
-namespace Kronos\FileSystem\Exception;
+namespace Kronos\FileSystem\Service\Exception;
 
 
 use Exception;

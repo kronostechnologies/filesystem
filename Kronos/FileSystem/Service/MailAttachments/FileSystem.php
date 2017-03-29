@@ -1,7 +1,7 @@
 <?php
-namespace Kronos\FileSystem\Thumbnails;
+namespace Kronos\FileSystem\Service\MailAttachments;
 
-use Kronos\FileSystem\BaseFileSystem;
+use Kronos\FileSystem\Service\BaseFileSystem;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 
@@ -28,13 +28,6 @@ class FileSystem extends BaseFileSystem {
 	 * @return int
 	 */
 	public function put(File $file){
-
-	}
-
-	/**
-	 * @param $id
-	 */
-	public function delete($id){
 
 	}
 }

@@ -1,7 +1,7 @@
 <?php
-namespace Kronos\FileSystem\UserDocuments;
+namespace Kronos\FileSystem\Service\UserDocuments;
 
-use Kronos\FileSystem\BaseFileSystem;
+use Kronos\FileSystem\Service\BaseFileSystem;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 

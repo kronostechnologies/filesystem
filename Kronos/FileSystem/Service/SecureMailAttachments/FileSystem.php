@@ -1,8 +1,9 @@
 <?php
-namespace Kronos\FileSystem\TemporaryFiles;
+namespace Kronos\FileSystem\Service\SecureMailAttachments;
 
-use Kronos\FileSystem\BaseFileSystem;
+use Kronos\FileSystem\Service\BaseFileSystem;
 use Kronos\FileSystem\File\File;
+use Kronos\FileSystem\File\Metadata;
 
 class FileSystem extends BaseFileSystem {
 
@@ -11,6 +12,14 @@ class FileSystem extends BaseFileSystem {
 	 * @return File
 	 */
 	public function get($id){
+
+	}
+
+	/**
+	 * @param int $id
+	 * @return Metadata
+	 */
+	public function getMetadata($id){
 
 	}
 
