@@ -1,17 +1,25 @@
 <?php
 
-namespace Kronos\FileSystem\Adaptor\Local;
+namespace Kronos\FileSystem\Mount\S3;
 
-use League\Flysystem\Adapter\Local as LocalFlySystem;
+use Kronos\FileSystem\Mount\MountInterface;
+use Kronos\FileSystem\Mount\PathGeneratorInterface;
+use League\Flysystem\AwsS3v3\AwsS3Adapter;
 
-class Local implements LocalAdaptorInterface{
+class S3 implements MountInterface  {
+
 	/**
-	 * @var LocalFlySystem
+	 * @var AwsS3Adapter
 	 */
-	private $adaptor;
+	private $mount;
+	/**
+	 * @var PathGeneratorInterface
+	 */
+	private $pathGenerator;
 
-	public function __construct(LocalFlySystem $adaptor) {
-		$this->adaptor = $adaptor;
+	public function __construct(PathGeneratorInterface $pathGenerator,AwsS3Adapter $mount) {
+		$this->mount = $mount;
+		$this->pathGenerator = $pathGenerator;
 	}
 
 	/**
@@ -35,11 +43,11 @@ class Local implements LocalAdaptorInterface{
 	 *
 	 * @param string $path
 	 * @param resource $resource
-	 * @param Configuration $config Configuration object
+	 * @param array $config Configuration object
 	 *
 	 * @return bool
 	 */
-	public function write($path, $resource, Configuration $config) {
+	public function write($path, $resource, array $config) {
 		// TODO: Implement write() method.
 	}
 
@@ -48,11 +56,11 @@ class Local implements LocalAdaptorInterface{
 	 *
 	 * @param string $path
 	 * @param resource $resource
-	 * @param Configuration $config
+	 * @param array $config
 	 *
 	 * @return bool
 	 */
-	public function update($path, $resource, Configuration $config) {
+	public function update($path, $resource, array $config) {
 		// TODO: Implement update() method.
 	}
 
@@ -65,5 +73,12 @@ class Local implements LocalAdaptorInterface{
 	 */
 	public function delete($path) {
 		// TODO: Implement delete() method.
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMountType() {
+		// TODO: Implement getMountType() method.
 	}
 }

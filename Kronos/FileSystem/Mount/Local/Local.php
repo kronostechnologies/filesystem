@@ -1,18 +1,19 @@
 <?php
 
-namespace Kronos\FileSystem\Adaptor\S3;
+namespace Kronos\FileSystem\Mount\Local;
 
-use League\Flysystem\AwsS3v3\AwsS3Adapter;
+use Kronos\FileSystem\Mount\MountInterface;
+use Kronos\FileSystem\Mount\PathGeneratorInterface;
+use League\Flysystem\Adapter\Local as LocalFlySystem;
 
-class S3 implements S3AdaptorInterface {
-
+class Local implements MountInterface {
 	/**
-	 * @var AwsS3Adapter
+	 * @var LocalFlySystem
 	 */
-	private $adaptor;
+	private $mount;
 
-	public function __construct(AwsS3Adapter $adaptor) {
-		$this->adaptor = $adaptor;
+	public function __construct(PathGeneratorInterface $pathGenerator,LocalFlySystem $Mount) {
+		$this->mount = $Mount;
 	}
 
 	/**
@@ -36,11 +37,11 @@ class S3 implements S3AdaptorInterface {
 	 *
 	 * @param string $path
 	 * @param resource $resource
-	 * @param Configuration $config Configuration object
+	 * @param array $config Configuration object
 	 *
 	 * @return bool
 	 */
-	public function write($path, $resource, Configuration $config) {
+	public function write($path, $resource, array $config) {
 		// TODO: Implement write() method.
 	}
 
@@ -49,11 +50,11 @@ class S3 implements S3AdaptorInterface {
 	 *
 	 * @param string $path
 	 * @param resource $resource
-	 * @param Configuration $config
+	 * @param array $config
 	 *
 	 * @return bool
 	 */
-	public function update($path, $resource, Configuration $config) {
+	public function update($path, $resource, array $config) {
 		// TODO: Implement update() method.
 	}
 
@@ -66,5 +67,12 @@ class S3 implements S3AdaptorInterface {
 	 */
 	public function delete($path) {
 		// TODO: Implement delete() method.
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMountType() {
+		// TODO: Implement getMountType() method.
 	}
 }

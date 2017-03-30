@@ -5,7 +5,7 @@ namespace Kronos\FileSystem;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 
-interface MetadataRepositoryInterface {
+interface FileRepositoryInterface {
 
 	/**
 	 * @param $id
