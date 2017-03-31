@@ -11,10 +11,10 @@ class BaseFileSystem implements FileSystemInterface {
 	}
 
 	/**
-	 * @param File $id
+	 * @param resource $file
 	 * @return int
 	 */
-	public function put(File $file){
+	public function put(resource $file){
 
 	}
 
