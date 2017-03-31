@@ -8,27 +8,27 @@ use Kronos\FileSystem\File\Metadata;
 interface FileRepositoryInterface {
 
 	/**
-	 * @param $id
-	 * @return Metadata
-	 */
-	public function getMetadata($id);
-
-	/**
-	 * @param File $file
+	 * @param string $mountType
 	 * @return int
 	 */
-	public function add(File $file);
+	public function add($mountType);
 
 	/**
-	 * @param int $id
-	 * @param File $file
-	 * @return bool
+	 * @param int $uuid
+	 * @return string
 	 */
-	public function update($id,File $file);
+	public function getFileMountType($uuid);
 
 	/**
-	 * @param int $id
+	 * @param int $uuid
 	 * @return bool
 	 */
-	public function delete($id);
+	public function delete($uuid);
+
+	/**
+	 * @param int $uuid
+	 * @param string $mountType
+	 * @return bool
+	 */
+	public function update($uuid,$mountType);
 }
