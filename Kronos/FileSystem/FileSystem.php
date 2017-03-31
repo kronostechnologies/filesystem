@@ -3,10 +3,11 @@
 namespace Kronos\FileSystem;
 
 use Kronos\FileSystem\File\File;
+use Kronos\FileSystem\Mount\Selector;
 
 class BaseFileSystem implements FileSystemInterface {
 
-	public function __construct(MountSelector $mountSelector) {
+	public function __construct(Selector $mountSelector) {
 	}
 
 	/**
