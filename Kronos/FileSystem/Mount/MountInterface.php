@@ -1,6 +1,8 @@
 <?php
 
 namespace Kronos\FileSystem\Mount;
+use Kronos\FileSystem\Exception\CantRetreiveFileException;
+use Kronos\FileSystem\File\Metadata;
 
 /**
  *
@@ -10,48 +12,56 @@ namespace Kronos\FileSystem\Mount;
 interface MountInterface {
 
 	/**
-	 * @param string $path
+	 * @param string $uuid
 	 * @return resource
 	 */
-	public function getRessource($path);
+	public function getResource($uuid);
 
 	/**
-	 * @param string $path
+	 * @param string $uuid
 	 * @return string
 	 */
-	public function getSignedUrl($path);
+	public function getSignedUrl($uuid);
 
 	/**
 	 * Delete a file.
 	 *
-	 * @param string $path
-	 *
-	 * @return bool
+	 * @param string $uuid
 	 */
-	public function delete($path);
+	public function delete($uuid);
 
 
 	/**
 	 * Write a new file using a stream.
 	 *
-	 * @param string $path
+	 * @param string $uuid
 	 * @param resource $resource
-	 * @param array $config
 	 *
 	 * @return bool
 	 */
-	public function write($path, $resource, array $config);
+	public function write($uuid, $resource);
 
 	/**
 	 * Update a file using a stream.
 	 *
-	 * @param string $path
+	 * @param string $uuid
 	 * @param resource $resource
-	 * @param array $config
 	 *
 	 * @return bool
 	 */
-	public function update($path, $resource, array $config);
+	public function update($uuid, $resource);
+
+	/**
+	 * @param string $uuid
+	 * @throws CantRetreiveFileException
+	 */
+	public function retrieve($uuid);
+
+	/**
+	 * @param string $uuid
+	 * @return Metadata
+	 */
+	public function getMetadata($uuid);
 
 	/**
 	 * @return string

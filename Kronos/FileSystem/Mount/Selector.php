@@ -20,9 +20,8 @@ class Selector {
 	}
 
 	/**
-	 * Maybe an object representing the file location (uuid + mountType)
-	 *
 	 * @param string $mountKey
+	 * @return MountInterface
 	 */
 	public function selectMount($mountKey){
 

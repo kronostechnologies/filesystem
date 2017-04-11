@@ -11,7 +11,7 @@ interface FileSystemInterface {
 	 * @param resource $file
 	 * @return int
 	 */
-	public function put(resource $file);
+	public function put($file);
 
 	/**
 	 * @param int $id

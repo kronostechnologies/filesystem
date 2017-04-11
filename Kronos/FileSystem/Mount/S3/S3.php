@@ -23,31 +23,30 @@ class S3 implements MountInterface  {
 	}
 
 	/**
-	 * @param string $path
+	 * @param string $uuid
 	 * @return resource
 	 */
-	public function getRessource($path) {
-		// TODO: Implement getRessource() method.
+	public function getResource($uuid) {
+		// TODO: Implement getResource() method.
 	}
 
 	/**
-	 * @param string $path
+	 * @param string $uuid
 	 * @return string
 	 */
-	public function getSignedUrl($path) {
+	public function getSignedUrl($uuid) {
 		// TODO: Implement getSignedUrl() method.
 	}
 
 	/**
 	 * Write a new file using a stream.
 	 *
-	 * @param string $path
+	 * @param string $uuid
 	 * @param resource $resource
-	 * @param array $config Configuration object
 	 *
 	 * @return bool
 	 */
-	public function write($path, $resource, array $config) {
+	public function write($uuid, $resource) {
 		// TODO: Implement write() method.
 	}
 
@@ -56,22 +55,21 @@ class S3 implements MountInterface  {
 	 *
 	 * @param string $path
 	 * @param resource $resource
-	 * @param array $config
 	 *
 	 * @return bool
 	 */
-	public function update($path, $resource, array $config) {
+	public function update($path, $resource) {
 		// TODO: Implement update() method.
 	}
 
 	/**
 	 * Delete a file.
 	 *
-	 * @param string $path
+	 * @param string $uuid
 	 *
 	 * @return bool
 	 */
-	public function delete($path) {
+	public function delete($uuid) {
 		// TODO: Implement delete() method.
 	}
 
