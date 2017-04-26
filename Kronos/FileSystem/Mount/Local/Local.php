@@ -2,26 +2,53 @@
 
 namespace Kronos\FileSystem\Mount\Local;
 
+use Kronos\FileSystem\Exception\CantRetreiveFileException;
+use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
+use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local as LocalFlySystem;
+use League\Flysystem\Filesystem;
 
 class Local implements MountInterface {
+
+	const MOUNT_TYPE = 'LOCAL';
+	const SIGNED_URL_BASE_PATH = 'utils/get_document.php?id=';
+
 	/**
-	 * @var LocalFlySystem
+	 * @var Filesystem
 	 */
 	private $mount;
 
-	public function __construct(PathGeneratorInterface $pathGenerator,LocalFlySystem $Mount) {
-		$this->mount = $Mount;
+	/**
+	 * @var PathGeneratorInterface
+	 */
+	private $pathGenerator;
+
+	public function __construct(PathGeneratorInterface $pathGenerator,Filesystem $mount) {
+		if(!$this->isLocalMount($mount)){
+			throw new WrongFileSystemTypeException($this->getMountType(),get_class($mount->getAdapter()));
+		}
+		$this->mount = $mount;
+		$this->pathGenerator = $pathGenerator;
 	}
 
 	/**
+	 * @param Filesystem $mount
+	 * @return bool
+	 */
+	private function isLocalMount(Filesystem $mount){
+		return $mount->getAdapter() instanceof  LocalFlySystem;
+	}
+
+
+	/**
 	 * @param string $uuid
-	 * @return resource
+	 * @return resource|false
 	 */
 	public function getResource($uuid) {
-		// TODO: Implement getResource() method.
+		$path = $this->pathGenerator->generatePath($uuid);
+		return $this->mount->readStream($path);
 	}
 
 	/**
@@ -29,7 +56,17 @@ class Local implements MountInterface {
 	 * @return string
 	 */
 	public function getSignedUrl($uuid) {
-		// TODO: Implement getSignedUrl() method.
+		return self::SIGNED_URL_BASE_PATH.$uuid;
+	}
+
+	/**
+	 * Delete a file.
+	 *
+	 * @param string $uuid
+	 */
+	public function delete($uuid) {
+		$path = $this->pathGenerator->generatePath($uuid);
+		return $this->mount->delete($path);
 	}
 
 	/**
@@ -41,36 +78,43 @@ class Local implements MountInterface {
 	 * @return bool
 	 */
 	public function write($uuid, $resource) {
-		// TODO: Implement write() method.
+		$path = $this->pathGenerator->generatePath($uuid);
+		return $this->mount->writeStream($path,$resource);
 	}
 
 	/**
 	 * Update a file using a stream.
 	 *
-	 * @param string $path
+	 * @param string $uuid
 	 * @param resource $resource
 	 *
 	 * @return bool
 	 */
-	public function update($path, $resource) {
-		// TODO: Implement update() method.
+	public function update($uuid, $resource) {
+		return false;
 	}
 
 	/**
-	 * Delete a file.
-	 *
 	 * @param string $uuid
-	 *
-	 * @return bool
+	 * @throws CantRetreiveFileException
 	 */
-	public function delete($uuid) {
-		// TODO: Implement delete() method.
+	public function retrieve($uuid) {
+		throw new CantRetreiveFileException();
+	}
+
+	/**
+	 * @param string $uuid
+	 * @return Metadata|false
+	 */
+	public function getMetadata($uuid) {
+		$path = $this->pathGenerator->generatePath($uuid);
+		return $this->mount->getMetadata($path);
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getMountType() {
-		// TODO: Implement getMountType() method.
+		return self::MOUNT_TYPE;
 	}
 }

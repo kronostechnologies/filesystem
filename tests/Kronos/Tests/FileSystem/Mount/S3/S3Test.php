@@ -303,7 +303,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->assertTrue(is_array($metadata));
 	}
 
-	public function test_FileNotWritten_delete_shouldReturnFalse(){
+	public function test_FileNotWritten_getMetadata_shouldReturnFalse(){
 
 		$this->fileSystem->method('getMetadata')->willReturn(false);
 
