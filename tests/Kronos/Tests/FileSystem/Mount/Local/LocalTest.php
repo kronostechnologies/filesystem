@@ -2,6 +2,8 @@
 namespace Kronos\Tests\FileSystem\Mount\Local;
 
 
+use DoctrineTest\InstantiatorTestAsset\PharAsset;
+use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
@@ -185,13 +187,25 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->localMount->getMetadata(self::UUID);
 	}
 
-	public function test_Path_getMetadata_shouldReturnTrue(){
+	public function test_Path_getMetadata_shouldReturnMetadata(){
 
-		$this->fileSystem->method('getMetadata')->willReturn([]);
+		$this->fileSystem->method('getMetadata')->willReturn(['timestamp'=>0,'size'=>0]);
 
 		$metadata = $this->localMount->getMetadata(self::UUID);
 
-		$this->assertTrue(is_array($metadata));
+		self::assertInstanceOf(Metadata::class,$metadata);
+	}
+
+	public function test_Metadata_getMetadata_shouldGetMimeType(){
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem->method('getMetadata')->willReturn(['timestamp'=>0,'size'=>0]);
+
+		$this->fileSystem
+			->expects(self::once())
+			->method('getMimeType')
+			->with(self::A_PATH);
+
+		$this->localMount->getMetadata(self::UUID);
 	}
 
 	public function test_FileNotWritten_getMetadata_shouldReturnFalse(){

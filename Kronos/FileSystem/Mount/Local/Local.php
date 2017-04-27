@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount\Local;
 
+use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\Metadata;
@@ -108,7 +109,18 @@ class Local implements MountInterface {
 	 */
 	public function getMetadata($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->getMetadata($path);
+
+		if($localMetadata = $this->mount->getMetadata($path)){
+			$metadata = new Metadata();
+
+			$metadata->size = isset($localMetadata['size']) ?$localMetadata['size'] : 0 ;
+			$metadata->lastModifiedDate = new DateTime('@' .$localMetadata['timestamp']);
+			$metadata->mimetype = $this->mount->getMimetype($path);
+
+			return $metadata;
+		}
+
+		return false;
 	}
 
 	/**

@@ -3,6 +3,7 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 
 use Aws\CommandInterface;
 use Aws\S3\S3Client;
+use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
@@ -294,13 +295,13 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->s3mount->getMetadata(self::UUID);
 	}
 
-	public function test_Path_getMetadata_shouldReturnTrue(){
+	public function test_Path_getMetadata_shouldReturnMetadata(){
 
-		$this->fileSystem->method('getMetadata')->willReturn([]);
+		$this->fileSystem->method('getMetadata')->willReturn(['timestamp'=>0,'mimetype'=>0]);
 
 		$metadata = $this->s3mount->getMetadata(self::UUID);
 
-		$this->assertTrue(is_array($metadata));
+		self::assertInstanceOf(Metadata::class,$metadata);
 	}
 
 	public function test_FileNotWritten_getMetadata_shouldReturnFalse(){

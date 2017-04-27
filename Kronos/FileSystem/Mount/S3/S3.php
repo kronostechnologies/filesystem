@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount\S3;
 
+use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\Metadata;
@@ -132,10 +133,21 @@ class S3 implements MountInterface  {
 
 	/**
 	 * @param string $uuid
-	 * @return array|false
+	 * @return Metadata|false
 	 */
 	public function getMetadata($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->getMetadata($path);
+
+		if($s3Metadata = $this->mount->getMetadata($path)){
+			$metadata = new Metadata();
+
+			$metadata->size = isset($s3Metadata['size']) ?$s3Metadata['size'] : 0 ;
+			$metadata->lastModifiedDate = new DateTime('@' .$s3Metadata['timestamp']);
+			$metadata->mimetype = $s3Metadata['mimetype'];
+
+			return $metadata;
+		}
+
+		return false;
 	}
 }
