@@ -198,7 +198,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->write(self::UUID,self::A_RESOURCE);
+		$this->localMount->put(self::UUID,self::A_RESOURCE);
 	}
 
 	public function test_path_write_shouldWrite(){
@@ -209,14 +209,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('writeStream')
 			->with(self::A_PATH,self::A_RESOURCE);
 
-		$this->localMount->write(self::UUID,self::A_RESOURCE);
+		$this->localMount->put(self::UUID,self::A_RESOURCE);
 	}
 
 	public function test_FileWritten_write_shouldReturnTrue(){
 
 		$this->fileSystem->method('writeStream')->willReturn(true);
 
-		$written = $this->localMount->write(self::UUID,self::A_RESOURCE);
+		$written = $this->localMount->put(self::UUID,self::A_RESOURCE);
 
 		$this->assertTrue($written);
 	}
@@ -225,7 +225,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('writeStream')->willReturn(false);
 
-		$written = $this->localMount->write(self::UUID,self::A_RESOURCE);
+		$written = $this->localMount->put(self::UUID,self::A_RESOURCE);
 
 		$this->assertFalse($written);
 	}

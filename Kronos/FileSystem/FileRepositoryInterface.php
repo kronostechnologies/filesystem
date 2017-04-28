@@ -9,15 +9,22 @@ interface FileRepositoryInterface {
 
 	/**
 	 * @param string $mountType
+	 * @param string $fileName
 	 * @return int $uuid
 	 */
-	public function addNewFile($mountType);
+	public function addNewFile($mountType,$fileName);
 
 	/**
 	 * @param int $uuid
 	 * @return string
 	 */
 	public function getFileMountType($uuid);
+
+	/**
+	 * @param int $uuid
+	 * @return string
+	 */
+	public function getFileName($uuid);
 
 	/**
 	 * @param int $uuid

@@ -4,6 +4,7 @@ namespace Kronos\FileSystem;
 
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\FileNotFoundException;
+use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\MountInterface;
@@ -26,15 +27,16 @@ class FileSystem implements FileSystemInterface {
 	}
 
 	/**
-	 * @param resource $file
+	 * @param string $filePath
+	 * @param string $fileName
 	 * @return int
 	 * @throws FileCantBeWrittenException
 	 */
-	public function put($file){
+	public function put($filePath,$fileName){
 		$mount = $this->mountSelector->getImportationMount();
-		$fileUuid = $this->fileRepository->addNewFile($mount->getMountType());
+		$fileUuid = $this->fileRepository->addNewFile($mount->getMountType(),$fileName);
 
-		if(!$mount->write($fileUuid,$file)){
+		if(!$mount->put($fileUuid,$filePath)){
 			$this->fileRepository->delete($fileUuid);
 			throw new FileCantBeWrittenException($mount->getMountType());
 		}
@@ -49,9 +51,8 @@ class FileSystem implements FileSystemInterface {
 	public function get($id){
 		$mount = $this->getMountForId($id);
 
-		$file = new File();
-		$file->resource = $mount->getResource($id);
-		$file->metadata = $mount->getMetadata($id);
+		$file = $mount->get($id);
+		$file->metadata = $this->getMetadata($id);
 
 		return $file;
 	}
@@ -59,7 +60,7 @@ class FileSystem implements FileSystemInterface {
 	/**
 	 * @param int $id
 	 * @return string
-	 * @throws FileNotFoundException
+	 * @throws MountNotFoundException
 	 */
 	public function getDownloadableLink($id){
 		$mount = $this->getMountForId($id);
@@ -71,11 +72,14 @@ class FileSystem implements FileSystemInterface {
 	/**
 	 * @param int $id
 	 * @return Metadata
-	 * @throws FileNotFoundException
+	 * @throws MountNotFoundException
 	 */
 	public function getMetadata($id){
 		$mount = $this->getMountForId($id);
 		$metadata = $mount->getMetadata($id);
+
+		$fileName = $this->fileRepository->getFileName($id);
+		$metadata->name = $fileName;
 
 		return $metadata;
 	}
@@ -91,12 +95,9 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @throws FileNotFoundException
+	 * @throws MountNotFoundException
 	 */
 	public function retrieve($id) {
-		//Pas convaincu de quoi faire ici ?
-		//Surement pas une recherche de mount normal.
-		//On assume S3 et si on ne trouve pas fuck it?
 		$mount = $this->getMountForId($id);
 		$mount->retrieve($id);
 	}
@@ -111,7 +112,7 @@ class FileSystem implements FileSystemInterface {
 		$mount = $this->mountSelector->selectMount($mountType);
 
 		if(is_null($mount)){
-			throw new FileNotFoundException($id);
+			throw new MountNotFoundException($mountType);
 		}
 
 		return $mount;

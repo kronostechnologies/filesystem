@@ -201,7 +201,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->write(self::UUID,self::A_RESOURCE);
+		$this->s3mount->put(self::UUID,self::A_RESOURCE);
 	}
 
 	public function test_path_write_shouldWrite(){
@@ -212,14 +212,14 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('writeStream')
 			->with(self::A_PATH,self::A_RESOURCE);
 
-		$this->s3mount->write(self::UUID,self::A_RESOURCE);
+		$this->s3mount->put(self::UUID,self::A_RESOURCE);
 	}
 
 	public function test_FileWritten_write_shouldReturnTrue(){
 
 		$this->fileSystem->method('writeStream')->willReturn(true);
 
-		$written = $this->s3mount->write(self::UUID,self::A_RESOURCE);
+		$written = $this->s3mount->put(self::UUID,self::A_RESOURCE);
 
 		$this->assertTrue($written);
 	}
@@ -228,7 +228,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('writeStream')->willReturn(false);
 
-		$written = $this->s3mount->write(self::UUID,self::A_RESOURCE);
+		$written = $this->s3mount->put(self::UUID,self::A_RESOURCE);
 
 		$this->assertFalse($written);
 	}

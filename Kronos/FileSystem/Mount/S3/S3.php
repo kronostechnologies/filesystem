@@ -47,7 +47,7 @@ class S3 implements MountInterface  {
 	 * @param string $uuid
 	 * @return resource|false
 	 */
-	public function getResource($uuid) {
+	public function get($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
 		return $this->mount->readStream($path);
 	}
@@ -82,26 +82,12 @@ class S3 implements MountInterface  {
 	 * Write a new file using a stream.
 	 *
 	 * @param string $uuid
-	 * @param resource $resource
-	 *
+	 * @param resource $filePath
 	 * @return bool
 	 */
-	public function write($uuid, $resource) {
+	public function put($uuid, $filePath) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->writeStream($path,$resource);
-	}
-
-	/**
-	 * Update a file using a stream.
-	 *
-	 * @param string $uuid
-	 * @param resource $resource
-	 *
-	 * @return bool
-	 */
-	public function update($uuid, $resource) {
-		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->updateStream($path,$resource);
+		return $this->mount->writeStream($path,$filePath);
 	}
 
 	/**

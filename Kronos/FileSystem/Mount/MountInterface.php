@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
+use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 
 /**
@@ -13,9 +14,9 @@ interface MountInterface {
 
 	/**
 	 * @param string $uuid
-	 * @return resource
+	 * @return File
 	 */
-	public function getResource($uuid);
+	public function get($uuid);
 
 	/**
 	 * @param string $uuid
@@ -35,21 +36,12 @@ interface MountInterface {
 	 * Write a new file using a stream.
 	 *
 	 * @param string $uuid
-	 * @param resource $resource
-	 *
+	 * @param string $filePath
 	 * @return bool
-	 */
-	public function write($uuid, $resource);
-
-	/**
-	 * Update a file using a stream.
+	 * @internal param resource $resource
 	 *
-	 * @param string $uuid
-	 * @param resource $resource
-	 *
-	 * @return bool
 	 */
-	public function update($uuid, $resource);
+	public function put($uuid, $filePath);
 
 	/**
 	 * @param string $uuid

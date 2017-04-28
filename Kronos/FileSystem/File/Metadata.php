@@ -10,6 +10,11 @@ class Metadata {
 	/**
 	 * @var string
 	 */
+	public $name;
+
+	/**
+	 * @var string
+	 */
 	public $mimetype;
 
 	/**

@@ -5,6 +5,7 @@ namespace Kronos\FileSystem\Mount\Local;
 use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
+use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
@@ -45,11 +46,12 @@ class Local implements MountInterface {
 
 	/**
 	 * @param string $uuid
-	 * @return resource|false
+	 * @return File
 	 */
-	public function getResource($uuid) {
+	public function get($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->readStream($path);
+		$flySystemFile = $this->mount->get($path);
+		return new File($flySystemFile);
 	}
 
 	/**
@@ -74,28 +76,12 @@ class Local implements MountInterface {
 	 * Write a new file using a stream.
 	 *
 	 * @param string $uuid
-	 * @param resource $resource
-	 *
+	 * @param string $filePath
 	 * @return bool
 	 */
-	public function write($uuid, $resource) {
+	public function put($uuid, $filePath) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->writeStream($path,$resource);
-	}
-
-	/**
-	 * Update a file using a stream.
-	 *
-	 * @param string $uuid
-	 * @param resource $resource
-	 *
-	 * @return bool
-	 */
-	public function update($uuid, $resource) {
-		if($this->delete($uuid)){
-			return $this->write($uuid,$resource);
-		}
-		return false;
+		return $this->mount->put($path,file_get_contents($filePath));
 	}
 
 	/**
@@ -103,7 +89,7 @@ class Local implements MountInterface {
 	 * @throws CantRetreiveFileException
 	 */
 	public function retrieve($uuid) {
-		throw new CantRetreiveFileException();
+		throw new CantRetreiveFileException($uuid);
 	}
 
 	/**

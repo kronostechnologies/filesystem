@@ -2,16 +2,19 @@
 
 namespace Kronos\FileSystem;
 
+use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 
 interface FileSystemInterface {
 
 	/**
-	 * @param resource $file
+	 * @param string $filePath
+	 * @param string $fileName
 	 * @return int
+	 * @throws FileCantBeWrittenException
 	 */
-	public function put($file);
+	public function put($filePath,$fileName);
 
 	/**
 	 * @param int $id
