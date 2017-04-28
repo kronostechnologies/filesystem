@@ -92,6 +92,9 @@ class Local implements MountInterface {
 	 * @return bool
 	 */
 	public function update($uuid, $resource) {
+		if($this->delete($uuid)){
+			return $this->write($uuid,$resource);
+		}
 		return false;
 	}
 

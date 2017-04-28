@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount\S3;
 
+use Aws\S3\Exception\S3Exception;
 use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
@@ -9,14 +10,13 @@ use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
-use League\Flysystem\Config;
-use League\Flysystem\ConfigAwareTrait;
 use League\Flysystem\Filesystem;
 
 class S3 implements MountInterface  {
 
 	const PRESIGNED_URL_LIFE_TIME = '+5 minutes';
 	const MOUNT_TYPE = 'S3';
+	const RESTORED_OBJECT_LIFE_TIME_IN_DAYS = 2;
 
 	/**
 	 * @var Filesystem
@@ -100,7 +100,8 @@ class S3 implements MountInterface  {
 	 * @return bool
 	 */
 	public function update($uuid, $resource) {
-		return false;
+		$path = $this->pathGenerator->generatePath($uuid);
+		return $this->mount->updateStream($path,$resource);
 	}
 
 	/**
@@ -128,7 +129,32 @@ class S3 implements MountInterface  {
 	 * @throws CantRetreiveFileException
 	 */
 	public function retrieve($uuid) {
-		throw new CantRetreiveFileException();
+		/** @var AwsS3Adapter $awsS3Adaptor */
+		$awsS3Adaptor = $this->mount->getAdapter();
+		$s3Client = $awsS3Adaptor->getClient();
+
+		$path = $this->pathGenerator->generatePath($uuid);
+		$location = $awsS3Adaptor->applyPathPrefix($path);
+
+		try {
+			$command = $s3Client->getCommand(
+				'restoreObject',
+				[
+					'Bucket' => $awsS3Adaptor->getBucket(),
+					'Key' => $location,
+					'RestoreRequest' => [
+						'Days' => self::RESTORED_OBJECT_LIFE_TIME_IN_DAYS,
+						'GlacierJobParameters' => [
+							'Tier' => 'Standard'
+						]
+					]
+				]
+			);
+
+			$s3Client->execute($command);
+		}catch(S3Exception $exception){
+			throw new CantRetreiveFileException($uuid,$exception);
+		}
 	}
 
 	/**

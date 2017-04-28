@@ -2,7 +2,9 @@
 namespace Kronos\Tests\FileSystem\Mount\S3;
 
 use Aws\CommandInterface;
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
@@ -284,7 +286,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->s3mount->getMetadata(self::UUID);
 	}
 
-	public function test_path_getMetadata_shouldDeleteFile(){
+	public function test_path_getMetadata_shouldGetMetadata(){
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
@@ -311,5 +313,130 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$metadata = $this->s3mount->getMetadata(self::UUID);
 
 		$this->assertFalse($metadata);
+	}
+
+	public function test_uuid_update_shouldGetPathOfFile(){
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->s3mount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_path_update_shouldUpdate(){
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+		$this->fileSystem
+			->expects(self::once())
+			->method('updateStream')
+			->with(self::A_PATH,self::A_RESOURCE);
+
+		$this->s3mount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_FileUpdated_update_shouldReturnTrue(){
+
+		$this->fileSystem->method('updateStream')->willReturn(true);
+
+		$written = $this->s3mount->update(self::UUID,self::A_RESOURCE);
+
+		$this->assertTrue($written);
+	}
+
+	public function test_FileNotUpdated_update_shouldReturnFalse(){
+
+		$this->fileSystem->method('updateStream')->willReturn(false);
+
+		$updated = $this->s3mount->update(self::UUID,self::A_RESOURCE);
+
+		$this->assertFalse($updated);
+	}
+
+
+	public function test_retreive_shouldGetS3Client(){
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+
+		$this->s3Adaptor
+			->expects(self::once())
+			->method('getClient');
+
+		$this->s3mount->retrieve(self::UUID);
+	}
+
+	public function test_uuid_retreive_shouldGetPathOfFile(){
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->s3mount->retrieve(self::UUID);
+	}
+
+	public function test_path_retreive_shouldGetFileLocation(){
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+		$this->s3Adaptor
+			->expects(self::once())
+			->method('applyPathPrefix')
+			->with(self::A_PATH);
+
+		$this->s3mount->retrieve(self::UUID);
+	}
+
+	public function test_location_retreive_shouldRestoreObject(){
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+		$this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+
+		$this->s3Client
+			->expects(self::once())
+			->method('getCommand')
+			->with(
+				'restoreObject',
+				[
+					'Bucket' => self::S3_BUCKET,
+					'Key' => self::A_LOCATION,
+					'RestoreRequest' => [
+					'Days' => S3::RESTORED_OBJECT_LIFE_TIME_IN_DAYS,
+					'GlacierJobParameters' => [
+						'Tier' => 'Standard'
+						]
+					]
+				]
+			)
+			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+
+		$this->s3mount->retrieve(self::UUID);
+	}
+
+	public function test_command_retreive_shouldExecuteCommand(){
+		$command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Client->method('getCommand')->willReturn($command);
+
+		$this->s3Client
+			->expects(self::once())
+			->method('execute')
+			->with($command);
+
+		$this->s3mount->retrieve(self::UUID);
+	}
+
+	public function test_commandFailed_retreive_shouldCatchAndThrowNewException(){
+		$command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
+		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+		$this->s3Client->method('getCommand')->willReturn($command);
+		$this->s3Client->method('execute')->willThrowException($this->getMockWithoutInvokingTheOriginalConstructor(S3Exception::class));
+
+		self::expectException(CantRetreiveFileException::class);
+
+		$this->s3mount->retrieve(self::UUID);
 	}
 }

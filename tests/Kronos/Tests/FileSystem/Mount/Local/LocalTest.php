@@ -123,6 +123,75 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($deleted);
 	}
 
+	public function test_uuid_update_shouldGetPathOfFile(){
+		$this->pathGenerator
+			->expects(self::atLeastOnce())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->localMount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_path_update_shouldDeleteFile(){
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+		$this->fileSystem
+			->expects(self::once())
+			->method('delete')
+			->with(self::A_PATH);
+
+		$this->localMount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_fileDeleted_update_shouldWrite(){
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem->method('delete')->willReturn(true);
+
+		$this->fileSystem
+			->expects(self::once())
+			->method('writeStream')
+			->with(self::A_PATH,self::A_RESOURCE);
+
+		$this->localMount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_fileNotDeleted_update_shouldNotWrite(){
+		$this->fileSystem->method('delete')->willReturn(false);
+
+		$this->fileSystem
+			->expects(self::never())
+			->method('writeStream')
+			->with(self::A_PATH,self::A_RESOURCE);
+
+		$this->localMount->update(self::UUID,self::A_RESOURCE);
+	}
+
+	public function test_fileNotDeleted_update_shouldReturnFalse(){
+		$this->fileSystem->method('delete')->willReturn(false);
+
+		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
+
+		self::assertFalse($updated);
+	}
+
+	public function test_fileUpdated_update_shouldReturnTrue(){
+		$this->fileSystem->method('delete')->willReturn(true);
+		$this->fileSystem->method('writeStream')->willReturn(true);
+
+		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
+
+		self::assertTrue($updated);
+	}
+
+	public function test_fileDeletedButNotUpdated_update_shouldReturnFalse(){
+		$this->fileSystem->method('delete')->willReturn(true);
+		$this->fileSystem->method('writeStream')->willReturn(false);
+
+		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
+
+		self::assertFalse($updated);
+	}
+
 	public function test_uuid_write_shouldGetPathOfFile(){
 		$this->pathGenerator
 			->expects(self::once())
