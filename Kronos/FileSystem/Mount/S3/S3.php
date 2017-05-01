@@ -20,8 +20,8 @@ class S3 extends FlySystemBaseMount {
 	 * @param Filesystem $mount
 	 * @return bool
 	 */
-	protected function isFileSystemValid(Filesystem $mount){
-		return $mount->getAdapter() instanceof  AwsS3Adapter;
+	protected function isFileSystemValid(Filesystem $mount) {
+		return $mount->getAdapter() instanceof AwsS3Adapter;
 	}
 
 	/**
@@ -46,7 +46,7 @@ class S3 extends FlySystemBaseMount {
 
 		$request = $s3Client->createPresignedRequest($command, self::PRESIGNED_URL_LIFE_TIME);
 
-		$presignedUrl = (string) $request->getUri();
+		$presignedUrl = (string)$request->getUri();
 		return $presignedUrl;
 	}
 
@@ -78,8 +78,9 @@ class S3 extends FlySystemBaseMount {
 			);
 
 			$s3Client->execute($command);
-		}catch(S3Exception $exception){
-			throw new CantRetreiveFileException($uuid,$exception);
+		}
+		catch(S3Exception $exception) {
+			throw new CantRetreiveFileException($uuid, $exception);
 		}
 	}
 

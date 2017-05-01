@@ -18,8 +18,8 @@ class Local extends FlySystemBaseMount {
 	 * @param Filesystem $mount
 	 * @return bool
 	 */
-	protected function isFileSystemValid(Filesystem $mount){
-		return $mount->getAdapter() instanceof  LocalFlySystem;
+	protected function isFileSystemValid(Filesystem $mount) {
+		return $mount->getAdapter() instanceof LocalFlySystem;
 	}
 
 	/**
@@ -27,10 +27,8 @@ class Local extends FlySystemBaseMount {
 	 * @return string
 	 */
 	public function getSignedUrl($uuid) {
-		return self::SIGNED_URL_BASE_PATH.$uuid;
+		return self::SIGNED_URL_BASE_PATH . $uuid;
 	}
-
-
 
 	/**
 	 * @param string $uuid
@@ -47,11 +45,11 @@ class Local extends FlySystemBaseMount {
 	public function getMetadata($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
 
-		if($localMetadata = $this->mount->getMetadata($path)){
+		if($localMetadata = $this->mount->getMetadata($path)) {
 			$metadata = new Metadata();
 
-			$metadata->size = isset($localMetadata['size']) ?$localMetadata['size'] : 0 ;
-			$metadata->lastModifiedDate = new DateTime('@' .$localMetadata['timestamp']);
+			$metadata->size = isset($localMetadata['size']) ? $localMetadata['size'] : 0;
+			$metadata->lastModifiedDate = new DateTime('@' . $localMetadata['timestamp']);
 			$metadata->mimetype = $this->mount->getMimetype($path);
 
 			return $metadata;
