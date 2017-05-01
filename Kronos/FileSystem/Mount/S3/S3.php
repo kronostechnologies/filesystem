@@ -6,52 +6,24 @@ use Aws\S3\Exception\S3Exception;
 use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
-use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
-use Kronos\FileSystem\Mount\MountInterface;
+use Kronos\FileSystem\Mount\FlySystemBaseMount;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 
-class S3 implements MountInterface  {
+class S3 extends FlySystemBaseMount {
 
 	const PRESIGNED_URL_LIFE_TIME = '+5 minutes';
 	const MOUNT_TYPE = 'S3';
 	const RESTORED_OBJECT_LIFE_TIME_IN_DAYS = 2;
 
 	/**
-	 * @var Filesystem
-	 */
-	private $mount;
-	/**
-	 * @var PathGeneratorInterface
-	 */
-	private $pathGenerator;
-
-	public function __construct(PathGeneratorInterface $pathGenerator,Filesystem $mount) {
-		if(!$this->issAwsS3Mount($mount)){
-			throw new WrongFileSystemTypeException($this->getMountType(),get_class($mount->getAdapter()));
-		}
-		$this->mount = $mount;
-		$this->pathGenerator = $pathGenerator;
-	}
-
-	/**
 	 * @param Filesystem $mount
 	 * @return bool
 	 */
-	private function issAwsS3Mount(Filesystem $mount){
+	protected function isFileSystemValid(Filesystem $mount){
 		return $mount->getAdapter() instanceof  AwsS3Adapter;
-	}
-
-	/**
-	 * @param string $uuid
-	 * @return File
-	 */
-	public function get($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
-		$flySystemFile = $this->mount->get($path);
-		return new File($flySystemFile);
 	}
 
 	/**
@@ -78,38 +50,6 @@ class S3 implements MountInterface  {
 
 		$presignedUrl = (string) $request->getUri();
 		return $presignedUrl;
-	}
-
-	/**
-	 * Write a new file using a stream.
-	 *
-	 * @param string $uuid
-	 * @param string $filePath
-	 * @return bool
-	 */
-	public function put($uuid, $filePath) {
-		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->put($path,$this->getFileContent($filePath));
-	}
-
-	/**
-	 * Delete a file.
-	 *
-	 * @param string $uuid
-	 *
-	 * @return bool
-	 */
-	public function delete($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->delete($path);
-
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getMountType() {
-		return self::MOUNT_TYPE;
 	}
 
 	/**
@@ -152,24 +92,16 @@ class S3 implements MountInterface  {
 	public function getMetadata($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
 
-		if($s3Metadata = $this->mount->getMetadata($path)){
+		if($s3Metadata = $this->mount->getMetadata($path)) {
 			$metadata = new Metadata();
 
-			$metadata->size = isset($s3Metadata['size']) ?$s3Metadata['size'] : 0 ;
-			$metadata->lastModifiedDate = new DateTime('@' .$s3Metadata['timestamp']);
+			$metadata->size = isset($s3Metadata['size']) ? $s3Metadata['size'] : 0;
+			$metadata->lastModifiedDate = new DateTime('@' . $s3Metadata['timestamp']);
 			$metadata->mimetype = $s3Metadata['mimetype'];
 
 			return $metadata;
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param string $path
-	 * @return string
-	 */
-	protected function getFileContent($path){
-		return file_get_contents($path);
 	}
 }
