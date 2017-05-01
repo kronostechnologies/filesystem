@@ -6,6 +6,7 @@ use Aws\S3\Exception\S3Exception;
 use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
+use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
@@ -45,11 +46,12 @@ class S3 implements MountInterface  {
 
 	/**
 	 * @param string $uuid
-	 * @return resource|false
+	 * @return File
 	 */
 	public function get($uuid) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->readStream($path);
+		$flySystemFile = $this->mount->get($path);
+		return new File($flySystemFile);
 	}
 
 	/**
@@ -82,12 +84,12 @@ class S3 implements MountInterface  {
 	 * Write a new file using a stream.
 	 *
 	 * @param string $uuid
-	 * @param resource $filePath
+	 * @param string $filePath
 	 * @return bool
 	 */
 	public function put($uuid, $filePath) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->writeStream($path,$filePath);
+		return $this->mount->put($path,$this->getFileContent($filePath));
 	}
 
 	/**
@@ -161,5 +163,13 @@ class S3 implements MountInterface  {
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param string $path
+	 * @return string
+	 */
+	protected function getFileContent($path){
+		return file_get_contents($path);
 	}
 }

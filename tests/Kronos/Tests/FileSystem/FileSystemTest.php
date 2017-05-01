@@ -21,6 +21,16 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	const A_SIGNED_URL = 'A_SIGNED_URL';
 
 	/**
+	 * @var File|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $file;
+
+	/**
+	 * @var Metadata|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $metadata;
+
+	/**
 	 * @var Selector|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mountSelector;
@@ -48,6 +58,11 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileRepository = $this->getMockWithoutInvokingTheOriginalConstructor(FileRepositoryInterface::class);
 
 		$this->fileSystem = new FileSystem($this->mountSelector,$this->fileRepository);
+	}
+
+	public function tearDown() {
+		unset($this->metadata);
+		unset($this->file);
 	}
 
 	public function test_resource_put_shouldGetImportationMount(){
@@ -261,9 +276,11 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_givenId_getMetadata_shouldMountAssociatedWithId(){
-		$metadata = new Metadata();
+		$this->metadata = new Metadata();
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
+		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
+		$this->mount->method('get')->willReturn($this->file);
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('getMetadata')->willReturn($metadata);
 
 		$this->fileRepository
 			->expects(self::once())
@@ -274,8 +291,8 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mountType_getMetadata_shouldSelectMount(){
-		$metadata = new Metadata();
-		$this->mount->method('getMetadata')->willReturn($metadata);
+		$this->metadata = new Metadata();
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
 		$this->fileRepository->method('getFileMountType')->willReturn(self::MOUNT_TYPE);
 
 		$this->mountSelector
@@ -296,9 +313,9 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mount_getMetadata_getMetadata(){
-		$metadata = new Metadata();
+		$this->metadata = new Metadata();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('getMetadata')->willReturn($metadata);
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
 
 		$this->mount
 			->expects(self::once())
@@ -309,9 +326,9 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_metadata_getMetadata_ShouldGetFileName(){
-		$metadata = new Metadata();
+		$this->metadata = new Metadata();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('getMetadata')->willReturn($metadata);
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
 
 		$this->fileRepository
 			->expects(self::once())
@@ -322,9 +339,9 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mount_getMetadata_ShouldReturnMetadata(){
-		$metadata = new Metadata();
+		$this->metadata = new Metadata();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('getMetadata')->willReturn($metadata);
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
 
 		$actualMetadata = $this->fileSystem->getMetadata(self::UUID);
 
@@ -333,6 +350,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 
 	public function test_givenId_get_shouldMountAssociatedWithId(){
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->fileRepository
@@ -344,6 +362,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mountType_get_shouldSelectMount(){
+		$this->givenWillReturnFile();
 		$this->fileRepository->method('getFileMountType')->willReturn(self::MOUNT_TYPE);
 
 		$this->mountSelector
@@ -356,6 +375,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_get_shouldThrowMountNotFoundException(){
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn(null);
 
 		$this->expectException(MountNotFoundException::class);
@@ -363,7 +383,8 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem->get(self::UUID);
 	}
 
-	public function test_mount_get_shouldGetRessource(){
+	public function test_mount_get_shouldGetFile(){
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->mount
@@ -375,6 +396,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mount_get_shouldGetMetadata(){
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->mount
@@ -386,31 +408,27 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_File_get_shouldReturnFile(){
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
-		$file = $this->fileSystem->get(self::UUID);
+		$this->file = $this->fileSystem->get(self::UUID);
 
-		self::assertInstanceOf(File::class,$file);
-	}
-
-	public function test_Resource_get_shouldBeTheResourceInFileObject(){
-		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
-
-		$file = $this->fileSystem->get(self::UUID);
-
-		self::assertSame(self::A_FILE_PATH,$file->resource);
+		self::assertInstanceOf(File::class,$this->file);
 	}
 
 	public function test_Metadata_get_shouldBeTheMetadataInFileObject(){
-		$metadata = new Metadata();
+		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mount->method('getMetadata')->willReturn($metadata);
 
 		$file = $this->fileSystem->get(self::UUID);
 
-		self::assertSame($metadata,$file->metadata);
+		self::assertSame($this->metadata,$file->metadata);
 	}
 
-
+	private function givenWillReturnFile(){
+		$this->metadata = new Metadata();
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
+		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
+		$this->mount->method('get')->willReturn($this->file);
+	}
 }

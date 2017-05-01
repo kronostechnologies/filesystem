@@ -6,6 +6,7 @@ use DoctrineTest\InstantiatorTestAsset\PharAsset;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
+use League\Flysystem\File;
 use League\Flysystem\Filesystem;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_TestCase;
@@ -14,10 +15,9 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
-	const A_STREAM = 'A_STREAM';
+	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const AN_URI = 'AN_URI';
-	const A_RESOURCE = 'A_RESOURCE';
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -46,43 +46,37 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('getAdapter')->willReturn($this->localAdaptor);
 
-		$this->localMount = new \Kronos\FileSystem\Mount\Local\Local($this->pathGenerator,$this->fileSystem);
+		$this->localMount = new localMountTestable($this->pathGenerator,$this->fileSystem);
 	}
 
-	public function test_uuid_getResource_shouldGetPathOfFile(){
+	public function test_uuid_get_shouldGetPathOfFile(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->getResource(self::UUID);
+		$this->localMount->get(self::UUID);
 	}
 
-	public function test_path_getResource_shouldReadStream(){
+	public function test_path_get_shouldReadStream(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
 			->expects(self::once())
-			->method('readStream')
+			->method('get')
 			->with(self::A_PATH);
 
-		$this->localMount->getResource(self::UUID);
+		$this->localMount->get(self::UUID);
 	}
 
-	public function test_noStream_getResource_shouldReturnEmptyString(){
-		$this->fileSystem->method('readStream')->willReturn(false);
+	public function test_stream_get_shouldReturnStream(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
 
-		$stream = $this->localMount->getResource(self::UUID);
+		$file = $this->localMount->get(self::UUID);
 
-		$this->assertFalse($stream);
-	}
-
-	public function test_stream_getResource_shouldReturnStream(){
-		$this->fileSystem->method('readStream')->willReturn(self::A_STREAM);
-
-		$stream = $this->localMount->getResource(self::UUID);
-
-		$this->assertEquals(self::A_STREAM,$stream);
+		$this->assertInstanceOf(\Kronos\FileSystem\File\File::class,$file);
 	}
 
 	public function test_uuid_delete_shouldGetPathOfFile(){
@@ -123,109 +117,40 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($deleted);
 	}
 
-	public function test_uuid_update_shouldGetPathOfFile(){
-		$this->pathGenerator
-			->expects(self::atLeastOnce())
-			->method('generatePath')
-			->with(self::UUID);
-
-		$this->localMount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_path_update_shouldDeleteFile(){
-		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
-
-		$this->fileSystem
-			->expects(self::once())
-			->method('delete')
-			->with(self::A_PATH);
-
-		$this->localMount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_fileDeleted_update_shouldWrite(){
-		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
-		$this->fileSystem->method('delete')->willReturn(true);
-
-		$this->fileSystem
-			->expects(self::once())
-			->method('writeStream')
-			->with(self::A_PATH,self::A_RESOURCE);
-
-		$this->localMount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_fileNotDeleted_update_shouldNotWrite(){
-		$this->fileSystem->method('delete')->willReturn(false);
-
-		$this->fileSystem
-			->expects(self::never())
-			->method('writeStream')
-			->with(self::A_PATH,self::A_RESOURCE);
-
-		$this->localMount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_fileNotDeleted_update_shouldReturnFalse(){
-		$this->fileSystem->method('delete')->willReturn(false);
-
-		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
-
-		self::assertFalse($updated);
-	}
-
-	public function test_fileUpdated_update_shouldReturnTrue(){
-		$this->fileSystem->method('delete')->willReturn(true);
-		$this->fileSystem->method('writeStream')->willReturn(true);
-
-		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
-
-		self::assertTrue($updated);
-	}
-
-	public function test_fileDeletedButNotUpdated_update_shouldReturnFalse(){
-		$this->fileSystem->method('delete')->willReturn(true);
-		$this->fileSystem->method('writeStream')->willReturn(false);
-
-		$updated = $this->localMount->update(self::UUID,self::A_RESOURCE);
-
-		self::assertFalse($updated);
-	}
-
-	public function test_uuid_write_shouldGetPathOfFile(){
+	public function test_uuid_put_shouldGetPathOfFile(){
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->put(self::UUID,self::A_RESOURCE);
+		$this->localMount->put(self::UUID,self::A_FILE_PATH);
 	}
 
-	public function test_path_write_shouldWrite(){
+	public function test_path_put_shouldPut(){
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
 			->expects(self::once())
-			->method('writeStream')
-			->with(self::A_PATH,self::A_RESOURCE);
+			->method('put')
+			->with(self::A_PATH,localMountTestable::A_FILE_CONTENT);
 
-		$this->localMount->put(self::UUID,self::A_RESOURCE);
+		$this->localMount->put(self::UUID,self::A_FILE_PATH);
 	}
 
-	public function test_FileWritten_write_shouldReturnTrue(){
+	public function test_FileWritten_put_shouldReturnTrue(){
 
-		$this->fileSystem->method('writeStream')->willReturn(true);
+		$this->fileSystem->method('put')->willReturn(true);
 
-		$written = $this->localMount->put(self::UUID,self::A_RESOURCE);
+		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH);
 
 		$this->assertTrue($written);
 	}
 
-	public function test_FileNotWritten_write_shouldReturnFalse(){
+	public function test_FileNotWritten_put_shouldReturnFalse(){
 
-		$this->fileSystem->method('writeStream')->willReturn(false);
+		$this->fileSystem->method('put')->willReturn(false);
 
-		$written = $this->localMount->put(self::UUID,self::A_RESOURCE);
+		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH);
 
 		$this->assertFalse($written);
 	}
@@ -291,4 +216,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		self::assertEquals(\Kronos\FileSystem\Mount\Local\Local::SIGNED_URL_BASE_PATH.self::UUID,$actualSignedUrl);
 	}
+}
+
+
+class localMountTestable extends \Kronos\FileSystem\Mount\Local\Local {
+
+	const A_FILE_CONTENT = 'A_FILE_CONTENT';
+	protected function getFileContent($path) {
+		return self::A_FILE_CONTENT;
+	}
+
 }

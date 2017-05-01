@@ -81,7 +81,7 @@ class Local implements MountInterface {
 	 */
 	public function put($uuid, $filePath) {
 		$path = $this->pathGenerator->generatePath($uuid);
-		return $this->mount->put($path,file_get_contents($filePath));
+		return $this->mount->put($path,$this->getFileContent($filePath));
 	}
 
 	/**
@@ -117,5 +117,14 @@ class Local implements MountInterface {
 	 */
 	public function getMountType() {
 		return self::MOUNT_TYPE;
+	}
+
+
+	/**
+	 * @param string $path
+	 * @return string
+	 */
+	protected function getFileContent($path){
+		return file_get_contents($path);
 	}
 }

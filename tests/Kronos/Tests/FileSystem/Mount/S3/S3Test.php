@@ -5,6 +5,7 @@ use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
+use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
@@ -18,11 +19,10 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
-	const A_STREAM = 'A_STREAM';
+	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
 	const AN_URI = 'AN_URI';
-	const A_RESOURCE = 'A_RESOURCE';
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -57,43 +57,37 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
 
-		$this->s3mount = new S3($this->pathGenerator,$this->fileSystem);
+		$this->s3mount = new s3MountTestable($this->pathGenerator,$this->fileSystem);
 	}
 
-	public function test_uuid_getResource_shouldGetPathOfFile(){
+	public function test_uuid_get_shouldGetPathOfFile(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->getResource(self::UUID);
+		$this->s3mount->get(self::UUID);
 	}
 
-	public function test_path_getResource_shouldReadStream(){
+	public function test_path_get_shouldGet(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
 			->expects(self::once())
-			->method('readStream')
+			->method('get')
 			->with(self::A_PATH);
 
-		$this->s3mount->getResource(self::UUID);
+		$this->s3mount->get(self::UUID);
 	}
 
-	public function test_noStream_getResource_shouldReturnEmptyString(){
-		$this->fileSystem->method('readStream')->willReturn(false);
+	public function test_stream_get_shouldReturnFile(){
+		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
 
-		$stream = $this->s3mount->getResource(self::UUID);
+		$file = $this->s3mount->get(self::UUID);
 
-		$this->assertFalse($stream);
-	}
-
-	public function test_stream_getResource_shouldReturnStream(){
-		$this->fileSystem->method('readStream')->willReturn(self::A_STREAM);
-
-		$stream = $this->s3mount->getResource(self::UUID);
-
-		$this->assertEquals(self::A_STREAM,$stream);
+		self::assertInstanceOf(File::class,$file);
 	}
 
 	public function test_getSignedUrl_shouldGetS3Client(){
@@ -195,40 +189,40 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		self::assertSame(self::AN_URI,$actualUri);
 	}
 
-	public function test_uuid_write_shouldGetPathOfFile(){
+	public function test_uuid_put_shouldGetPathOfFile(){
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->put(self::UUID,self::A_RESOURCE);
+		$this->s3mount->put(self::UUID,self::A_FILE_PATH);
 	}
 
-	public function test_path_write_shouldWrite(){
+	public function test_path_put_shouldPut(){
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
 			->expects(self::once())
-			->method('writeStream')
-			->with(self::A_PATH,self::A_RESOURCE);
+			->method('put')
+			->with(self::A_PATH,s3MountTestable::A_FILE_CONTENT);
 
-		$this->s3mount->put(self::UUID,self::A_RESOURCE);
+		$this->s3mount->put(self::UUID,self::A_FILE_PATH);
 	}
 
-	public function test_FileWritten_write_shouldReturnTrue(){
+	public function test_FileWritten_put_shouldReturnTrue(){
 
-		$this->fileSystem->method('writeStream')->willReturn(true);
+		$this->fileSystem->method('put')->willReturn(true);
 
-		$written = $this->s3mount->put(self::UUID,self::A_RESOURCE);
+		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH);
 
 		$this->assertTrue($written);
 	}
 
-	public function test_FileNotWritten_write_shouldReturnFalse(){
+	public function test_FileNotWritten_put_shouldReturnFalse(){
 
-		$this->fileSystem->method('writeStream')->willReturn(false);
+		$this->fileSystem->method('put')->willReturn(false);
 
-		$written = $this->s3mount->put(self::UUID,self::A_RESOURCE);
+		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH);
 
 		$this->assertFalse($written);
 	}
@@ -313,44 +307,6 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$metadata = $this->s3mount->getMetadata(self::UUID);
 
 		$this->assertFalse($metadata);
-	}
-
-	public function test_uuid_update_shouldGetPathOfFile(){
-		$this->pathGenerator
-			->expects(self::once())
-			->method('generatePath')
-			->with(self::UUID);
-
-		$this->s3mount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_path_update_shouldUpdate(){
-		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
-
-		$this->fileSystem
-			->expects(self::once())
-			->method('updateStream')
-			->with(self::A_PATH,self::A_RESOURCE);
-
-		$this->s3mount->update(self::UUID,self::A_RESOURCE);
-	}
-
-	public function test_FileUpdated_update_shouldReturnTrue(){
-
-		$this->fileSystem->method('updateStream')->willReturn(true);
-
-		$written = $this->s3mount->update(self::UUID,self::A_RESOURCE);
-
-		$this->assertTrue($written);
-	}
-
-	public function test_FileNotUpdated_update_shouldReturnFalse(){
-
-		$this->fileSystem->method('updateStream')->willReturn(false);
-
-		$updated = $this->s3mount->update(self::UUID,self::A_RESOURCE);
-
-		$this->assertFalse($updated);
 	}
 
 
@@ -439,4 +395,13 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->s3mount->retrieve(self::UUID);
 	}
+}
+
+class s3MountTestable extends \Kronos\FileSystem\Mount\S3\S3 {
+
+	const A_FILE_CONTENT = 'A_FILE_CONTENT';
+	protected function getFileContent($path) {
+		return self::A_FILE_CONTENT;
+	}
+
 }
