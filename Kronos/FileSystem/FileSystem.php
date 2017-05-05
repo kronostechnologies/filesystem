@@ -7,6 +7,7 @@ use Kronos\FileSystem\Exception\FileNotFoundException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
+use Kronos\FileSystem\File\Translator\MetadataTranslator;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
 
@@ -16,14 +17,22 @@ class FileSystem implements FileSystemInterface {
 	 * @var Selector
 	 */
 	private $mountSelector;
+
 	/**
 	 * @var FileRepositoryInterface
 	 */
 	private $fileRepository;
 
-	public function __construct(Selector $mountSelector, FileRepositoryInterface $fileRepository) {
+	/**
+	 * @var MetadataTranslator
+	 */
+	private $metadataTranslator;
+
+	public function __construct(Selector $mountSelector, FileRepositoryInterface $fileRepository, MetadataTranslator $metadataTranslator = null) {
 		$this->mountSelector = $mountSelector;
 		$this->fileRepository = $fileRepository;
+		$this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
+
 	}
 
 	/**
@@ -76,12 +85,12 @@ class FileSystem implements FileSystemInterface {
 	 */
 	public function getMetadata($id){
 		$mount = $this->getMountForId($id);
-		$metadata = $mount->getMetadata($id);
-
 		$fileName = $this->fileRepository->getFileName($id);
+
+		$metadata = $mount->getMetadata($id);
 		$metadata->name = $fileName;
 
-		return $metadata;
+		return $this->metadataTranslator->translateInternalToExposed($metadata);
 	}
 
 	/**
