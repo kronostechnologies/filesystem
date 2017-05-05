@@ -28,10 +28,11 @@ class FileSystem implements FileSystemInterface {
 	 */
 	private $metadataTranslator;
 
-	public function __construct(Selector $mountSelector, FileRepositoryInterface $fileRepository,MetadataTranslator $metadataTranslator = null) {
+	public function __construct(Selector $mountSelector, FileRepositoryInterface $fileRepository, MetadataTranslator $metadataTranslator = null) {
 		$this->mountSelector = $mountSelector;
 		$this->fileRepository = $fileRepository;
-		$this->metadataTranslator = is_null($metadataTranslator) ? new MetadataTranslator() : $metadataTranslator;
+		$this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
+
 	}
 
 	/**
