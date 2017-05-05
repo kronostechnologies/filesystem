@@ -4,7 +4,8 @@ namespace Kronos\Tests\FileSystem;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\File\File;
-use Kronos\FileSystem\File\Metadata;
+use Kronos\FileSystem\File\Internal\Metadata;
+use Kronos\FileSystem\File\Translator\MetadataTranslator;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\FileSystem;
 use Kronos\FileSystem\Mount\MountInterface;
@@ -50,14 +51,20 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	 */
 	private $mount;
 
+	/**
+	 * @var MetadataTranslator|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $metadataTranslator;
+
 	public function setUp(){
 
 		$this->mount = $this->getMockWithoutInvokingTheOriginalConstructor(MountInterface::class);
 
+		$this->metadataTranslator = $this->getMockWithoutInvokingTheOriginalConstructor(MetadataTranslator::class);
 		$this->mountSelector = $this->getMockWithoutInvokingTheOriginalConstructor(Selector::class);
 		$this->fileRepository = $this->getMockWithoutInvokingTheOriginalConstructor(FileRepositoryInterface::class);
 
-		$this->fileSystem = new FileSystem($this->mountSelector,$this->fileRepository);
+		$this->fileSystem = new FileSystem($this->mountSelector,$this->fileRepository,$this->metadataTranslator);
 	}
 
 	public function tearDown() {
@@ -338,6 +345,19 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem->getMetadata(self::UUID);
 	}
 
+	public function test_InternalMetadata_getMetadata_ShouldTranslateMetadata(){
+		$this->metadata = new Metadata();
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mount->method('getMetadata')->willReturn($this->metadata);
+
+		$this->metadataTranslator
+			->expects(self::once())
+			->method('translateInternalToExposed')
+			->with($this->metadata);
+
+		$this->fileSystem->getMetadata(self::UUID);
+	}
+
 	public function test_mount_getMetadata_ShouldReturnMetadata(){
 		$this->metadata = new Metadata();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
@@ -417,12 +437,13 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_Metadata_get_shouldBeTheMetadataInFileObject(){
+		$this->metadataTranslator->method('translateInternalToExposed')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\Kronos\FileSystem\File\Metadata::class));
 		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$file = $this->fileSystem->get(self::UUID);
 
-		self::assertSame($this->metadata,$file->metadata);
+		self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class,$file->metadata);
 	}
 
 	private function givenWillReturnFile(){

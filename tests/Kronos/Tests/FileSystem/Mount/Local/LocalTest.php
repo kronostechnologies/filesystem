@@ -1,9 +1,7 @@
 <?php
 namespace Kronos\Tests\FileSystem\Mount\Local;
 
-
-use DoctrineTest\InstantiatorTestAsset\PharAsset;
-use Kronos\FileSystem\File\Metadata;
+use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;

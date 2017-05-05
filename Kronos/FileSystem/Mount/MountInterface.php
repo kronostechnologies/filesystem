@@ -3,8 +3,7 @@
 namespace Kronos\FileSystem\Mount;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
-use Kronos\FileSystem\File\Metadata;
-
+use Kronos\FileSystem\File\Internal\Metadata;
 /**
  *
  * Interface MountInterface

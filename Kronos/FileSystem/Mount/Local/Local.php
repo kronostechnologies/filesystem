@@ -4,7 +4,7 @@ namespace Kronos\FileSystem\Mount\Local;
 
 use DateTime;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
-use Kronos\FileSystem\File\Metadata;
+use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\Mount\FlySystemBaseMount;
 use League\Flysystem\Adapter\Local as LocalFlySystem;
 use League\Flysystem\Filesystem;
