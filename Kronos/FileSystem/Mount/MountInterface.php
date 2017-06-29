@@ -50,6 +50,12 @@ interface MountInterface {
 
 	/**
 	 * @param string $uuid
+	 * @return mixed
+	 */
+	public function getPath($uuid);
+
+	/**
+	 * @param string $uuid
 	 * @return Metadata
 	 */
 	public function getMetadata($uuid);
