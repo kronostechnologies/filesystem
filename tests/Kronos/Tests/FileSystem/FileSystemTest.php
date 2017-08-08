@@ -152,7 +152,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->getDownloadableLink(self::UUID);
+		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountType_getDownloadableLink_shouldSelectMount(){
@@ -164,7 +164,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->getDownloadableLink(self::UUID);
+		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountSelected_getDownloadableLink_getSignedUrl(){
@@ -175,7 +175,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getSignedUrl')
 			->with(self::UUID);
 
-		$this->fileSystem->getDownloadableLink(self::UUID);
+		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_getDownloadableLink_shouldThrowMountNotFoundException(){
@@ -184,7 +184,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->getDownloadableLink(self::UUID);
+		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_signedUlr_getDownloadableLink_shouldReturnSignedUlr(){
@@ -192,7 +192,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->mount->method('getSignedUrl')->willReturn(self::A_SIGNED_URL);
 
-		$actualSignedUrl = $this->fileSystem->getDownloadableLink(self::UUID);
+		$actualSignedUrl = $this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 
 		self::assertSame(self::A_SIGNED_URL,$actualSignedUrl);
 	}
@@ -205,7 +205,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->delete(self::UUID);
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountType_delete_shouldSelectMount(){
@@ -217,7 +217,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->delete(self::UUID);
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_delete_shouldThrowMountNotFoundException(){
@@ -226,7 +226,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->delete(self::UUID);
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountSelected_delete_delete(){
@@ -237,7 +237,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('delete')
 			->with(self::UUID);
 
-		$this->fileSystem->delete(self::UUID);
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_givenId_retrieve_shouldMountAssociatedWithId(){
@@ -248,7 +248,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->retrieve(self::UUID);
+		$this->fileSystem->retrieve(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountType_retrieve_shouldSelectMount(){
@@ -260,7 +260,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->retrieve(self::UUID);
+		$this->fileSystem->retrieve(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_retrieve_shouldThrowMountNotFoundException(){
@@ -268,7 +268,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->retrieve(self::UUID);
+		$this->fileSystem->retrieve(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mount_retrieve_retreive(){
@@ -279,7 +279,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('retrieve')
 			->with(self::UUID);
 
-		$this->fileSystem->retrieve(self::UUID);
+		$this->fileSystem->retrieve(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_givenId_getMetadata_shouldMountAssociatedWithId(){
@@ -294,7 +294,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountType_getMetadata_shouldSelectMount(){
@@ -308,7 +308,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_getMetadata_shouldThrowMountNotFoundException(){
@@ -316,7 +316,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mount_getMetadata_getMetadata(){
@@ -329,7 +329,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getMetadata')
 			->with(self::UUID);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_metadata_getMetadata_ShouldGetFileName(){
@@ -342,7 +342,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileName')
 			->with(self::UUID);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_InternalMetadata_getMetadata_ShouldTranslateMetadata(){
@@ -355,7 +355,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('translateInternalToExposed')
 			->with($this->metadata);
 
-		$this->fileSystem->getMetadata(self::UUID);
+		$this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mount_getMetadata_ShouldReturnMetadata(){
@@ -363,7 +363,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 		$this->mount->method('getMetadata')->willReturn($this->metadata);
 
-		$actualMetadata = $this->fileSystem->getMetadata(self::UUID);
+		$actualMetadata = $this->fileSystem->getMetadata(self::UUID, self::FILE_NAME);
 
 		self::assertSame($actualMetadata,$actualMetadata);
 	}
@@ -378,7 +378,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->get(self::UUID);
+		$this->fileSystem->get(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountType_get_shouldSelectMount(){
@@ -391,7 +391,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->get(self::UUID);
+		$this->fileSystem->get(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_get_shouldThrowMountNotFoundException(){
@@ -400,7 +400,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->get(self::UUID);
+		$this->fileSystem->get(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mount_get_shouldGetFile(){
@@ -412,7 +412,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('get')
 			->with(self::UUID);
 
-		$this->fileSystem->get(self::UUID);
+		$this->fileSystem->get(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_mount_get_shouldGetMetadata(){
@@ -424,14 +424,14 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getMetadata')
 			->with(self::UUID);
 
-		$this->fileSystem->get(self::UUID);
+		$this->fileSystem->get(self::UUID, self::FILE_NAME);
 	}
 
 	public function test_File_get_shouldReturnFile(){
 		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
-		$this->file = $this->fileSystem->get(self::UUID);
+		$this->file = $this->fileSystem->get(self::UUID, self::FILE_NAME);
 
 		self::assertInstanceOf(File::class,$this->file);
 	}
@@ -441,7 +441,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->givenWillReturnFile();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
-		$file = $this->fileSystem->get(self::UUID);
+		$file = $this->fileSystem->get(self::UUID, self::FILE_NAME);
 
 		self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class,$file->metadata);
 	}
