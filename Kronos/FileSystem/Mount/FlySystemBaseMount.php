@@ -40,10 +40,11 @@ abstract class FlySystemBaseMount implements MountInterface{
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return File
 	 */
-	public function get($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
+	public function get($uuid, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		$flySystemFile = $this->mount->get($path);
 		return new File($flySystemFile);
 	}
@@ -53,31 +54,42 @@ abstract class FlySystemBaseMount implements MountInterface{
 	 *
 	 * @param string $uuid
 	 * @param string $filePath
+	 * @param $fileName
 	 * @return bool
 	 */
-	public function put($uuid, $filePath) {
-		$path = $this->pathGenerator->generatePath($uuid);
+	public function put($uuid, $filePath, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		return $this->mount->put($path,$this->getFileContent($filePath));
 	}
 
 	/**
+	 *
 	 * Delete a file.
 	 *
 	 * @param string $uuid
-	 *
+	 * @param $fileName
 	 * @return bool
 	 */
-	public function delete($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
+	public function delete($uuid, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		return $this->mount->delete($path);
 
 	}
 
 	/**
-	 * @return string
+	 * @return mixed
 	 */
 	public function getMountType() {
 		return static::MOUNT_TYPE;
+	}
+
+	/**
+	 * @param string $uuid
+	 * @param $fileName
+	 * @return string
+	 */
+	public function getPath($uuid, $fileName) {
+		return $this->pathGenerator->generatePath($uuid, $fileName);
 	}
 
 	/**

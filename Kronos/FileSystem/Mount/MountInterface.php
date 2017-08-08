@@ -15,44 +15,50 @@ interface MountInterface {
 	 * @param string $uuid
 	 * @return File
 	 */
-	public function get($uuid);
+	public function get($uuid, $fileName);
 
 	/**
 	 * @param string $uuid
 	 * @return string
 	 */
-	public function getSignedUrl($uuid);
+	public function getSignedUrl($uuid, $fileName);
 
 	/**
 	 * Delete a file.
 	 *
 	 * @param string $uuid
 	 */
-	public function delete($uuid);
+	public function delete($uuid, $fileName);
 
 
 	/**
 	 * Write a new file using a stream.
 	 *
-	 * @param string $uuid
-	 * @param string $filePath
-	 * @return bool
-	 * @internal param resource $resource
+	 * @param $uuid
+	 * @param $filePath
+	 * @param $fileName
+	 * @return mixed
 	 *
 	 */
-	public function put($uuid, $filePath);
+	public function put($uuid, $filePath, $fileName);
 
 	/**
 	 * @param string $uuid
 	 * @throws CantRetreiveFileException
 	 */
-	public function retrieve($uuid);
+	public function retrieve($uuid, $fileName);
+
+	/**
+	 * @param string $uuid
+	 * @return mixed
+	 */
+	public function getPath($uuid, $fileName);
 
 	/**
 	 * @param string $uuid
 	 * @return Metadata
 	 */
-	public function getMetadata($uuid);
+	public function getMetadata($uuid, $fileName);
 
 	/**
 	 * @return string

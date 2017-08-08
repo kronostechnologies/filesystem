@@ -5,8 +5,9 @@ namespace Kronos\FileSystem\Mount;
 interface PathGeneratorInterface {
 
 	/**
-	 * @param string $uuid
-	 * @return string
+	 * @param $uuid
+	 * @param $fileName
+	 * @return mixed
 	 */
-	public function generatePath($uuid);
+	public function generatePath($uuid, $fileName);
 }
