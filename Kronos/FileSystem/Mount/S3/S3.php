@@ -26,14 +26,15 @@ class S3 extends FlySystemBaseMount {
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return string
 	 */
-	public function getSignedUrl($uuid) {
+	public function getSignedUrl($uuid, $fileName) {
 		/** @var AwsS3Adapter $awsS3Adaptor */
 		$awsS3Adaptor = $this->mount->getAdapter();
 		$s3Client = $awsS3Adaptor->getClient();
 
-		$path = $this->pathGenerator->generatePath($uuid);
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		$location = $awsS3Adaptor->applyPathPrefix($path);
 
 		$command = $s3Client->getCommand(
@@ -52,14 +53,15 @@ class S3 extends FlySystemBaseMount {
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @throws CantRetreiveFileException
 	 */
-	public function retrieve($uuid) {
+	public function retrieve($uuid, $fileName) {
 		/** @var AwsS3Adapter $awsS3Adaptor */
 		$awsS3Adaptor = $this->mount->getAdapter();
 		$s3Client = $awsS3Adaptor->getClient();
 
-		$path = $this->pathGenerator->generatePath($uuid);
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		$location = $awsS3Adaptor->applyPathPrefix($path);
 
 		try {
@@ -86,10 +88,11 @@ class S3 extends FlySystemBaseMount {
 
 	/**
 	 * @param string $uuid
-	 * @return Metadata|false
+	 * @param $fileName
+	 * @return bool|Metadata
 	 */
-	public function getMetadata($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
+	public function getMetadata($uuid, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 
 		if($s3Metadata = $this->mount->getMetadata($path)) {
 			$metadata = new Metadata();

@@ -24,26 +24,29 @@ class Local extends FlySystemBaseMount {
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return string
 	 */
-	public function getSignedUrl($uuid) {
+	public function getSignedUrl($uuid, $fileName) {
 		return self::SIGNED_URL_BASE_PATH . $uuid;
 	}
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @throws CantRetreiveFileException
 	 */
-	public function retrieve($uuid) {
+	public function retrieve($uuid, $fileName) {
 		throw new CantRetreiveFileException($uuid);
 	}
 
 	/**
 	 * @param string $uuid
-	 * @return Metadata|false
+	 * @param $fileName
+	 * @return bool|Metadata
 	 */
-	public function getMetadata($uuid) {
-		$path = $this->pathGenerator->generatePath($uuid);
+	public function getMetadata($uuid, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 
 		if($localMetadata = $this->mount->getMetadata($path)) {
 			$metadata = new Metadata();

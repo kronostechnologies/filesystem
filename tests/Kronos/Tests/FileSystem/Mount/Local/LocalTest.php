@@ -13,6 +13,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
+	const A_FILE_NAME = 'A_FILE_NAME';
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const AN_URI = 'AN_URI';
@@ -54,7 +55,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->get(self::UUID);
+		$this->localMount->get(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_get_shouldReadStream(){
@@ -66,13 +67,13 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('get')
 			->with(self::A_PATH);
 
-		$this->localMount->get(self::UUID);
+		$this->localMount->get(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_stream_get_shouldReturnStream(){
 		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
 
-		$file = $this->localMount->get(self::UUID);
+		$file = $this->localMount->get(self::UUID, self::A_FILE_NAME);
 
 		$this->assertInstanceOf(\Kronos\FileSystem\File\File::class,$file);
 	}
@@ -83,7 +84,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->delete(self::UUID);
+		$this->localMount->delete(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_delete_shouldDeleteFile(){
@@ -94,14 +95,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('delete')
 			->with(self::A_PATH);
 
-		$this->localMount->delete(self::UUID);
+		$this->localMount->delete(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_FileDeleted_delete_shouldReturnTrue(){
 
 		$this->fileSystem->method('delete')->willReturn(true);
 
-		$deleted = $this->localMount->delete(self::UUID);
+		$deleted = $this->localMount->delete(self::UUID, self::A_FILE_NAME);
 
 		$this->assertTrue($deleted);
 	}
@@ -110,7 +111,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('delete')->willReturn(false);
 
-		$deleted = $this->localMount->delete(self::UUID);
+		$deleted = $this->localMount->delete(self::UUID, self::A_FILE_NAME);
 
 		$this->assertFalse($deleted);
 	}
@@ -121,7 +122,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->put(self::UUID,self::A_FILE_PATH);
+		$this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_path_put_shouldPut(){
@@ -132,14 +133,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('put')
 			->with(self::A_PATH,localMountTestable::A_FILE_CONTENT);
 
-		$this->localMount->put(self::UUID,self::A_FILE_PATH);
+		$this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_FileWritten_put_shouldReturnTrue(){
 
 		$this->fileSystem->method('put')->willReturn(true);
 
-		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH);
+		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertTrue($written);
 	}
@@ -148,7 +149,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('put')->willReturn(false);
 
-		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH);
+		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertFalse($written);
 	}
@@ -165,7 +166,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->localMount->getMetadata(self::UUID);
+		$this->localMount->getMetadata(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_getMetadata_shouldDeleteFile(){
@@ -176,14 +177,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('getMetadata')
 			->with(self::A_PATH);
 
-		$this->localMount->getMetadata(self::UUID);
+		$this->localMount->getMetadata(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_Path_getMetadata_shouldReturnMetadata(){
 
 		$this->fileSystem->method('getMetadata')->willReturn(['timestamp'=>0,'size'=>0]);
 
-		$metadata = $this->localMount->getMetadata(self::UUID);
+		$metadata = $this->localMount->getMetadata(self::UUID, self::A_FILE_NAME);
 
 		self::assertInstanceOf(Metadata::class,$metadata);
 	}
@@ -197,20 +198,20 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 			->method('getMimeType')
 			->with(self::A_PATH);
 
-		$this->localMount->getMetadata(self::UUID);
+		$this->localMount->getMetadata(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_FileNotWritten_getMetadata_shouldReturnFalse(){
 
 		$this->fileSystem->method('getMetadata')->willReturn(false);
 
-		$metadata = $this->localMount->getMetadata(self::UUID);
+		$metadata = $this->localMount->getMetadata(self::UUID, self::A_FILE_NAME);
 
 		$this->assertFalse($metadata);
 	}
 
 	public function test_uuid_getSignedUrl_shouldReturnPresignedUrl(){
-		$actualSignedUrl = $this->localMount->getSignedUrl(self::UUID);
+		$actualSignedUrl = $this->localMount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 
 		self::assertEquals(\Kronos\FileSystem\Mount\Local\Local::SIGNED_URL_BASE_PATH.self::UUID,$actualSignedUrl);
 	}

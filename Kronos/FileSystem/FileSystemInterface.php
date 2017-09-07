@@ -14,33 +14,33 @@ interface FileSystemInterface {
 	 * @return int
 	 * @throws FileCantBeWrittenException
 	 */
-	public function put($filePath,$fileName);
+	public function put($filePath, $fileName);
 
 	/**
 	 * @param int $id
 	 * @return File
 	 */
-	public function get($id);
+	public function get($id, $fileName);
 
 	/**
 	 * @param int $id
 	 * @return string
 	 */
-	public function getDownloadableLink($id);
+	public function getDownloadableLink($id, $fileName);
 
 	/**
 	 * @param int $id
 	 * @return Metadata
 	 */
-	public function getMetadata($id);
+	public function getMetadata($id, $fileName);
 
 	/**
 	 * @param int $id
 	 */
-	public function delete($id);
+	public function delete($id, $fileName);
 
 	/**
 	 * @param int $id
 	 */
-	public function retrieve($id);
+	public function retrieve($id, $fileName);
 }

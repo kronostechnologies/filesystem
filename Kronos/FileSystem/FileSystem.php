@@ -45,7 +45,7 @@ class FileSystem implements FileSystemInterface {
 		$mount = $this->mountSelector->getImportationMount();
 		$fileUuid = $this->fileRepository->addNewFile($mount->getMountType(),$fileName);
 
-		if(!$mount->put($fileUuid,$filePath)){
+		if(!$mount->put($fileUuid,$filePath, $fileName)){
 			$this->fileRepository->delete($fileUuid);
 			throw new FileCantBeWrittenException($mount->getMountType());
 		}
@@ -55,39 +55,42 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
+	 * @param $fileName
 	 * @return File
 	 */
-	public function get($id){
+	public function get($id, $fileName){
 		$mount = $this->getMountForId($id);
 
-		$file = $mount->get($id);
-		$file->metadata = $this->getMetadata($id);
+		$file = $mount->get($id, $fileName);
+		$file->metadata = $this->getMetadata($id, $fileName);
 
 		return $file;
 	}
 
 	/**
 	 * @param int $id
+	 * @param $fileName
 	 * @return string
 	 * @throws MountNotFoundException
 	 */
-	public function getDownloadableLink($id){
+	public function getDownloadableLink($id, $fileName){
 		$mount = $this->getMountForId($id);
-		$signedUrl = $mount->getSignedUrl($id);
+		$signedUrl = $mount->getSignedUrl($id, $fileName);
 		return $signedUrl;
 	}
 
 
 	/**
 	 * @param int $id
+	 * @param $fileName
 	 * @return Metadata
 	 * @throws MountNotFoundException
 	 */
-	public function getMetadata($id){
+	public function getMetadata($id, $fileName){
 		$mount = $this->getMountForId($id);
 		$fileName = $this->fileRepository->getFileName($id);
 
-		$metadata = $mount->getMetadata($id);
+		$metadata = $mount->getMetadata($id, $fileName);
 		$metadata->name = $fileName;
 
 		return $this->metadataTranslator->translateInternalToExposed($metadata);
@@ -95,20 +98,22 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
+	 * @param $fileName
 	 * @throws FileNotFoundException
 	 */
-	public function delete($id){
+	public function delete($id, $fileName){
 		$mount = $this->getMountForId($id);
-		$mount->delete($id);
+		$mount->delete($id, $fileName);
 	}
 
 	/**
 	 * @param int $id
+	 * @param $fileName
 	 * @throws MountNotFoundException
 	 */
-	public function retrieve($id) {
+	public function retrieve($id, $fileName) {
 		$mount = $this->getMountForId($id);
-		$mount->retrieve($id);
+		$mount->retrieve($id, $fileName);
 	}
 
 	/**

@@ -19,6 +19,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
+	const A_FILE_NAME = 'A_FILE_NAME';
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
@@ -67,7 +68,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->get(self::UUID);
+		$this->s3mount->get(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_get_shouldGet(){
@@ -79,13 +80,13 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('get')
 			->with(self::A_PATH);
 
-		$this->s3mount->get(self::UUID);
+		$this->s3mount->get(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_stream_get_shouldReturnFile(){
 		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
 
-		$file = $this->s3mount->get(self::UUID);
+		$file = $this->s3mount->get(self::UUID, self::A_FILE_NAME);
 
 		self::assertInstanceOf(File::class,$file);
 	}
@@ -99,7 +100,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('getClient');
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_uuid_getSignedUrl_shouldGetPathOfFile(){
@@ -112,7 +113,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_getSignedUrl_shouldGetFileLocation(){
@@ -126,7 +127,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('applyPathPrefix')
 			->with(self::A_PATH);
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_location_getSignedUrl_shouldGetCommandToGetFile(){
@@ -147,7 +148,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			)
 			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_command_getSignedUrl_shouldGetCommandToGetFile(){
@@ -161,7 +162,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->with($command,S3::PRESIGNED_URL_LIFE_TIME)
 			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_request_getSignedUrl_shouldGetUriFromRequest(){
@@ -174,7 +175,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('getUri');
 
-		$this->s3mount->getSignedUrl(self::UUID);
+		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_uri_getSignedUrl_shouldReturnUri(){
@@ -184,7 +185,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->s3Client->method('createPresignedRequest')->willReturn($request);
 		$request->method('getUri')->willReturn(self::AN_URI);
 
-		$actualUri = $this->s3mount->getSignedUrl(self::UUID);
+		$actualUri = $this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
 
 		self::assertSame(self::AN_URI,$actualUri);
 	}
@@ -195,7 +196,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->put(self::UUID,self::A_FILE_PATH);
+		$this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_path_put_shouldPut(){
@@ -206,14 +207,14 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('put')
 			->with(self::A_PATH,s3MountTestable::A_FILE_CONTENT);
 
-		$this->s3mount->put(self::UUID,self::A_FILE_PATH);
+		$this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_FileWritten_put_shouldReturnTrue(){
 
 		$this->fileSystem->method('put')->willReturn(true);
 
-		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH);
+		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertTrue($written);
 	}
@@ -222,7 +223,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('put')->willReturn(false);
 
-		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH);
+		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertFalse($written);
 	}
@@ -239,7 +240,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->delete(self::UUID);
+		$this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_delete_shouldDeleteFile(){
@@ -250,14 +251,14 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('delete')
 			->with(self::A_PATH);
 
-		$this->s3mount->delete(self::UUID);
+		$this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_FileDeleted_delete_shouldReturnTrue(){
 
 		$this->fileSystem->method('delete')->willReturn(true);
 
-		$deleted = $this->s3mount->delete(self::UUID);
+		$deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 
 		$this->assertTrue($deleted);
 	}
@@ -266,7 +267,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('delete')->willReturn(false);
 
-		$deleted = $this->s3mount->delete(self::UUID);
+		$deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 
 		$this->assertFalse($deleted);
 	}
@@ -277,7 +278,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->getMetadata(self::UUID);
+		$this->s3mount->getMetadata(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_getMetadata_shouldGetMetadata(){
@@ -288,14 +289,14 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('getMetadata')
 			->with(self::A_PATH);
 
-		$this->s3mount->getMetadata(self::UUID);
+		$this->s3mount->getMetadata(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_Path_getMetadata_shouldReturnMetadata(){
 
 		$this->fileSystem->method('getMetadata')->willReturn(['timestamp'=>0,'mimetype'=>0]);
 
-		$metadata = $this->s3mount->getMetadata(self::UUID);
+		$metadata = $this->s3mount->getMetadata(self::UUID, self::A_FILE_NAME);
 
 		self::assertInstanceOf(Metadata::class,$metadata);
 	}
@@ -304,7 +305,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->fileSystem->method('getMetadata')->willReturn(false);
 
-		$metadata = $this->s3mount->getMetadata(self::UUID);
+		$metadata = $this->s3mount->getMetadata(self::UUID, self::A_FILE_NAME);
 
 		$this->assertFalse($metadata);
 	}
@@ -318,7 +319,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('getClient');
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_uuid_retreive_shouldGetPathOfFile(){
@@ -330,7 +331,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_retreive_shouldGetFileLocation(){
@@ -343,7 +344,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('applyPathPrefix')
 			->with(self::A_PATH);
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_location_retreive_shouldRestoreObject(){
@@ -369,7 +370,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			)
 			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_command_retreive_shouldExecuteCommand(){
@@ -382,7 +383,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('execute')
 			->with($command);
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_commandFailed_retreive_shouldCatchAndThrowNewException(){
@@ -393,7 +394,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		self::expectException(CantRetreiveFileException::class);
 
-		$this->s3mount->retrieve(self::UUID);
+		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
 }
 
