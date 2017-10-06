@@ -144,7 +144,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem->put(self::A_FILE_PATH,self::FILE_NAME);
 	}
 
-	public function test_givenId_getDownloadableLink_shouldMountAssociatedWithId(){
+	public function test_givenId_getUrl_shouldMountAssociatedWithId(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->fileRepository
@@ -152,10 +152,10 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
+		$this->fileSystem->getUrl(self::UUID, self::FILE_NAME);
 	}
 
-	public function test_mountType_getDownloadableLink_shouldSelectMount(){
+	public function test_mountType_getUrl_shouldSelectMount(){
 		$this->fileRepository->method('getFileMountType')->willReturn(self::MOUNT_TYPE);
 
 		$this->mountSelector
@@ -164,10 +164,10 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
+		$this->fileSystem->getUrl(self::UUID, self::FILE_NAME);
 	}
 
-	public function test_mountSelected_getDownloadableLink_getSignedUrl(){
+	public function test_mountSelected_getUrl_shouldGetUrl(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->mount
@@ -175,24 +175,24 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getUrl')
 			->with(self::UUID);
 
-		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
+		$this->fileSystem->getUrl(self::UUID, self::FILE_NAME);
 	}
 
-	public function test_mountCouldNotHaveBeenSelected_getDownloadableLink_shouldThrowMountNotFoundException(){
+	public function test_mountCouldNotHaveBeenSelected_getUrl_shouldThrowMountNotFoundException(){
 
 		$this->mountSelector->method('selectMount')->willReturn(null);
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
+		$this->fileSystem->getUrl(self::UUID, self::FILE_NAME);
 	}
 
-	public function test_signedUlr_getDownloadableLink_shouldReturnSignedUlr(){
+	public function test_signedUlr_getUrl_shouldReturnSignedUlr(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->mount->method('getUrl')->willReturn(self::A_SIGNED_URL);
 
-		$actualSignedUrl = $this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
+		$actualSignedUrl = $this->fileSystem->getUrl(self::UUID, self::FILE_NAME);
 
 		self::assertSame(self::A_SIGNED_URL,$actualSignedUrl);
 	}

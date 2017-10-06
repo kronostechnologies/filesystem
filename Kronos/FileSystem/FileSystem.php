@@ -73,7 +73,7 @@ class FileSystem implements FileSystemInterface {
 	 * @return string
 	 * @throws MountNotFoundException
 	 */
-	public function getDownloadableLink($id, $fileName){
+	public function getUrl($id, $fileName){
 		$mount = $this->getMountForId($id);
 		$signedUrl = $mount->getUrl($id, $fileName);
 		return $signedUrl;
