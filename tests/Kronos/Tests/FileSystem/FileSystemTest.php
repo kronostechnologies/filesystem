@@ -172,7 +172,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->mount
 			->expects(self::once())
-			->method('getSignedUrl')
+			->method('getUrl')
 			->with(self::UUID);
 
 		$this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
@@ -190,7 +190,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	public function test_signedUlr_getDownloadableLink_shouldReturnSignedUlr(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
-		$this->mount->method('getSignedUrl')->willReturn(self::A_SIGNED_URL);
+		$this->mount->method('getUrl')->willReturn(self::A_SIGNED_URL);
 
 		$actualSignedUrl = $this->fileSystem->getDownloadableLink(self::UUID, self::FILE_NAME);
 

@@ -75,7 +75,7 @@ class FileSystem implements FileSystemInterface {
 	 */
 	public function getDownloadableLink($id, $fileName){
 		$mount = $this->getMountForId($id);
-		$signedUrl = $mount->getSignedUrl($id, $fileName);
+		$signedUrl = $mount->getUrl($id, $fileName);
 		return $signedUrl;
 	}
 

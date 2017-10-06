@@ -28,10 +28,11 @@ class Local extends FlySystemBaseMount {
 	}
 
 	/**
-	 * @param string $baseUrl
+	 * Specify the URL to use for getUrl. Note that the file UUID will simply be appended to the URL.
+	 * @param string $url
 	 */
-	public function setBaseUrl($baseUrl) {
-		$this->baseUrl = $baseUrl;
+	public function setBaseUrl($url) {
+		$this->baseUrl = $url;
 	}
 
 	/**
@@ -40,7 +41,7 @@ class Local extends FlySystemBaseMount {
 	 * @return string
 	 * @throws \Exception
 	 */
-	public function getSignedUrl($uuid, $fileName) {
+	public function getUrl($uuid, $fileName) {
 		if(!$this->baseUrl) {
 			throw new \Exception(self::ERR_MISSING_BASE_URL);
 		}

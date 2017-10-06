@@ -21,7 +21,7 @@ interface MountInterface {
 	 * @param string $uuid
 	 * @return string
 	 */
-	public function getSignedUrl($uuid, $fileName);
+	public function getUrl($uuid, $fileName);
 
 	/**
 	 * Delete a file.

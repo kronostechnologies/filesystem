@@ -29,7 +29,7 @@ class S3 extends FlySystemBaseMount {
 	 * @param $fileName
 	 * @return string
 	 */
-	public function getSignedUrl($uuid, $fileName) {
+	public function getUrl($uuid, $fileName) {
 		/** @var AwsS3Adapter $awsS3Adaptor */
 		$awsS3Adaptor = $this->mount->getAdapter();
 		$s3Client = $awsS3Adaptor->getClient();

@@ -214,15 +214,15 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	public function test_BaseUrl_getSignedUrl_shouldReturnPresignedUrl(){
 		$this->localMount->setBaseUrl(self::BASE_URL);
 
-		$actualSignedUrl = $this->localMount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
 
-		self::assertEquals(self::BASE_URL.self::UUID, $actualSignedUrl);
+		self::assertEquals(self::BASE_URL.self::UUID, $actualUrl);
 	}
 
 	public function test_NoBaseUrl_getSignedUrl_shouldThrowException() {
 		$this->expectException(\Exception::class);
 
-		$this->localMount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 }
 
