@@ -100,7 +100,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('getClient');
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_uuid_getSignedUrl_shouldGetPathOfFile(){
@@ -113,7 +113,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_path_getSignedUrl_shouldGetFileLocation(){
@@ -127,7 +127,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->method('applyPathPrefix')
 			->with(self::A_PATH);
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_location_getSignedUrl_shouldGetCommandToGetFile(){
@@ -148,7 +148,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			)
 			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_command_getSignedUrl_shouldGetCommandToGetFile(){
@@ -162,7 +162,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->with($command,S3::PRESIGNED_URL_LIFE_TIME)
 			->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_request_getSignedUrl_shouldGetUriFromRequest(){
@@ -175,7 +175,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('getUri');
 
-		$this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
 	public function test_uri_getSignedUrl_shouldReturnUri(){
@@ -185,7 +185,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->s3Client->method('createPresignedRequest')->willReturn($request);
 		$request->method('getUri')->willReturn(self::AN_URI);
 
-		$actualUri = $this->s3mount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+		$actualUri = $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 
 		self::assertSame(self::AN_URI,$actualUri);
 	}

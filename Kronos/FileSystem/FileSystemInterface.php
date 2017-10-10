@@ -26,7 +26,7 @@ interface FileSystemInterface {
 	 * @param int $id
 	 * @return string
 	 */
-	public function getDownloadableLink($id, $fileName);
+	public function getUrl($id, $fileName);
 
 	/**
 	 * @param int $id

@@ -17,6 +17,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const AN_URI = 'AN_URI';
+	const BASE_URL = '/base/url?id=';
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -210,10 +211,18 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($metadata);
 	}
 
-	public function test_uuid_getSignedUrl_shouldReturnPresignedUrl(){
-		$actualSignedUrl = $this->localMount->getSignedUrl(self::UUID, self::A_FILE_NAME);
+	public function test_BaseUrl_getSignedUrl_shouldReturnPresignedUrl(){
+		$this->localMount->setBaseUrl(self::BASE_URL);
 
-		self::assertEquals(\Kronos\FileSystem\Mount\Local\Local::SIGNED_URL_BASE_PATH.self::UUID,$actualSignedUrl);
+		$actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
+
+		self::assertEquals(self::BASE_URL.self::UUID, $actualUrl);
+	}
+
+	public function test_NoBaseUrl_getSignedUrl_shouldThrowException() {
+		$this->expectException(\Exception::class);
+
+		$this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 }
 

@@ -12,7 +12,12 @@ use League\Flysystem\Filesystem;
 class Local extends FlySystemBaseMount {
 
 	const MOUNT_TYPE = 'LOCAL';
-	const SIGNED_URL_BASE_PATH = 'utils/get_document.php?id=';
+	const ERR_MISSING_BASE_URL = 'Mount requires a base URL (setBaseUrl)';
+
+	/**
+	 * @var string
+	 */
+	protected $baseUrl;
 
 	/**
 	 * @param Filesystem $mount
@@ -23,12 +28,25 @@ class Local extends FlySystemBaseMount {
 	}
 
 	/**
+	 * Specify the URL to use for getUrl. Note that the file UUID will simply be appended to the URL.
+	 * @param string $url
+	 */
+	public function setBaseUrl($url) {
+		$this->baseUrl = $url;
+	}
+
+	/**
 	 * @param string $uuid
 	 * @param $fileName
 	 * @return string
+	 * @throws \Exception
 	 */
-	public function getSignedUrl($uuid, $fileName) {
-		return self::SIGNED_URL_BASE_PATH . $uuid;
+	public function getUrl($uuid, $fileName) {
+		if(!$this->baseUrl) {
+			throw new \Exception(self::ERR_MISSING_BASE_URL);
+		}
+
+		return $this->baseUrl . $uuid;
 	}
 
 	/**
