@@ -593,7 +593,16 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_StreamPut_copy_shouldReturnNewFileUuid() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
+		$this->givenSourceAndImporationMounts();
+		$stream = tmpfile();
+		$this->file->method('readStream')->willReturn($stream);
 
+		$actualUuid = $this->fileSystem->copy(self::UUID, self::FILE_NAME);
+
+		$this->assertEquals(self::NEW_FILE_UUID, $actualUuid);
 	}
 
 	private function givenWillReturnFile(){
