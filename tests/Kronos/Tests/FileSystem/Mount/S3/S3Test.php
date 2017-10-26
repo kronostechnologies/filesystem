@@ -24,6 +24,8 @@ class S3Test extends PHPUnit_Framework_TestCase{
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
 	const AN_URI = 'AN_URI';
+	const A_FILE_CONTENT = 'A_FILE_CONTENT';
+	const PUT_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -205,7 +207,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->fileSystem
 			->expects(self::once())
 			->method('put')
-			->with(self::A_PATH,s3MountTestable::A_FILE_CONTENT);
+			->with(self::A_PATH,self::A_FILE_CONTENT);
 
 		$this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
@@ -226,6 +228,28 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertFalse($written);
+	}
+
+	public function test_putContents_shouldGetPathOfFile() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->s3mount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+	}
+
+	public function test_path_putContents_shouldPutAndReturnResult() {
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('put')
+			->with(self::A_PATH, self::A_FILE_CONTENT)
+			->willReturn(self::PUT_RESULT);
+
+		$actualResult = $this->s3mount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+
+		$this->assertSame(self::PUT_RESULT, $actualResult);
 	}
 
 	public function test_getMountType_ShouldReutrnMountType(){
@@ -400,9 +424,8 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 class s3MountTestable extends \Kronos\FileSystem\Mount\S3\S3 {
 
-	const A_FILE_CONTENT = 'A_FILE_CONTENT';
 	protected function getFileContent($path) {
-		return self::A_FILE_CONTENT;
+		return S3Test::A_FILE_CONTENT;
 	}
 
 }

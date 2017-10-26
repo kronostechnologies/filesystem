@@ -18,6 +18,8 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const A_LOCATION = 'A_LOCATION';
 	const AN_URI = 'AN_URI';
 	const BASE_URL = '/base/url?id=';
+	const A_FILE_CONTENT = 'File contents';
+	const PUT_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -101,7 +103,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 	public function test_FileDeleted_delete_shouldReturnTrue(){
 
-		$this->fileSystem->method('delete')->willReturn(true);
+		$this->fileSystem->method('delete')->willReturn(self::PUT_RESULT);
 
 		$deleted = $this->localMount->delete(self::UUID, self::A_FILE_NAME);
 
@@ -132,14 +134,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem
 			->expects(self::once())
 			->method('put')
-			->with(self::A_PATH,localMountTestable::A_FILE_CONTENT);
+			->with(self::A_PATH,self::A_FILE_CONTENT);
 
 		$this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_FileWritten_put_shouldReturnTrue(){
 
-		$this->fileSystem->method('put')->willReturn(true);
+		$this->fileSystem->method('put')->willReturn(self::PUT_RESULT);
 
 		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
@@ -155,7 +157,29 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($written);
 	}
 
-	public function test_getMountType_ShouldReutrnMountType(){
+	public function test_putContents_shouldGetPathOfFile() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->localMount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+	}
+
+	public function test_path_putContents_shouldPutAndReturnResult() {
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('put')
+			->with(self::A_PATH, self::A_FILE_CONTENT)
+			->willReturn(self::PUT_RESULT);
+
+		$actualResult = $this->localMount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+
+		$this->assertSame(self::PUT_RESULT, $actualResult);
+	}
+
+	public function test_getMountType_ShouldReturnMountType(){
 		$actualMountType = $this->localMount->getMountType();
 
 		self::assertEquals(\Kronos\FileSystem\Mount\Local\Local::MOUNT_TYPE,$actualMountType);
@@ -229,9 +253,8 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 class localMountTestable extends \Kronos\FileSystem\Mount\Local\Local {
 
-	const A_FILE_CONTENT = 'A_FILE_CONTENT';
 	protected function getFileContent($path) {
-		return self::A_FILE_CONTENT;
+		return LocalTest::A_FILE_CONTENT;
 	}
 
 }
