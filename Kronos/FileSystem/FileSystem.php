@@ -97,6 +97,30 @@ class FileSystem implements FileSystemInterface {
 	}
 
 	/**
+	 * @param string $id
+	 * @param string $fileName
+	 * @return string
+	 */
+	public function copy($id, $fileName) {
+		$sourceMountType = $this->fileRepository->getFileMountType($id);
+		$destinationMountType = $this->mountSelector->getImportationMountType();
+		$destinationMount = $this->mountSelector->selectMount($destinationMountType);
+		$destinationId = $this->fileRepository->addNewFile($destinationMountType, $fileName);
+
+		if($sourceMountType == $destinationMountType) {
+			$destinationMount->copy($id, $destinationId, $fileName);
+		}
+		else {
+			$sourceMount = $this->mountSelector->selectMount($sourceMountType);
+			$file = $sourceMount->get($id, $fileName);
+			$destinationMount->putStream($destinationId, $file->readStream(), $fileName);
+		}
+
+		return $destinationId;
+	}
+
+
+	/**
 	 * @param int $id
 	 * @param $fileName
 	 * @throws FileNotFoundException

@@ -24,6 +24,13 @@ class S3Test extends PHPUnit_Framework_TestCase{
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
 	const AN_URI = 'AN_URI';
+	const A_FILE_CONTENT = 'A_FILE_CONTENT';
+	const PUT_RESULT = true;
+	const SOURCE_UUID = 'source uuid';
+	const TARGET_UUID = 'target uuid';
+	const SOURCE_PATH = 'source path';
+	const TARGET_PATH = 'target path';
+	const COPY_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -205,7 +212,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->fileSystem
 			->expects(self::once())
 			->method('put')
-			->with(self::A_PATH,s3MountTestable::A_FILE_CONTENT);
+			->with(self::A_PATH,self::A_FILE_CONTENT);
 
 		$this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
@@ -226,6 +233,29 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
 		$this->assertFalse($written);
+	}
+
+	public function test_putStream_shouldGetPathOfFile() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->s3mount->putStream(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+	}
+
+	public function test_path_putStream_shouldPutAndReturnResult() {
+		$stream = tmpfile();
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('putStream')
+			->with(self::A_PATH, $stream)
+			->willReturn(self::PUT_RESULT);
+
+		$actualResult = $this->s3mount->putStream(self::UUID, $stream, self::A_FILE_NAME);
+
+		$this->assertSame(self::PUT_RESULT, $actualResult);
 	}
 
 	public function test_getMountType_ShouldReutrnMountType(){
@@ -396,13 +426,43 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 		$this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
 	}
+
+	public function test_copy_shouldGeneratePathForSourceUuid() {
+		$this->pathGenerator
+			->expects(self::at(0))
+			->method('generatePath')
+			->with(self::SOURCE_UUID, self::A_FILE_NAME);
+
+		$this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_SourcePath_copy_shouldGeneratePathForTargetUuid() {
+		$this->pathGenerator
+			->expects(self::at(1))
+			->method('generatePath')
+			->with(self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_Paths_copy_shouldCopySourcePathToTargetPathAndReturnResult() {
+		$this->pathGenerator->method('generatePath')->willReturnOnConsecutiveCalls(self::SOURCE_PATH, self::TARGET_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('copy')
+			->with(self::SOURCE_PATH, self::TARGET_PATH)
+			->willReturn(self::COPY_RESULT);
+
+		$actualResult = $this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->assertEquals(self::COPY_RESULT, $actualResult);
+	}
 }
 
 class s3MountTestable extends \Kronos\FileSystem\Mount\S3\S3 {
 
-	const A_FILE_CONTENT = 'A_FILE_CONTENT';
 	protected function getFileContent($path) {
-		return self::A_FILE_CONTENT;
+		return S3Test::A_FILE_CONTENT;
 	}
 
 }

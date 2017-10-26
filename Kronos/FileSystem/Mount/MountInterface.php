@@ -24,6 +24,14 @@ interface MountInterface {
 	public function getUrl($uuid, $fileName);
 
 	/**
+	 * @param $sourceUuid
+	 * @param $targetUuid
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public function copy($sourceUuid, $targetUuid, $fileName);
+
+	/**
 	 * Delete a file.
 	 *
 	 * @param string $uuid
@@ -41,6 +49,14 @@ interface MountInterface {
 	 *
 	 */
 	public function put($uuid, $filePath, $fileName);
+
+	/**
+	 * @param $uuid
+	 * @param $stream
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public function putStream($uuid, $stream, $fileName);
 
 	/**
 	 * @param string $uuid

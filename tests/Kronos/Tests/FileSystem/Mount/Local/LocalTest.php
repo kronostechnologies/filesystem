@@ -18,6 +18,13 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const A_LOCATION = 'A_LOCATION';
 	const AN_URI = 'AN_URI';
 	const BASE_URL = '/base/url?id=';
+	const A_FILE_CONTENT = 'File contents';
+	const PUT_RESULT = self::COPY_RESULT;
+	const SOURCE_UUID = 'source uuid';
+	const TARGET_UUID = 'target uuid';
+	const SOURCE_PATH = 'source path';
+	const TARGET_PATH = 'target path';
+	const COPY_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -101,7 +108,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 	public function test_FileDeleted_delete_shouldReturnTrue(){
 
-		$this->fileSystem->method('delete')->willReturn(true);
+		$this->fileSystem->method('delete')->willReturn(self::PUT_RESULT);
 
 		$deleted = $this->localMount->delete(self::UUID, self::A_FILE_NAME);
 
@@ -132,14 +139,14 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem
 			->expects(self::once())
 			->method('put')
-			->with(self::A_PATH,localMountTestable::A_FILE_CONTENT);
+			->with(self::A_PATH,self::A_FILE_CONTENT);
 
 		$this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 	}
 
 	public function test_FileWritten_put_shouldReturnTrue(){
 
-		$this->fileSystem->method('put')->willReturn(true);
+		$this->fileSystem->method('put')->willReturn(self::PUT_RESULT);
 
 		$written = $this->localMount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
@@ -155,7 +162,30 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($written);
 	}
 
-	public function test_getMountType_ShouldReutrnMountType(){
+	public function test_putStream_shouldGetPathOfFile() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID);
+
+		$this->localMount->putStream(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+	}
+
+	public function test_path_putStream_shouldPutAndReturnResult() {
+		$resource = tmpfile();
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('putStream')
+			->with(self::A_PATH, $resource)
+			->willReturn(self::PUT_RESULT);
+
+		$actualResult = $this->localMount->putStream(self::UUID, $resource, self::A_FILE_NAME);
+
+		$this->assertSame(self::PUT_RESULT, $actualResult);
+	}
+
+	public function test_getMountType_ShouldReturnMountType(){
 		$actualMountType = $this->localMount->getMountType();
 
 		self::assertEquals(\Kronos\FileSystem\Mount\Local\Local::MOUNT_TYPE,$actualMountType);
@@ -224,14 +254,44 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
 		$this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
+
+	public function test_copy_shouldGeneratePathForSourceUuid() {
+		$this->pathGenerator
+			->expects(self::at(0))
+			->method('generatePath')
+			->with(self::SOURCE_UUID, self::A_FILE_NAME);
+
+		$this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_SourcePath_copy_shouldGeneratePathForTargetUuid() {
+		$this->pathGenerator
+			->expects(self::at(1))
+			->method('generatePath')
+			->with(self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_Paths_copy_shouldCopySourcePathToTargetPathAndReturnResult() {
+		$this->pathGenerator->method('generatePath')->willReturnOnConsecutiveCalls(self::SOURCE_PATH, self::TARGET_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('copy')
+			->with(self::SOURCE_PATH, self::TARGET_PATH)
+			->willReturn(self::COPY_RESULT);
+
+		$actualResult = $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->assertEquals(self::COPY_RESULT, $actualResult);
+	}
 }
 
 
 class localMountTestable extends \Kronos\FileSystem\Mount\Local\Local {
 
-	const A_FILE_CONTENT = 'A_FILE_CONTENT';
 	protected function getFileContent($path) {
-		return self::A_FILE_CONTENT;
+		return LocalTest::A_FILE_CONTENT;
 	}
 
 }

@@ -35,6 +35,13 @@ interface FileSystemInterface {
 	public function getMetadata($id, $fileName);
 
 	/**
+	 * @param string $id
+	 * @param string $fileName
+	 * @return string
+	 */
+	public function copy($id, $fileName);
+
+	/**
 	 * @param int $id
 	 */
 	public function delete($id, $fileName);
