@@ -97,6 +97,16 @@ class FileSystem implements FileSystemInterface {
 	}
 
 	/**
+	 * @param string $id
+	 * @param string $fileName
+	 * @return string
+	 */
+	public function copy($id, $fileName) {
+
+	}
+
+
+	/**
 	 * @param int $id
 	 * @param $fileName
 	 * @throws FileNotFoundException
