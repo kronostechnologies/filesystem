@@ -20,6 +20,10 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	const MOUNT_TYPE = 'MOUNT_TYPE';
 	const UUID = 'UUID';
 	const A_SIGNED_URL = 'A_SIGNED_URL';
+	const IMPORTATION_MOUNT_TYPE = 'Importation mount Type';
+	const NEW_FILE_UUID = 'newFileUuid';
+	const SOURCE_MOUNT_TYPE = 'Source mount type';
+	const PUT_STREAM_RESULT = true;
 
 	/**
 	 * @var File|PHPUnit_Framework_MockObject_MockObject
@@ -52,6 +56,16 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	private $mount;
 
 	/**
+	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $sourceMount;
+
+	/**
+	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $importationMount;
+
+	/**
 	 * @var MetadataTranslator|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $metadataTranslator;
@@ -73,7 +87,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_resource_put_shouldGetImportationMount(){
-		$this->mount->method('put')->willReturn(true);
+		$this->mount->method('put')->willReturn(self::PUT_STREAM_RESULT);
 
 		$this->mountSelector
 			->expects(self::once())
@@ -84,7 +98,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mount_put_shouldAddNewFile(){
-		$this->mount->method('put')->willReturn(true);
+		$this->mount->method('put')->willReturn(self::PUT_STREAM_RESULT);
 		$this->mount->method('getMountType')->willReturn(self::MOUNT_TYPE);
 		$this->mountSelector->method('getImportationMount')->willReturn($this->mount);
 
@@ -97,7 +111,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_mountAndUuid_put_putFile(){
-		$this->mount->method('put')->willReturn(true);
+		$this->mount->method('put')->willReturn(self::PUT_STREAM_RESULT);
 		$this->mountSelector->method('getImportationMount')->willReturn($this->mount);
 		$this->fileRepository->method('addNewFile')->willReturn(self::UUID);
 
@@ -110,7 +124,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_fileAsBeenWritten_put_shouldReturnFileUuid(){
-		$this->mount->method('put')->willReturn(true);
+		$this->mount->method('put')->willReturn(self::PUT_STREAM_RESULT);
 		$this->mountSelector->method('getImportationMount')->willReturn($this->mount);
 		$this->fileRepository->method('addNewFile')->willReturn(self::UUID);
 
@@ -446,10 +460,166 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class,$file->metadata);
 	}
 
+	public function test_copy_shouldGetFileMountType() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->fileRepository
+			->expects(self::once())
+			->method('getFileMountType')
+			->with(self::UUID);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_SourceMountType_copy_shouldGetImportationMountType() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mountSelector
+			->expects(self::once())
+			->method('getImportationMountType');
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_ImportationMountType_copy_shouldSelectImportationMount() {
+		$this->givenImporationMountType();
+		$this->givenFileInImportationMount();
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mountSelector
+			->expects(self::once())
+			->method('selectMount')
+			->with(self::IMPORTATION_MOUNT_TYPE);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_ImportationMountType_copy_shouldAddNewFile() {
+		$this->givenImporationMountType();
+		$this->givenFileInImportationMount();
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->fileRepository
+			->expects(self::once())
+			->method('addNewFile')
+			->with(self::IMPORTATION_MOUNT_TYPE, self::FILE_NAME);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_AddedFileAndSameSourceAndImporationMountTypes_copy_shouldCopyFile() {
+		$this->givenImporationMountType();
+		$this->givenFileInImportationMount();
+		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mount
+			->expects(self::once())
+			->method('copy')
+			->with(self::UUID, self::NEW_FILE_UUID, self::FILE_NAME);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_FileCopied_copy_shouldReturnNewUuid() {
+		$this->givenImporationMountType();
+		$this->givenFileInImportationMount();
+		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+
+		$actualUuid = $this->fileSystem->copy(self::UUID, self::FILE_NAME);
+
+		$this->assertSame(self::NEW_FILE_UUID, $actualUuid);
+	}
+
+	public function test_DifferentSourceAndImportationMountTypes_copy_shouldNotCallCopy() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->givenSourceAndImporationMounts();
+		$this->importationMount
+			->expects(self::never())
+			->method('copy');
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_DifferentSourceAndImportationMountTypes_copy_shouldSelectSourceMount() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->givenSourceAndImporationMounts();
+		$this->mountSelector
+			->expects(self::at(1))
+			->method('selectMount')
+			->with(self::IMPORTATION_MOUNT_TYPE);
+		$this->mountSelector
+			->expects(self::at(2))
+			->method('selectMount')
+			->with(self::SOURCE_MOUNT_TYPE);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_SourceMount_copy_shouldGetFile() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->givenSourceAndImporationMounts();
+		$this->sourceMount
+			->expects(self::once())
+			->method('get')
+			->with(self::UUID, self::FILE_NAME);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_File_copy_shouldReadStream() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->givenSourceAndImporationMounts();
+		$this->file
+			->expects(self::once())
+			->method('readStream');
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_Stream_copy_shouldPutStream() {
+		$this->givenImporationMountType();
+		$this->givenDifferentSourceMount();
+		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
+		$this->givenSourceAndImporationMounts();
+		$stream = tmpfile();
+		$this->file->method('readStream')->willReturn($stream);
+		$this->importationMount
+			->expects(self::once())
+			->method('putStream')
+			->with(self::NEW_FILE_UUID, $stream, self::FILE_NAME);
+
+		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_StreamPut_copy_shouldReturnNewFileUuid() {
+
+	}
+
 	private function givenWillReturnFile(){
 		$this->metadata = new Metadata();
 		$this->mount->method('getMetadata')->willReturn($this->metadata);
 		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
 		$this->mount->method('get')->willReturn($this->file);
+	}
+
+	protected function givenImporationMountType() {
+		$this->mountSelector->method('getImportationMountType')->willReturn(self::IMPORTATION_MOUNT_TYPE);
+	}
+
+	protected function givenFileInImportationMount() {
+		$this->fileRepository->method('getFileMountType')->willReturn(self::IMPORTATION_MOUNT_TYPE);
+	}
+
+	protected function givenDifferentSourceMount() {
+		$this->fileRepository->method('getFileMountType')->willReturn(self::SOURCE_MOUNT_TYPE);
+	}
+
+	protected function givenSourceAndImporationMounts() {
+		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
+		$this->sourceMount = $this->getMock(MountInterface::class);
+		$this->sourceMount->method('get')->willReturn($this->file);
+		$this->importationMount = $this->getMock(MountInterface::class);
+		$this->mountSelector->method('selectMount')->willReturnMap([[self::SOURCE_MOUNT_TYPE, $this->sourceMount], [self::IMPORTATION_MOUNT_TYPE, $this->importationMount]]);
 	}
 }

@@ -65,7 +65,7 @@ class Selector {
 	/**
 	 * @return string
 	 */
-	public function getImportationMountKey() {
+	public function getImportationMountType() {
 		return $this->importationMountKey;
 	}
 }

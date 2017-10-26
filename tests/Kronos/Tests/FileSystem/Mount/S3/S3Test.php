@@ -230,24 +230,25 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($written);
 	}
 
-	public function test_putContents_shouldGetPathOfFile() {
+	public function test_putStream_shouldGetPathOfFile() {
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
 			->with(self::UUID);
 
-		$this->s3mount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+		$this->s3mount->putStream(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
 	}
 
-	public function test_path_putContents_shouldPutAndReturnResult() {
+	public function test_path_putStream_shouldPutAndReturnResult() {
+		$stream = tmpfile();
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 		$this->fileSystem
 			->expects(self::once())
-			->method('put')
-			->with(self::A_PATH, self::A_FILE_CONTENT)
+			->method('putStream')
+			->with(self::A_PATH, $stream)
 			->willReturn(self::PUT_RESULT);
 
-		$actualResult = $this->s3mount->putContents(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+		$actualResult = $this->s3mount->putStream(self::UUID, $stream, self::A_FILE_NAME);
 
 		$this->assertSame(self::PUT_RESULT, $actualResult);
 	}

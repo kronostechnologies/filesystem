@@ -51,6 +51,14 @@ interface MountInterface {
 	public function put($uuid, $filePath, $fileName);
 
 	/**
+	 * @param $uuid
+	 * @param $stream
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public function putStream($uuid, $stream, $fileName);
+
+	/**
 	 * @param string $uuid
 	 * @throws CantRetreiveFileException
 	 */

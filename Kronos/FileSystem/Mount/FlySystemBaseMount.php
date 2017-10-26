@@ -62,9 +62,15 @@ abstract class FlySystemBaseMount implements MountInterface{
 		return $this->mount->put($path, $this->getFileContent($filePath));
 	}
 
-	public function putContents($uuid, $contents, $fileName) {
+	/**
+	 * @param $uuid
+	 * @param $stream
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public function putStream($uuid, $stream, $fileName) {
 		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		return $this->mount->put($path, $contents);
+		return $this->mount->putStream($path, $stream);
 	}
 
 	public function copy($sourceUuid, $targetUuid, $fileName) {
