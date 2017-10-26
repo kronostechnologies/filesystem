@@ -74,7 +74,10 @@ abstract class FlySystemBaseMount implements MountInterface{
 	}
 
 	public function copy($sourceUuid, $targetUuid, $fileName) {
-		// TODO: Implement copy() method./
+		$sourcePath = $this->pathGenerator->generatePath($sourceUuid, $fileName);
+		$targetPath = $this->pathGenerator->generatePath($targetUuid, $fileName);
+
+		return $this->mount->copy($sourcePath, $targetPath);
 	}
 
 	/**

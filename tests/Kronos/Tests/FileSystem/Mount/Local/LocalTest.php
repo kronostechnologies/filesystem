@@ -19,7 +19,12 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const AN_URI = 'AN_URI';
 	const BASE_URL = '/base/url?id=';
 	const A_FILE_CONTENT = 'File contents';
-	const PUT_RESULT = true;
+	const PUT_RESULT = self::COPY_RESULT;
+	const SOURCE_UUID = 'source uuid';
+	const TARGET_UUID = 'target uuid';
+	const SOURCE_PATH = 'source path';
+	const TARGET_PATH = 'target path';
+	const COPY_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -248,6 +253,37 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->expectException(\Exception::class);
 
 		$this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
+	}
+
+	public function test_copy_shouldGeneratePathForSourceUuid() {
+		$this->pathGenerator
+			->expects(self::at(0))
+			->method('generatePath')
+			->with(self::SOURCE_UUID, self::A_FILE_NAME);
+
+		$this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_SourcePath_copy_shouldGeneratePathForTargetUuid() {
+		$this->pathGenerator
+			->expects(self::at(1))
+			->method('generatePath')
+			->with(self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+	}
+
+	public function test_Paths_copy_shouldCopySourcePathToTargetPathAndReturnResult() {
+		$this->pathGenerator->method('generatePath')->willReturnOnConsecutiveCalls(self::SOURCE_PATH, self::TARGET_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('copy')
+			->with(self::SOURCE_PATH, self::TARGET_PATH)
+			->willReturn(self::COPY_RESULT);
+
+		$actualResult = $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+
+		$this->assertEquals(self::COPY_RESULT, $actualResult);
 	}
 }
 
