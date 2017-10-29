@@ -43,7 +43,7 @@ interface FileSystemInterface {
 	/**
 	 * @param int $id
 	 */
-	public function delete($id, $fileName);
+	public function delete($id);
 
 	/**
 	 * @param int $id

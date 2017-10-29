@@ -122,10 +122,10 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @throws FileNotFoundException
 	 */
-	public function delete($id, $fileName){
+	public function delete($id){
+		$fileName = $this->fileRepository->getFileName($id);
 		$mount = $this->getMountForId($id);
 		$mount->delete($id, $fileName);
 	}

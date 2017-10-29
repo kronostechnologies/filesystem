@@ -211,6 +211,16 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		self::assertSame(self::A_SIGNED_URL,$actualSignedUrl);
 	}
 
+	public function test_givenId_delete_shouldGetFileName() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->fileRepository
+			->expects(self::once())
+			->method('getFileName')
+			->with(self::UUID);
+
+		$this->fileSystem->delete(self::UUID);
+	}
+
 	public function test_givenId_delete_shouldMountAssociatedWithId(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
@@ -219,7 +229,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_mountType_delete_shouldSelectMount(){
@@ -231,7 +241,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_delete_shouldThrowMountNotFoundException(){
@@ -240,18 +250,19 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
-	public function test_mountSelected_delete_delete(){
+	public function test_mountAndFileName_delete_delete(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->givenFileName();
 
 		$this->mount
 			->expects(self::once())
 			->method('delete')
-			->with(self::UUID);
+			->with(self::UUID, self::FILE_NAME);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_givenId_retrieve_shouldMountAssociatedWithId(){
