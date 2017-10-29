@@ -36,10 +36,9 @@ interface FileSystemInterface {
 
 	/**
 	 * @param string $id
-	 * @param string $fileName
 	 * @return string
 	 */
-	public function copy($id, $fileName);
+	public function copy($id);
 
 	/**
 	 * @param int $id

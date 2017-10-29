@@ -98,11 +98,11 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param string $id
-	 * @param string $fileName
 	 * @return string
 	 */
-	public function copy($id, $fileName) {
+	public function copy($id) {
 		$sourceMountType = $this->fileRepository->getFileMountType($id);
+		$fileName = $this->fileRepository->getFileName($id);
 		$destinationMountType = $this->mountSelector->getImportationMountType();
 		$destinationMount = $this->mountSelector->selectMount($destinationMountType);
 		$destinationId = $this->fileRepository->addNewFile($destinationMountType, $fileName);
