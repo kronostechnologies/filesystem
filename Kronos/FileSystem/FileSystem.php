@@ -55,11 +55,11 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @return File
 	 */
-	public function get($id, $fileName){
+	public function get($id){
 		$mount = $this->getMountForId($id);
+		$fileName = $this->fileRepository->getFileName($id);
 
 		$file = $mount->get($id, $fileName);
 		$file->metadata = $this->getMetadata($id, $fileName);
@@ -69,12 +69,12 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @return string
 	 * @throws MountNotFoundException
 	 */
-	public function getUrl($id, $fileName){
+	public function getUrl($id){
 		$mount = $this->getMountForId($id);
+		$fileName = $this->fileRepository->getFileName($id);
 		$signedUrl = $mount->getUrl($id, $fileName);
 		return $signedUrl;
 	}
@@ -82,11 +82,10 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @return Metadata
 	 * @throws MountNotFoundException
 	 */
-	public function getMetadata($id, $fileName){
+	public function getMetadata($id){
 		$mount = $this->getMountForId($id);
 		$fileName = $this->fileRepository->getFileName($id);
 
@@ -132,18 +131,18 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @throws MountNotFoundException
 	 */
-	public function retrieve($id, $fileName) {
+	public function retrieve($id) {
 		$mount = $this->getMountForId($id);
+		$fileName = $this->fileRepository->getFileName($id);
 		$mount->retrieve($id, $fileName);
 	}
 
 	/**
 	 * @param $id
 	 * @return MountInterface
-	 * @throws FileNotFoundException
+	 * @throws MountNotFoundException
 	 */
 	private function getMountForId($id){
 		$mountType = $this->fileRepository->getFileMountType($id);
