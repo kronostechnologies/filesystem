@@ -10,9 +10,8 @@ interface FileSystemInterface {
 
 	/**
 	 * @param string $filePath
-	 * @param string $fileName
-	 * @return int
-	 * @throws FileCantBeWrittenException
+	 * @param int $fileName
+	 * @return mixed
 	 */
 	public function put($filePath, $fileName);
 
@@ -20,34 +19,33 @@ interface FileSystemInterface {
 	 * @param int $id
 	 * @return File
 	 */
-	public function get($id, $fileName);
+	public function get($id);
 
 	/**
 	 * @param int $id
 	 * @return string
 	 */
-	public function getUrl($id, $fileName);
+	public function getUrl($id);
 
 	/**
 	 * @param int $id
 	 * @return Metadata
 	 */
-	public function getMetadata($id, $fileName);
+	public function getMetadata($id);
 
 	/**
 	 * @param string $id
-	 * @param string $fileName
 	 * @return string
 	 */
-	public function copy($id, $fileName);
+	public function copy($id);
 
 	/**
 	 * @param int $id
 	 */
-	public function delete($id, $fileName);
+	public function delete($id);
 
 	/**
 	 * @param int $id
 	 */
-	public function retrieve($id, $fileName);
+	public function retrieve($id);
 }

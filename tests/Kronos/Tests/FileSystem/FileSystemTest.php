@@ -211,6 +211,16 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		self::assertSame(self::A_SIGNED_URL,$actualSignedUrl);
 	}
 
+	public function test_givenId_delete_shouldGetFileName() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->fileRepository
+			->expects(self::once())
+			->method('getFileName')
+			->with(self::UUID);
+
+		$this->fileSystem->delete(self::UUID);
+	}
+
 	public function test_givenId_delete_shouldMountAssociatedWithId(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
@@ -219,7 +229,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_mountType_delete_shouldSelectMount(){
@@ -231,7 +241,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->with(self::MOUNT_TYPE)
 			->willReturn($this->mount);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_mountCouldNotHaveBeenSelected_delete_shouldThrowMountNotFoundException(){
@@ -240,18 +250,19 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		$this->expectException(MountNotFoundException::class);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
-	public function test_mountSelected_delete_delete(){
+	public function test_mountAndFileName_delete_delete(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->givenFileName();
 
 		$this->mount
 			->expects(self::once())
 			->method('delete')
-			->with(self::UUID);
+			->with(self::UUID, self::FILE_NAME);
 
-		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+		$this->fileSystem->delete(self::UUID);
 	}
 
 	public function test_givenId_retrieve_shouldMountAssociatedWithId(){
@@ -467,20 +478,22 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('getFileMountType')
 			->with(self::UUID);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
-	public function test_SourceMountType_copy_shouldGetImportationMountType() {
+	public function test_copy_shouldGetFileName() {
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
-		$this->mountSelector
+		$this->fileRepository
 			->expects(self::once())
-			->method('getImportationMountType');
+			->method('getFileName')
+			->with(self::UUID);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_ImportationMountType_copy_shouldSelectImportationMount() {
 		$this->givenImporationMountType();
+		$this->givenFileName();
 		$this->givenFileInImportationMount();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 		$this->mountSelector
@@ -488,11 +501,12 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('selectMount')
 			->with(self::IMPORTATION_MOUNT_TYPE);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
-	public function test_ImportationMountType_copy_shouldAddNewFile() {
+	public function test_ImportationMountTypeAndFileName_copy_shouldAddNewFile() {
 		$this->givenImporationMountType();
+		$this->givenFileName();
 		$this->givenFileInImportationMount();
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 		$this->fileRepository
@@ -500,11 +514,12 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('addNewFile')
 			->with(self::IMPORTATION_MOUNT_TYPE, self::FILE_NAME);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_AddedFileAndSameSourceAndImporationMountTypes_copy_shouldCopyFile() {
 		$this->givenImporationMountType();
+		$this->givenFileName();
 		$this->givenFileInImportationMount();
 		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
@@ -513,7 +528,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('copy')
 			->with(self::UUID, self::NEW_FILE_UUID, self::FILE_NAME);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_FileCopied_copy_shouldReturnNewUuid() {
@@ -522,7 +537,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
-		$actualUuid = $this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$actualUuid = $this->fileSystem->copy(self::UUID);
 
 		$this->assertSame(self::NEW_FILE_UUID, $actualUuid);
 	}
@@ -535,7 +550,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->expects(self::never())
 			->method('copy');
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_DifferentSourceAndImportationMountTypes_copy_shouldSelectSourceMount() {
@@ -551,7 +566,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('selectMount')
 			->with(self::SOURCE_MOUNT_TYPE);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_SourceMount_copy_shouldGetFile() {
@@ -561,9 +576,9 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->sourceMount
 			->expects(self::once())
 			->method('get')
-			->with(self::UUID, self::FILE_NAME);
+			->with(self::UUID);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_File_copy_shouldReadStream() {
@@ -574,11 +589,12 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->expects(self::once())
 			->method('readStream');
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_Stream_copy_shouldPutStream() {
 		$this->givenImporationMountType();
+		$this->givenFileName();
 		$this->givenDifferentSourceMount();
 		$this->fileRepository->method('addNewFile')->willReturn(self::NEW_FILE_UUID);
 		$this->givenSourceAndImporationMounts();
@@ -589,7 +605,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 			->method('putStream')
 			->with(self::NEW_FILE_UUID, $stream, self::FILE_NAME);
 
-		$this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$this->fileSystem->copy(self::UUID);
 	}
 
 	public function test_StreamPut_copy_shouldReturnNewFileUuid() {
@@ -600,7 +616,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$stream = tmpfile();
 		$this->file->method('readStream')->willReturn($stream);
 
-		$actualUuid = $this->fileSystem->copy(self::UUID, self::FILE_NAME);
+		$actualUuid = $this->fileSystem->copy(self::UUID);
 
 		$this->assertEquals(self::NEW_FILE_UUID, $actualUuid);
 	}
@@ -614,6 +630,10 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 	protected function givenImporationMountType() {
 		$this->mountSelector->method('getImportationMountType')->willReturn(self::IMPORTATION_MOUNT_TYPE);
+	}
+
+	protected function givenFileName() {
+		$this->fileRepository->method('getFileName')->willReturn(self::FILE_NAME);
 	}
 
 	protected function givenFileInImportationMount() {
