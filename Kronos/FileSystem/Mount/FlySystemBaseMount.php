@@ -91,7 +91,6 @@ abstract class FlySystemBaseMount implements MountInterface{
 	public function delete($uuid, $fileName) {
 		$path = $this->pathGenerator->generatePath($uuid, $fileName);
 		return $this->mount->delete($path);
-
 	}
 
 	/**
