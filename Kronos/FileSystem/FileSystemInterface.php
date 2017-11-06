@@ -36,15 +36,14 @@ interface FileSystemInterface {
 
 	/**
 	 * @param string $id
-	 * @param string $fileName
 	 * @return string
 	 */
-	public function copy($id, $fileName);
+	public function copy($id);
 
 	/**
 	 * @param int $id
 	 */
-	public function delete($id, $fileName);
+	public function delete($id);
 
 	/**
 	 * @param int $id

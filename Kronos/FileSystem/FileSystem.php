@@ -98,11 +98,11 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param string $id
-	 * @param string $fileName
 	 * @return string
 	 */
-	public function copy($id, $fileName) {
+	public function copy($id) {
 		$sourceMountType = $this->fileRepository->getFileMountType($id);
+		$fileName = $this->fileRepository->getFileName($id);
 		$destinationMountType = $this->mountSelector->getImportationMountType();
 		$destinationMount = $this->mountSelector->selectMount($destinationMountType);
 		$destinationId = $this->fileRepository->addNewFile($destinationMountType, $fileName);
@@ -122,10 +122,10 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param int $id
-	 * @param $fileName
 	 * @throws FileNotFoundException
 	 */
-	public function delete($id, $fileName){
+	public function delete($id){
+		$fileName = $this->fileRepository->getFileName($id);
 		$mount = $this->getMountForId($id);
 		if($mount->delete($id, $fileName)) {
 			$this->fileRepository->delete($id);
