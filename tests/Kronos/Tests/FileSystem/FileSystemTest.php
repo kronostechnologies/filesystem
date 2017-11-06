@@ -243,13 +243,38 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
 
-	public function test_mountSelected_delete_delete(){
+	public function test_mountSelected_delete_ShouldDelteInMount(){
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 
 		$this->mount
 			->expects(self::once())
 			->method('delete')
 			->with(self::UUID);
+
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_DeleteInMount_delete_ShouldDeleteInRepository() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mount
+			->method('delete')
+			->willReturn(true);
+		$this->fileRepository
+			->expects(self::once())
+			->method('delete')
+			->with(self::UUID);
+
+		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
+	}
+
+	public function test_DeleteFailed_delete_ShouldNotDeleteInRepository() {
+		$this->mountSelector->method('selectMount')->willReturn($this->mount);
+		$this->mount
+			->method('delete')
+			->willReturn(false);
+		$this->fileRepository
+			->expects(self::never())
+			->method('delete');
 
 		$this->fileSystem->delete(self::UUID, self::FILE_NAME);
 	}
