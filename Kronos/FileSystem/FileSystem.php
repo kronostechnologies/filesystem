@@ -126,7 +126,9 @@ class FileSystem implements FileSystemInterface {
 	public function delete($id){
 		$fileName = $this->fileRepository->getFileName($id);
 		$mount = $this->getMountForId($id);
-		$mount->delete($id, $fileName);
+		if($mount->delete($id, $fileName)) {
+			$this->fileRepository->delete($id);
+		}
 	}
 
 	/**
