@@ -34,6 +34,12 @@ interface FileSystemInterface {
 	public function getMetadata($id);
 
 	/**
+	 * @param int $id
+	 * @return bool
+	 */
+	public funtion has($id);
+
+	/**
 	 * @param string $id
 	 * @return string
 	 */
