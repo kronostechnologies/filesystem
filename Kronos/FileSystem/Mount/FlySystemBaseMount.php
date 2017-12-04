@@ -94,6 +94,16 @@ abstract class FlySystemBaseMount implements MountInterface{
 	}
 
 	/**
+	 * @param $uuid
+	 * @param $fileName
+	 * @return bool
+	 */
+	public function has($uuid, $fileName) {
+		$path = $this->pathGenerator->generatePath($uuid, $fileName);
+		return $this->mount->has($path);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getMountType() {

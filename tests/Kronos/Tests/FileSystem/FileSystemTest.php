@@ -23,7 +23,8 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	const IMPORTATION_MOUNT_TYPE = 'Importation mount Type';
 	const NEW_FILE_UUID = 'newFileUuid';
 	const SOURCE_MOUNT_TYPE = 'Source mount type';
-	const PUT_STREAM_RESULT = true;
+	const PUT_STREAM_RESULT = self::HAS_FILE;
+	const HAS_FILE = true;
 
 	/**
 	 * @var File|PHPUnit_Framework_MockObject_MockObject
@@ -269,7 +270,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->mountSelector->method('selectMount')->willReturn($this->mount);
 		$this->mount
 			->method('delete')
-			->willReturn(true);
+			->willReturn(self::HAS_FILE);
 		$this->fileRepository
 			->expects(self::once())
 			->method('delete')
@@ -644,6 +645,61 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$actualUuid = $this->fileSystem->copy(self::UUID);
 
 		$this->assertEquals(self::NEW_FILE_UUID, $actualUuid);
+	}
+
+	public function test_Uuid_has_shouldGetFileMountType() {
+		$this->fileRepository
+			->expects(self::once())
+			->method('getFileMountType')
+			->with(self::UUID);
+		$this->mountSelector
+			->method('selectMount')
+			->willReturn($this->mount);
+
+		$this->fileSystem->has(self::UUID);
+	}
+
+	public function test_Uuid_has_shouldGetFileName() {
+		$this->fileRepository
+			->expects(self::once())
+			->method('getFileName')
+			->with(self::UUID);
+		$this->mountSelector
+			->method('selectMount')
+			->willReturn($this->mount);
+
+		$this->fileSystem->has(self::UUID);
+	}
+
+	public function test_MountType_has_shouldSelectMount() {
+		$this->fileRepository
+			->method('getFileMountType')
+			->willReturn(self::MOUNT_TYPE);
+		$this->mountSelector
+			->expects(self::once())
+			->method('selectMount')
+			->with(self::MOUNT_TYPE)
+			->willReturn($this->mount);
+
+		$this->fileSystem->has(self::UUID);
+	}
+
+	public function test_Mount_has_shouldCheckAndReturnIfMountHasUuid() {
+		$this->mountSelector
+			->method('selectMount')
+			->willReturn($this->mount);
+		$this->fileRepository
+			->method('getFileName')
+			->willReturn(self::FILE_NAME);
+		$this->mount
+			->expects(self::once())
+			->method('has')
+			->with(self::UUID, self::FILE_NAME)
+			->willReturn(self::HAS_FILE);
+
+		$actualResult = $this->fileSystem->has(self::UUID);
+
+		$this->assertSame(self::HAS_FILE, $actualResult);
 	}
 
 	private function givenWillReturnFile(){
