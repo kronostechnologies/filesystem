@@ -143,6 +143,16 @@ class FileSystem implements FileSystemInterface {
 
 	/**
 	 * @param $id
+	 * @return bool
+	 */
+	public function has($id) {
+		$mount = $this->getMountForId($id);
+		$fileName = $this->fileRepository->getFileName($id);
+		return $mount->has($id, $fileName);
+	}
+
+	/**
+	 * @param $id
 	 * @return MountInterface
 	 * @throws MountNotFoundException
 	 */

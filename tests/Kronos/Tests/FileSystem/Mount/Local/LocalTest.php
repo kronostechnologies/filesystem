@@ -24,7 +24,8 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const TARGET_UUID = 'target uuid';
 	const SOURCE_PATH = 'source path';
 	const TARGET_PATH = 'target path';
-	const COPY_RESULT = true;
+	const COPY_RESULT = self::HAS_RESULT;
+	const HAS_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -284,6 +285,28 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$actualResult = $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
 
 		$this->assertEquals(self::COPY_RESULT, $actualResult);
+	}
+
+	public function test_UuidAndName_has_shouldGeneratePath() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID, self::A_FILE_NAME);
+
+		$this->localMount->has(self::UUID, self::A_FILE_NAME);
+	}
+
+	public function test_Path_has_shouldGetAndReturnMountHasResult() {
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_FILE_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('has')
+			->with(self::A_FILE_PATH)
+			->willReturn(self::HAS_RESULT);
+
+		$actualResult = $this->localMount->has(self::UUID, self::A_FILE_NAME);
+
+		$this->assertSame(self::HAS_RESULT, $actualResult);
 	}
 }
 

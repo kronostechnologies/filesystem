@@ -13,12 +13,14 @@ interface MountInterface {
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return File
 	 */
 	public function get($uuid, $fileName);
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return string
 	 */
 	public function getUrl($uuid, $fileName);
@@ -35,6 +37,7 @@ interface MountInterface {
 	 * Delete a file.
 	 *
 	 * @param string $uuid
+	 * @param $fileName
 	 */
 	public function delete($uuid, $fileName);
 
@@ -60,18 +63,28 @@ interface MountInterface {
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @throws CantRetreiveFileException
 	 */
 	public function retrieve($uuid, $fileName);
 
 	/**
+	 * @param $uuid
+	 * @param $fileName
+	 * @return bool
+	 */
+	public function has($uuid, $fileName);
+
+	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return mixed
 	 */
 	public function getPath($uuid, $fileName);
 
 	/**
 	 * @param string $uuid
+	 * @param $fileName
 	 * @return Metadata
 	 */
 	public function getMetadata($uuid, $fileName);

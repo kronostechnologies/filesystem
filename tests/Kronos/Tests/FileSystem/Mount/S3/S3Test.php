@@ -25,12 +25,13 @@ class S3Test extends PHPUnit_Framework_TestCase{
 	const S3_BUCKET = 'S3_BUCKET';
 	const AN_URI = 'AN_URI';
 	const A_FILE_CONTENT = 'A_FILE_CONTENT';
-	const PUT_RESULT = true;
+	const PUT_RESULT = self::HAS_RESULT;
 	const SOURCE_UUID = 'source uuid';
 	const TARGET_UUID = 'target uuid';
 	const SOURCE_PATH = 'source path';
 	const TARGET_PATH = 'target path';
-	const COPY_RESULT = true;
+	const COPY_RESULT = self::HAS_RESULT;
+	const HAS_RESULT = true;
 
 	/**
 	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
@@ -219,7 +220,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 	public function test_FileWritten_put_shouldReturnTrue(){
 
-		$this->fileSystem->method('put')->willReturn(true);
+		$this->fileSystem->method('put')->willReturn(self::HAS_RESULT);
 
 		$written = $this->s3mount->put(self::UUID,self::A_FILE_PATH, self::A_FILE_NAME);
 
@@ -286,7 +287,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
 
 	public function test_FileDeleted_delete_shouldReturnTrue(){
 
-		$this->fileSystem->method('delete')->willReturn(true);
+		$this->fileSystem->method('delete')->willReturn(self::HAS_RESULT);
 
 		$deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 
@@ -456,6 +457,28 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$actualResult = $this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
 
 		$this->assertEquals(self::COPY_RESULT, $actualResult);
+	}
+
+	public function test_UuidAndName_has_shouldGeneratePath() {
+		$this->pathGenerator
+			->expects(self::once())
+			->method('generatePath')
+			->with(self::UUID, self::A_FILE_NAME);
+
+		$this->s3mount->has(self::UUID, self::A_FILE_NAME);
+	}
+
+	public function test_Path_has_shouldGetAndReturnMountHasResult() {
+		$this->pathGenerator->method('generatePath')->willReturn(self::A_FILE_PATH);
+		$this->fileSystem
+			->expects(self::once())
+			->method('has')
+			->with(self::A_FILE_PATH)
+			->willReturn(self::HAS_RESULT);
+
+		$actualResult = $this->s3mount->has(self::UUID, self::A_FILE_NAME);
+
+		$this->assertSame(self::HAS_RESULT, $actualResult);
 	}
 }
 
