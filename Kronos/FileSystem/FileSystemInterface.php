@@ -37,7 +37,7 @@ interface FileSystemInterface {
 	 * @param int $id
 	 * @return bool
 	 */
-	public funtion has($id);
+	public function has($id);
 
 	/**
 	 * @param string $id
