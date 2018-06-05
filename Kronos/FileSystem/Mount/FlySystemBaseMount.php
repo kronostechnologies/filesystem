@@ -13,117 +13,128 @@ use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\File;
 use League\Flysystem\Filesystem;
 
-abstract class FlySystemBaseMount implements MountInterface{
+abstract class FlySystemBaseMount implements MountInterface
+{
 
-	/**
-	 * @var Filesystem
-	 */
-	protected $mount;
-	/**
-	 * @var PathGeneratorInterface
-	 */
-	protected $pathGenerator;
+    /**
+     * @var Filesystem
+     */
+    protected $mount;
+    /**
+     * @var PathGeneratorInterface
+     */
+    protected $pathGenerator;
 
-	public function __construct(PathGeneratorInterface $pathGenerator,Filesystem $mount) {
-		if(!$this->isFileSystemValid($mount)){
-			throw new WrongFileSystemTypeException($this->getMountType(),get_class($mount->getAdapter()));
-		}
-		$this->mount = $mount;
-		$this->pathGenerator = $pathGenerator;
-	}
+    public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount)
+    {
+        if (!$this->isFileSystemValid($mount)) {
+            throw new WrongFileSystemTypeException($this->getMountType(), get_class($mount->getAdapter()));
+        }
+        $this->mount = $mount;
+        $this->pathGenerator = $pathGenerator;
+    }
 
-	/**
-	 * @param Filesystem $mount
-	 * @return bool
-	 */
-	abstract protected function isFileSystemValid(Filesystem $mount);
+    /**
+     * @param Filesystem $mount
+     * @return bool
+     */
+    abstract protected function isFileSystemValid(Filesystem $mount);
 
-	/**
-	 * @param string $uuid
-	 * @param $fileName
-	 * @return File
-	 */
-	public function get($uuid, $fileName) {
-		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		$flySystemFile = $this->mount->get($path);
-		return new File($flySystemFile);
-	}
+    /**
+     * @param string $uuid
+     * @param $fileName
+     * @return File
+     */
+    public function get($uuid, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $flySystemFile = $this->mount->get($path);
+        return new File($flySystemFile);
+    }
 
-	/**
-	 * Write a new file using a stream.
-	 *
-	 * @param string $uuid
-	 * @param string $filePath
-	 * @param $fileName
-	 * @return bool
-	 */
-	public function put($uuid, $filePath, $fileName) {
-		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		return $this->mount->put($path, $this->getFileContent($filePath));
-	}
+    /**
+     * Write a new file using a stream.
+     *
+     * @param string $uuid
+     * @param string $filePath
+     * @param $fileName
+     * @return bool
+     */
+    public function put($uuid, $filePath, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->mount->put($path, $this->getFileContent($filePath));
+    }
 
-	/**
-	 * @param $uuid
-	 * @param $stream
-	 * @param $fileName
-	 * @return mixed
-	 */
-	public function putStream($uuid, $stream, $fileName) {
-		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		return $this->mount->putStream($path, $stream);
-	}
+    /**
+     * @param $uuid
+     * @param $stream
+     * @param $fileName
+     * @return mixed
+     */
+    public function putStream($uuid, $stream, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->mount->putStream($path, $stream);
+    }
 
-	public function copy($sourceUuid, $targetUuid, $fileName) {
-		$sourcePath = $this->pathGenerator->generatePath($sourceUuid, $fileName);
-		$targetPath = $this->pathGenerator->generatePath($targetUuid, $fileName);
+    public function copy($sourceUuid, $targetUuid, $fileName)
+    {
+        $sourcePath = $this->pathGenerator->generatePath($sourceUuid, $fileName);
+        $targetPath = $this->pathGenerator->generatePath($targetUuid, $fileName);
 
-		return $this->mount->copy($sourcePath, $targetPath);
-	}
+        return $this->mount->copy($sourcePath, $targetPath);
+    }
 
-	/**
-	 *
-	 * Delete a file.
-	 *
-	 * @param string $uuid
-	 * @param $fileName
-	 * @return bool
-	 */
-	public function delete($uuid, $fileName) {
-		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		return $this->mount->delete($path);
-	}
+    /**
+     *
+     * Delete a file.
+     *
+     * @param string $uuid
+     * @param $fileName
+     * @return bool
+     */
+    public function delete($uuid, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->mount->delete($path);
+    }
 
-	/**
-	 * @param $uuid
-	 * @param $fileName
-	 * @return bool
-	 */
-	public function has($uuid, $fileName) {
-		$path = $this->pathGenerator->generatePath($uuid, $fileName);
-		return $this->mount->has($path);
-	}
+    /**
+     * @param $uuid
+     * @param $fileName
+     * @return bool
+     */
+    public function has($uuid, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->mount->has($path);
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getMountType() {
-		return static::MOUNT_TYPE;
-	}
+    /**
+     * @return mixed
+     */
+    public function getMountType()
+    {
+        return static::MOUNT_TYPE;
+    }
 
-	/**
-	 * @param string $uuid
-	 * @param $fileName
-	 * @return string
-	 */
-	public function getPath($uuid, $fileName) {
-		return $this->pathGenerator->generatePath($uuid, $fileName);
-	}
+    /**
+     * @param string $uuid
+     * @param $fileName
+     * @return string
+     */
+    public function getPath($uuid, $fileName)
+    {
+        return $this->pathGenerator->generatePath($uuid, $fileName);
+    }
 
-	/**
-	 * @param string $path
-	 * @return string
-	 */
-	protected function getFileContent($path){
-		return file_get_contents($path);
-	}
+    /**
+     * @param string $path
+     * @return string
+     */
+    protected function getFileContent($path)
+    {
+        return file_get_contents($path);
+    }
 }

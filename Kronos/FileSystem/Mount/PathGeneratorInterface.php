@@ -2,12 +2,13 @@
 
 namespace Kronos\FileSystem\Mount;
 
-interface PathGeneratorInterface {
+interface PathGeneratorInterface
+{
 
-	/**
-	 * @param $uuid
-	 * @param $fileName
-	 * @return mixed
-	 */
-	public function generatePath($uuid, $fileName);
+    /**
+     * @param $uuid
+     * @param $fileName
+     * @return mixed
+     */
+    public function generatePath($uuid, $fileName);
 }

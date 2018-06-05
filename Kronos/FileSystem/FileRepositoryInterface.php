@@ -5,37 +5,38 @@ namespace Kronos\FileSystem;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Metadata;
 
-interface FileRepositoryInterface {
+interface FileRepositoryInterface
+{
 
-	/**
-	 * @param string $mountType
-	 * @param string $fileName
-	 * @return int $uuid
-	 */
-	public function addNewFile($mountType,$fileName);
+    /**
+     * @param string $mountType
+     * @param string $fileName
+     * @return string $uuid
+     */
+    public function addNewFile($mountType, $fileName);
 
-	/**
-	 * @param int $uuid
-	 * @return string
-	 */
-	public function getFileMountType($uuid);
+    /**
+     * @param string $uuid
+     * @return string
+     */
+    public function getFileMountType($uuid);
 
-	/**
-	 * @param int $uuid
-	 * @return string
-	 */
-	public function getFileName($uuid);
+    /**
+     * @param string $uuid
+     * @return string
+     */
+    public function getFileName($uuid);
 
-	/**
-	 * @param int $uuid
-	 * @return bool
-	 */
-	public function delete($uuid);
+    /**
+     * @param string $uuid
+     * @return bool
+     */
+    public function delete($uuid);
 
-	/**
-	 * @param int $uuid
-	 * @param string $mountType
-	 * @return bool
-	 */
-	public function update($uuid,$mountType);
+    /**
+     * @param string $uuid
+     * @param string $mountType
+     * @return bool
+     */
+    public function update($uuid, $mountType);
 }

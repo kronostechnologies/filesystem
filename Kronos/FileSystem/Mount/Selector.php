@@ -5,67 +5,72 @@ namespace Kronos\FileSystem\Mount;
 
 use Kronos\FileSystem\Exception\MountNotFoundException;
 
-class Selector {
+class Selector
+{
 
-	/**
-	 * @var array
-	 */
-	protected $mountList = [];
+    /**
+     * @var array
+     */
+    protected $mountList = [];
 
-	/**
-	 * @var string
-	 */
-	protected $importationMountKey = '';
+    /**
+     * @var string
+     */
+    protected $importationMountKey = '';
 
-	/**
-	 * @param MountInterface $mount
-	 */
-	public function addMount(MountInterface $mount){
-		$this->mountList[$mount->getMountType()] = $mount;
-	}
+    /**
+     * @param MountInterface $mount
+     */
+    public function addMount(MountInterface $mount)
+    {
+        $this->mountList[$mount->getMountType()] = $mount;
+    }
 
-	/**
-	 * @param string $mountKey
-	 * @throws MountNotFoundException
-	 */
-	public function setImportationMount($mountKey){
-		if(isset($this->mountList[$mountKey])){
-			$this->importationMountKey = $mountKey;
-		}
-		else{
-			throw new MountNotFoundException($mountKey);
-		}
-	}
+    /**
+     * @param string $mountKey
+     * @throws MountNotFoundException
+     */
+    public function setImportationMount($mountKey)
+    {
+        if (isset($this->mountList[$mountKey])) {
+            $this->importationMountKey = $mountKey;
+        } else {
+            throw new MountNotFoundException($mountKey);
+        }
+    }
 
-	/**
-	 * @param string $mountKey
-	 * @return MountInterface
-	 * @throws MountNotFoundException
-	 */
-	public function selectMount($mountKey){
-		if(isset($this->mountList[$mountKey])){
-			return $this->mountList[$mountKey];
-		}
+    /**
+     * @param string $mountKey
+     * @return MountInterface
+     * @throws MountNotFoundException
+     */
+    public function selectMount($mountKey)
+    {
+        if (isset($this->mountList[$mountKey])) {
+            return $this->mountList[$mountKey];
+        }
 
-		throw new MountNotFoundException($mountKey);
-	}
+        throw new MountNotFoundException($mountKey);
+    }
 
-	/**
-	 * @return MountInterface|null
-	 */
-	public function getImportationMount(){
+    /**
+     * @return MountInterface|null
+     */
+    public function getImportationMount()
+    {
 
-		if(!empty($this->importationMountKey)){
-			return $this->mountList[$this->importationMountKey];
-		}
+        if (!empty($this->importationMountKey)) {
+            return $this->mountList[$this->importationMountKey];
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getImportationMountType() {
-		return $this->importationMountKey;
-	}
+    /**
+     * @return string
+     */
+    public function getImportationMountType()
+    {
+        return $this->importationMountKey;
+    }
 }

@@ -1,28 +1,30 @@
 <?php
+
 namespace Kronos\FileSystem\File\Internal;
 
 use DateTime;
 
-class Metadata {
+class Metadata
+{
 
-	/**
-	 * @var string
-	 */
-	public $name;
+    /**
+     * @var string
+     */
+    public $name;
 
-	/**
-	 * @var string
-	 */
-	public $mimetype;
+    /**
+     * @var string
+     */
+    public $mimetype;
 
-	/**
-	 * @var DateTime
-	 */
-	public $lastModifiedDate;
+    /**
+     * @var DateTime
+     */
+    public $lastModifiedDate;
 
-	/**
-	 * @var int (bytes)
-	 */
-	public $size;
+    /**
+     * @var int (bytes)
+     */
+    public $size;
 
 }
