@@ -21,6 +21,11 @@ class Local extends FlySystemBaseMount
     protected $baseUrl;
 
     /**
+     * @var string
+     */
+    protected $forceDownloadParameter = '';
+
+    /**
      * @param Filesystem $mount
      * @return bool
      */
@@ -38,6 +43,10 @@ class Local extends FlySystemBaseMount
         $this->baseUrl = $url;
     }
 
+    public function setForceDownloadParameter($parameter) {
+        $this->forceDownloadParameter = $parameter;
+    }
+
     /**
      * @param $uuid
      * @param $fileName
@@ -51,7 +60,7 @@ class Local extends FlySystemBaseMount
             throw new \Exception(self::ERR_MISSING_BASE_URL);
         }
 
-        return $this->baseUrl . $uuid;
+        return $this->baseUrl . $uuid . ($forceDownload ? $this->forceDownloadParameter : '');
     }
 
     /**
