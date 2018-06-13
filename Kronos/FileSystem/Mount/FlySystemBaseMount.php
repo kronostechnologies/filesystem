@@ -20,6 +20,7 @@ abstract class FlySystemBaseMount implements MountInterface
      * @var Filesystem
      */
     protected $mount;
+
     /**
      * @var PathGeneratorInterface
      */

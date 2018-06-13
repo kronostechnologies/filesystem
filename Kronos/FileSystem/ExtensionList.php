@@ -1,6 +1,6 @@
 <?php
 
-namespace Kronos\FileSystem\Mount;
+namespace Kronos\FileSystem;
 
 class ExtensionList
 {

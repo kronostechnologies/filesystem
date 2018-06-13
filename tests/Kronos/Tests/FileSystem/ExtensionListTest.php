@@ -1,6 +1,8 @@
 <?php
 
-namespace Kronos\Tests\FileSystem\Mount;
+namespace Kronos\Tests\FileSystem;
+
+use Kronos\FileSystem\ExtensionList;
 
 class ExtensionListTest extends \PHPUnit_Framework_TestCase
 {
@@ -12,7 +14,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
 
     public function test_FilenameMatchingAddedExtension_isInList_shouldReturnTrue()
     {
-        $list = new \Kronos\FileSystem\Mount\ExtensionList();
+        $list = new ExtensionList();
         $list->addExtension(self::JPG);
 
         $inList = $list->isInList(self::FILENAME . '.' . self::JPG);
@@ -22,7 +24,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
 
     public function test_FilenameNotMatchingAddedExtension_isInList_shouldReturnFalse()
     {
-        $list = new \Kronos\FileSystem\Mount\ExtensionList();
+        $list = new ExtensionList();
         $list->addExtension(self::JPG);
 
         $inList = $list->isInList(self::FILENAME . '.' . self::PNG);
@@ -32,7 +34,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
 
     public function test_ExtensionWithDotAdded_isInList_shouldReturnTrue()
     {
-        $list = new \Kronos\FileSystem\Mount\ExtensionList();
+        $list = new ExtensionList();
         $list->addExtension('.' . self::JPG);
 
         $inList = $list->isInList(self::FILENAME . '.' . self::JPG);
@@ -42,7 +44,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
 
     public function test_FilenameWithoutExtension_isInList_shouldReturnFalse()
     {
-        $list = new \Kronos\FileSystem\Mount\ExtensionList();
+        $list = new ExtensionList();
         $list->addExtension(self::JPG);
 
         $inList = $list->isInList(self::FILENAME);

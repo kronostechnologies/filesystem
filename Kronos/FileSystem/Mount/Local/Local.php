@@ -39,12 +39,13 @@ class Local extends FlySystemBaseMount
     }
 
     /**
-     * @param string $uuid
+     * @param $uuid
      * @param $fileName
-     * @return string
+     * @param bool $forceDownload
+     * @return mixed|string
      * @throws \Exception
      */
-    public function getUrl($uuid, $fileName)
+    public function getUrl($uuid, $fileName, $forceDownload = false)
     {
         if (!$this->baseUrl) {
             throw new \Exception(self::ERR_MISSING_BASE_URL);

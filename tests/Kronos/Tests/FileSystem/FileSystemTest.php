@@ -3,6 +3,7 @@ namespace Kronos\Tests\FileSystem;
 
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
+use Kronos\FileSystem\ExtensionList;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\File\Translator\MetadataTranslator;
@@ -182,13 +183,24 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 		$this->fileSystem->getUrl(self::UUID);
 	}
 
-	public function test_mountSelected_getUrl_shouldGetUrl(){
-		$this->givenMountSelected();
+	public function test_mountSelected_getUrl_shouldGetFilename()
+    {
+	    $this->givenMountSelected();
+	    $this->fileRepository
+            ->expects(self::once())
+            ->method('getFileName')
+            ->with(self::UUID);
 
+        $this->fileSystem->getUrl(self::UUID);
+    }
+
+	public function test_fileName_getUrl_shouldGetUrl(){
+		$this->givenMountSelected();
+        $this->givenFileName();
 		$this->mount
 			->expects(self::once())
 			->method('getUrl')
-			->with(self::UUID);
+			->with(self::UUID, self::FILE_NAME, false);
 
 		$this->fileSystem->getUrl(self::UUID);
 	}
@@ -211,6 +223,35 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 
 		self::assertSame(self::A_SIGNED_URL,$actualSignedUrl);
 	}
+
+	public function test_ForceDownloadList_getUrl_shouldCheckIfInList()
+    {
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $extensionList = $this->getMock(ExtensionList::class);
+        $extensionList
+            ->expects(self::once())
+            ->method('isInList')
+            ->with(self::FILE_NAME);
+        $this->fileSystem->setForceDownloadExtensionList($extensionList);
+
+        $this->fileSystem->getUrl(self::UUID);
+    }
+
+    public function test_ForceDownloadListAndInList_getUrl_shouldGetUrlAndForceDownload()
+    {
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $extensionList = $this->getMock(ExtensionList::class);
+        $extensionList->method('isInList')->willReturn(true);
+        $this->fileSystem->setForceDownloadExtensionList($extensionList);
+        $this->mount
+            ->expects(self::once())
+            ->method('getUrl')
+            ->with(self::UUID, self::FILE_NAME, true);
+
+        $this->fileSystem->getUrl(self::UUID);
+    }
 
 	public function test_givenId_delete_shouldGetFileName() {
 		$this->givenMountSelected();
