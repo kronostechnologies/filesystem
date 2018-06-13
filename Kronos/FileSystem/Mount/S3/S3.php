@@ -41,14 +41,16 @@ class S3 extends FlySystemBaseMount
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         $location = $awsS3Adaptor->applyPathPrefix($path);
 
-        $command = $s3Client->getCommand(
-            'GetObject',
-            [
-                'Bucket' => $awsS3Adaptor->getBucket(),
-                'Key' => $location,
-            ]
-        );
+        $commandOptions = [
+            'Bucket' => $awsS3Adaptor->getBucket(),
+            'Key' => $location,
+        ];
 
+        if ($forceDownload) {
+            $commandOptions['ResponseContentDisposition'] = 'attachment; filename=' . $fileName;
+        }
+
+        $command = $s3Client->getCommand('GetObject', $commandOptions);
         $request = $s3Client->createPresignedRequest($command, self::PRESIGNED_URL_LIFE_TIME);
 
         $presignedUrl = (string)$request->getUri();
