@@ -18,7 +18,7 @@ class ExtensionList
     {
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if($extension) {
+        if ($extension) {
             return in_array($extension, $this->extensions);
         }
 
