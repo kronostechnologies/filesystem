@@ -159,6 +159,29 @@ class S3Test extends PHPUnit_Framework_TestCase{
 		$this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 	}
 
+	public function test_locationAndForceDownload_getSignedUrl_shouldAddResponseContentDispositionToCommand()
+    {
+        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+
+        $this->s3Client
+            ->expects(self::once())
+            ->method('getCommand')
+            ->with(
+                'GetObject',
+                [
+                    'Bucket' => self::S3_BUCKET,
+                    'Key' => self::A_LOCATION,
+                    'ResponseContentDisposition' => 'attachment; filename='.self::A_FILE_NAME,
+                ]
+            )
+            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+
+        $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME, true);
+    }
+
 	public function test_command_getSignedUrl_shouldGetCommandToGetFile(){
 		$command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
 		$this->s3Adaptor->method('getClient')->willReturn($this->s3Client);

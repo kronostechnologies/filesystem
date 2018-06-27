@@ -22,11 +22,12 @@ interface MountInterface
     public function get($uuid, $fileName);
 
     /**
-     * @param string $uuid
+     * @param $uuid
      * @param $fileName
-     * @return string
+     * @param bool $forceDownload
+     * @return mixed
      */
-    public function getUrl($uuid, $fileName);
+    public function getUrl($uuid, $fileName, $forceDownload=false);
 
     /**
      * @param $sourceUuid

@@ -47,7 +47,9 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	 */
 	private $localMount;
 
-	public function setUp(){
+    const FORCE_DOWNLOAD_PARAMETER = '&force=1';
+
+    public function setUp(){
 		$this->fileSystem = $this->getMockWithoutInvokingTheOriginalConstructor(Filesystem::class);
 		$this->localAdaptor = $this->getMockWithoutInvokingTheOriginalConstructor(Local::class);
 		$this->pathGenerator = $this->getMockWithoutInvokingTheOriginalConstructor(PathGeneratorInterface::class);
@@ -242,7 +244,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		$this->assertFalse($metadata);
 	}
 
-	public function test_BaseUrl_getSignedUrl_shouldReturnPresignedUrl(){
+	public function test_BaseUrl_getUrl_shouldReturnUrl(){
 		$this->localMount->setBaseUrl(self::BASE_URL);
 
 		$actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
@@ -250,7 +252,36 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 		self::assertEquals(self::BASE_URL.self::UUID, $actualUrl);
 	}
 
-	public function test_NoBaseUrl_getSignedUrl_shouldThrowException() {
+    public function test_ForceDownloadAndParameterSet_getUrl_shouldReturnUrlWithParameter()
+    {
+        $this->localMount->setBaseUrl(self::BASE_URL);
+        $this->localMount->setForceDownloadParameter(self::FORCE_DOWNLOAD_PARAMETER);
+
+        $actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME, true);
+
+        self::assertEquals(self::BASE_URL.self::UUID.self::FORCE_DOWNLOAD_PARAMETER, $actualUrl);
+    }
+
+    public function test_DoNotForceDownloadAndParameterSet_getUrl_shouldOnlyReturnUrl()
+    {
+        $this->localMount->setBaseUrl(self::BASE_URL);
+        $this->localMount->setForceDownloadParameter(self::FORCE_DOWNLOAD_PARAMETER);
+
+        $actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
+
+        self::assertEquals(self::BASE_URL.self::UUID, $actualUrl);
+    }
+
+    public function test_ForceDownloadAndParameterNotSet_getUrl_shouldOnlyReturnUrl()
+    {
+        $this->localMount->setBaseUrl(self::BASE_URL);
+
+        $actualUrl = $this->localMount->getUrl(self::UUID, self::A_FILE_NAME, true);
+
+        self::assertEquals(self::BASE_URL.self::UUID, $actualUrl);
+    }
+
+	public function test_NoBaseUrl_getUrl_shouldThrowException() {
 		$this->expectException(\Exception::class);
 
 		$this->localMount->getUrl(self::UUID, self::A_FILE_NAME);

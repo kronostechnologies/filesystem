@@ -29,6 +29,11 @@ class FileSystem implements FileSystemInterface
      */
     private $metadataTranslator;
 
+    /**
+     * @var ExtensionList
+     */
+    protected $forceDownloadList;
+
     public function __construct(
         Selector $mountSelector,
         FileRepositoryInterface $fileRepository,
@@ -83,10 +88,20 @@ class FileSystem implements FileSystemInterface
     {
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
-        $signedUrl = $mount->getUrl($id, $fileName);
-        return $signedUrl;
+        return $mount->getUrl($id, $fileName, $this->shouldForceDownload($fileName));;
     }
 
+    /**
+     * @param ExtensionList $extensionList
+     */
+    public function setForceDownloadExtensionList(ExtensionList $extensionList)
+    {
+        $this->forceDownloadList = $extensionList;
+    }
+
+    protected function shouldForceDownload($fileName) {
+        return $this->forceDownloadList ? $this->forceDownloadList->isInList($fileName) : false;
+    }
 
     /**
      * @param string $id
