@@ -11,7 +11,7 @@ class ExtensionList
 
     public function addExtension($extension)
     {
-        $this->extensions[] = ltrim($extension, '.');
+        $this->extensions[] = strtolower(ltrim($extension, '.'));
     }
 
     public function isInList($filename)
@@ -19,7 +19,7 @@ class ExtensionList
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
         if ($extension) {
-            return in_array($extension, $this->extensions);
+            return in_array(strtolower($extension), $this->extensions);
         }
 
         return false;
