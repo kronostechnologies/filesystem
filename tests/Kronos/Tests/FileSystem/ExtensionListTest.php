@@ -9,6 +9,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
 
     const JPG = 'jpg';
     const PNG = 'png';
+    const PNG_UPPERCASE = 'PNG';
 
     const FILENAME = 'filename';
 
@@ -50,5 +51,25 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
         $inList = $list->isInList(self::FILENAME);
 
         $this->assertFalse($inList);
+    }
+
+    public function test_FilenameWithExtensionUppercase_isInListButLowercase_shouldReturnTrue()
+    {
+        $list = new ExtensionList();
+        $list->addExtension(self::PNG);
+
+        $inList = $list->isInList(self::FILENAME. '.' . self::PNG_UPPERCASE);
+
+        $this->assertTrue($inList);
+    }
+
+    public function test_FilenameWithExtensionLowercase_isInListButUppercase_shouldReturnTrue()
+    {
+        $list = new ExtensionList();
+        $list->addExtension(self::PNG_UPPERCASE);
+
+        $inList = $list->isInList(self::FILENAME. '.' . self::PNG);
+
+        $this->assertTrue($inList);
     }
 }
