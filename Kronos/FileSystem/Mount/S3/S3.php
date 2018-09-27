@@ -47,7 +47,7 @@ class S3 extends FlySystemBaseMount
         ];
 
         if ($forceDownload) {
-            $commandOptions['ResponseContentDisposition'] = 'attachment; filename=' . $fileName;
+            $commandOptions['ResponseContentDisposition'] = 'attachment;filename="' . str_replace('"','\"', $fileName).'"';
         }
 
         $command = $s3Client->getCommand('GetObject', $commandOptions);
