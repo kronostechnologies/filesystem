@@ -13,7 +13,7 @@ jobs:
             - *composer_cache_key
       - run:
           name: composer install
-          command: composer install --dev -n --prefer-dist
+          command: composer install -n --prefer-dist
       - save_cache:
           key: *composer_cache_key
           paths: ./vendor
