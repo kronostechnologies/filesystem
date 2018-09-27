@@ -20,6 +20,8 @@ class S3Test extends PHPUnit_Framework_TestCase{
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
 	const A_FILE_NAME = 'A_FILE_NAME';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES = 'T"EST';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES_ESCAPED = 'T\"EST';
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
@@ -174,12 +176,35 @@ class S3Test extends PHPUnit_Framework_TestCase{
                 [
                     'Bucket' => self::S3_BUCKET,
                     'Key' => self::A_LOCATION,
-                    'ResponseContentDisposition' => 'attachment; filename='.self::A_FILE_NAME,
+                    'ResponseContentDisposition' => 'attachment;filename="'.self::A_FILE_NAME.'"',
                 ]
             )
             ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
 
         $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME, true);
+    }
+
+    public function test_locationAndForceDownloadWithDocumentHavingDoubleQuotes_getSignedUrl_shouldAddResponseContentDispositionToCommandWithDoubleQuotesEscaped()
+    {
+        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+
+        $this->s3Client
+            ->expects(self::once())
+            ->method('getCommand')
+            ->with(
+                'GetObject',
+                [
+                    'Bucket' => self::S3_BUCKET,
+                    'Key' => self::A_LOCATION,
+                    'ResponseContentDisposition' => 'attachment;filename="'.self::A_FILE_NAME_WITH_DOUBLE_QUOTES_ESCAPED.'"',
+                ]
+            )
+            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+
+        $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME_WITH_DOUBLE_QUOTES, true);
     }
 
 	public function test_command_getSignedUrl_shouldGetCommandToGetFile(){
