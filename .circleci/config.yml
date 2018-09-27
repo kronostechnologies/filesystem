@@ -2,7 +2,6 @@ version: 2
 aliases:
   - &composer_cache_key v1-composer-install-{{ checksum "composer.lock" }}
 
-version: 2
 jobs:
   composer_install:
     docker:
