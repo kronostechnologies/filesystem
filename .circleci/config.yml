@@ -1,0 +1,40 @@
+version: 2
+aliases:
+  - &composer_cache_key v1-composer-install-{{ checksum "composer.lock" }}
+
+jobs:
+  composer_install:
+    docker:
+      - image: composer:1.6.2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - *composer_cache_key
+      - run:
+          name: composer install
+          command: composer install -n --prefer-dist
+      - save_cache:
+          key: *composer_cache_key
+          paths: ./vendor
+
+  phpunit:
+    docker:
+      - image: composer:1.6.2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - *composer_cache_key
+      - run:
+          command: ./vendor/bin/phpunit
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - composer_install
+      - phpunit:
+          requires:
+            - composer_install
+      
