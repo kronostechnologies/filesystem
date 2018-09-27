@@ -34,7 +34,7 @@ workflows:
   build_and_test:
     jobs:
       - composer_install
-      - phpunit
+      - phpunit:
           requires:
             - composer_install
       
