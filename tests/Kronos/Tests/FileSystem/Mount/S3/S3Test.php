@@ -199,7 +199,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
                 [
                     'Bucket' => self::S3_BUCKET,
                     'Key' => self::A_LOCATION,
-                    'ResponseContentDisposition' => 'attachment;filename='.self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED.'',
+                    'ResponseContentDisposition' => 'attachment;filename='.self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED,
                 ]
             )
             ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));

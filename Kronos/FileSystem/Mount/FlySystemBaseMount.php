@@ -25,7 +25,7 @@ abstract class FlySystemBaseMount implements MountInterface
         if (!$this->isFileSystemValid($mount)) {
             throw new WrongFileSystemTypeException($this->getMountType(), get_class($mount->getAdapter()));
         }
-        $this->mount = $mount; 
+        $this->mount = $mount;
         $this->pathGenerator = $pathGenerator;
     }
 
