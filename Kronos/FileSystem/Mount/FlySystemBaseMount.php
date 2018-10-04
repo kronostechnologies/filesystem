@@ -146,7 +146,7 @@ abstract class FlySystemBaseMount implements MountInterface
      */
     protected function getRFC6266ContentDisposition($filename, $charset = 'UTF-8', $addAttachment = true)
     {
-        //setlocale(LC_CTYPE, 'C.UTF-8', 'en_CA.utf8', 'en_US.utf8');
+        setlocale(LC_ALL, 'C.UTF-8', 'en_CA.utf8', 'en_US.utf8');
 
         $header = $addAttachment ? 'attachment;' : '';
 
@@ -200,12 +200,12 @@ abstract class FlySystemBaseMount implements MountInterface
     /**
      * Convert $string to ASCII.  This function deprecate replaceFrenchAccents.
      * @param string $string
-     * @param string $in_charset UTF-8|ISO-8859-1|charset
-     * @return string
+     * @param string $charset UTF-8|ISO-8859-1|charset
+     * @return string|false
      */
-    private function toAscii($string, $in_charset = 'UTF-8')
+    private function toAscii($string, $charset = 'UTF-8')
     {
-        $ascii_string = iconv($in_charset, 'ASCII//TRANSLIT//IGNORE', $string);
+        $ascii_string = iconv($charset, 'ASCII//TRANSLIT//IGNORE', $string);
         if (!$ascii_string) {
             return $string;
         }
