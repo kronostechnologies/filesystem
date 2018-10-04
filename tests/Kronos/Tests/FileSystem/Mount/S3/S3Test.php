@@ -20,8 +20,8 @@ class S3Test extends PHPUnit_Framework_TestCase{
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
 	const A_FILE_NAME = 'A_FILE_NAME';
-    const A_FILE_NAME_WITH_DOUBLE_QUOTES = 'T"EST';
-    const A_FILE_NAME_WITH_DOUBLE_QUOTES_ESCAPED = 'T\"EST';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER = 'T"ESTé0';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED = '"T\"EST\'e0";filename*=UTF-8\'fr\'T%22EST%C3%A90';
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const A_LOCATION = 'A_LOCATION';
 	const S3_BUCKET = 'S3_BUCKET';
@@ -176,7 +176,7 @@ class S3Test extends PHPUnit_Framework_TestCase{
                 [
                     'Bucket' => self::S3_BUCKET,
                     'Key' => self::A_LOCATION,
-                    'ResponseContentDisposition' => 'attachment;filename="'.self::A_FILE_NAME.'"',
+                    'ResponseContentDisposition' => 'attachment;filename='.self::A_FILE_NAME,
                 ]
             )
             ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
@@ -199,12 +199,12 @@ class S3Test extends PHPUnit_Framework_TestCase{
                 [
                     'Bucket' => self::S3_BUCKET,
                     'Key' => self::A_LOCATION,
-                    'ResponseContentDisposition' => 'attachment;filename="'.self::A_FILE_NAME_WITH_DOUBLE_QUOTES_ESCAPED.'"',
+                    'ResponseContentDisposition' => 'attachment;filename='.self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED.'',
                 ]
             )
             ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
 
-        $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME_WITH_DOUBLE_QUOTES, true);
+        $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER, true);
     }
 
 	public function test_command_getSignedUrl_shouldGetCommandToGetFile(){
