@@ -146,7 +146,7 @@ abstract class FlySystemBaseMount implements MountInterface
      */
     protected function getRFC6266ContentDisposition($filename, $charset = 'UTF-8', $addAttachment = true)
     {
-        setlocale(LC_CTYPE, 'C.UTF-8', 'en_CA.utf8', 'en_US.utf8');
+        //setlocale(LC_CTYPE, 'C.UTF-8', 'en_CA.utf8', 'en_US.utf8');
 
         $header = $addAttachment ? 'attachment;' : '';
 
