@@ -300,4 +300,12 @@ abstract class FlySystemBaseMount implements MountInterface
             return "$name*=$value";
         }
     }
+
+    /**
+     * @return bool
+     */
+    public function isSelfContained()
+    {
+        return false;
+    }
 }

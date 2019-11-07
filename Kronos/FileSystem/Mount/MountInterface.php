@@ -97,4 +97,9 @@ interface MountInterface
      * @return string
      */
     public function getMountType();
+
+    /**
+     * @return bool
+     */
+    public function isSelfContained();
 }
