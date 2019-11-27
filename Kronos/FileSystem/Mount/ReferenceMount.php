@@ -4,10 +4,35 @@ namespace Kronos\FileSystem\Mount;
 
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\InvalidOperationException;
+use Kronos\FileSystem\File\File;
 
 abstract class ReferenceMount implements MountInterface
 {
     const MOUNT_TYPE = 'REFERENCE';
+
+    /**
+     * @var GetterInterface
+     */
+    private $getter;
+
+    /**
+     * ReferenceMount constructor.
+     * @param GetterInterface $getter
+     */
+    public function __construct(GetterInterface $getter)
+    {
+        $this->getter = $getter;
+    }
+
+    /**
+     * @param string $uuid
+     * @param $fileName
+     * @return File
+     */
+    public function get($uuid, $fileName)
+    {
+        return $this->getter->get($uuid, $fileName);
+    }
 
     /**
      * @param $sourceUuid
@@ -53,7 +78,7 @@ abstract class ReferenceMount implements MountInterface
      */
     public function putStream($uuid, $stream, $fileName)
     {
-        throw new InvalidOperationException(self::MOUNT_TYPE);
+        throw new InvalidOperationException(static::MOUNT_TYPE);
     }
 
     /**
@@ -63,7 +88,7 @@ abstract class ReferenceMount implements MountInterface
      */
     public function retrieve($uuid, $fileName)
     {
-        throw new CantRetreiveFileException(self::MOUNT_TYPE);
+        throw new CantRetreiveFileException(static::MOUNT_TYPE);
     }
 
     /**
@@ -84,7 +109,7 @@ abstract class ReferenceMount implements MountInterface
      */
     public function getPath($uuid, $fileName)
     {
-        throw new InvalidOperationException(self::MOUNT_TYPE);
+        throw new InvalidOperationException(static::MOUNT_TYPE);
     }
 
     /**
