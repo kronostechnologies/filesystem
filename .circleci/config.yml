@@ -1,40 +1,32 @@
 version: 2
-aliases:
-  - &composer_cache_key v1-composer-install-{{ checksum "composer.lock" }}
 
 jobs:
-  composer_install:
+  phpunit-7-2:
     docker:
-      - image: composer:1.6.2
+      - image: circleci/php:7.2-node-browsers
     steps:
       - checkout
+      - run: sudo composer self-update
       - restore_cache:
           keys:
-            - *composer_cache_key
-      - run:
-          name: composer install
-          command: composer install -n --prefer-dist
+            - v2-deps-7-2-{{ checksum "composer.lock" }}
+      - run: composer install -n --prefer-dist --ignore-platform-reqs
       - save_cache:
-          key: *composer_cache_key
-          paths: ./vendor
-
-  phpunit:
-    docker:
-      - image: composer:1.6.2
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - *composer_cache_key
+          paths:
+            - ./vendor
+          key: v2-deps-7-2-{{ checksum "composer.lock" }}
+      - run: sudo pecl install pcov
       - run:
-          command: apk add gnu-libiconv --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && export LD_PRELOAD=/usr/lib/preloadable_libiconv.so php && ./vendor/bin/phpunit
+          name: "phpunit"
+          command: php -d pcov.enabled=1 -d pcov.directory=. ./vendor/bin/phpunit --coverage-clover ~/php-test-coverage.xml --log-junit ~/test-results/phpunit/junit.xml
+      - store_test_results:
+          path: '~/test-results'
+      - store_artifacts:
+          path: '~/php-test-coverage.xml'
+          destination: 'php-test-coverage.xml'
 
 workflows:
   version: 2
-  build_and_test:
+  build_and_deploy:
     jobs:
-      - composer_install
-      - phpunit:
-          requires:
-            - composer_install
-      
+      - phpunit-7-2

@@ -12,18 +12,18 @@ use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
-use PHPUnit_Framework_MockObject_MockObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 
-class S3Test extends PHPUnit_Framework_TestCase
+class S3Test extends TestCase
 {
 
     const UUID = 'UUID';
     const A_PATH = 'A_PATH';
     const A_FILE_NAME = 'A_FILE_NAME';
     const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER = 'T"ESTà0';
-    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED = '"T\"EST`a0";filename*=UTF-8\'fr\'T%22EST%C3%A00';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED = '"T\"ESTa0";filename*=UTF-8\'fr\'T%22EST%C3%A00';
     const A_FILE_PATH = 'A_FILE_PATH';
     const A_LOCATION = 'A_LOCATION';
     const S3_BUCKET = 'S3_BUCKET';
@@ -38,22 +38,22 @@ class S3Test extends PHPUnit_Framework_TestCase
     const HAS_RESULT = true;
 
     /**
-     * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var PathGeneratorInterface|MockObject
      */
     private $pathGenerator;
 
     /**
-     * @var AwsS3Adapter|PHPUnit_Framework_MockObject_MockObject
+     * @var AwsS3Adapter|MockObject
      */
     private $s3Adaptor;
 
     /**
-     * @var FileSystem|PHPUnit_Framework_MockObject_MockObject
+     * @var FileSystem|MockObject
      */
     private $fileSystem;
 
     /**
-     * @var S3Client|PHPUnit_Framework_MockObject_MockObject
+     * @var S3Client|MockObject
      */
     private $s3Client;
 
@@ -62,12 +62,12 @@ class S3Test extends PHPUnit_Framework_TestCase
      */
     private $s3mount;
 
-    public function setUp()
+    public function setUp(): void
     {
-        $this->fileSystem = $this->getMockWithoutInvokingTheOriginalConstructor(Filesystem::class);
-        $this->s3Client = $this->getMockWithoutInvokingTheOriginalConstructor(S3Client::class);
-        $this->s3Adaptor = $this->getMockWithoutInvokingTheOriginalConstructor(AwsS3Adapter::class);
-        $this->pathGenerator = $this->getMockWithoutInvokingTheOriginalConstructor(PathGeneratorInterface::class);
+        $this->fileSystem = $this->createMock(Filesystem::class);
+        $this->s3Client = $this->createMock(S3Client::class);
+        $this->s3Adaptor = $this->createMock(AwsS3Adapter::class);
+        $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
 
@@ -76,7 +76,7 @@ class S3Test extends PHPUnit_Framework_TestCase
 
     public function test_uuid_get_shouldGetPathOfFile()
     {
-        $this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
+        $this->fileSystem->method('get')->willReturn($this->createMock(\League\Flysystem\File::class));
         $this->pathGenerator
             ->expects(self::once())
             ->method('generatePath')
@@ -87,7 +87,7 @@ class S3Test extends PHPUnit_Framework_TestCase
 
     public function test_path_get_shouldGet()
     {
-        $this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
+        $this->fileSystem->method('get')->willReturn($this->createMock(\League\Flysystem\File::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
         $this->fileSystem
@@ -100,7 +100,7 @@ class S3Test extends PHPUnit_Framework_TestCase
 
     public function test_stream_get_shouldReturnFile()
     {
-        $this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\League\Flysystem\File::class));
+        $this->fileSystem->method('get')->willReturn($this->createMock(\League\Flysystem\File::class));
 
         $file = $this->s3mount->get(self::UUID, self::A_FILE_NAME);
 
@@ -110,8 +110,8 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_getSignedUrl_shouldGetS3Client()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Adaptor
             ->expects(self::once())
@@ -123,8 +123,8 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_uuid_getSignedUrl_shouldGetPathOfFile()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->pathGenerator
             ->expects(self::once())
@@ -137,8 +137,8 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_path_getSignedUrl_shouldGetFileLocation()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
         $this->s3Adaptor
@@ -154,7 +154,7 @@ class S3Test extends PHPUnit_Framework_TestCase
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
         $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
             ->expects(self::once())
@@ -166,7 +166,7 @@ class S3Test extends PHPUnit_Framework_TestCase
                     'Key' => self::A_LOCATION,
                 ]
             )
-            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+            ->willReturn($this->createMock(CommandInterface::class));
 
         $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
     }
@@ -176,7 +176,7 @@ class S3Test extends PHPUnit_Framework_TestCase
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
         $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
             ->expects(self::once())
@@ -189,7 +189,7 @@ class S3Test extends PHPUnit_Framework_TestCase
                     'ResponseContentDisposition' => 'attachment;filename=' . self::A_FILE_NAME,
                 ]
             )
-            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+            ->willReturn($this->createMock(CommandInterface::class));
 
         $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME, true);
     }
@@ -197,10 +197,15 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_locationAndForceDownloadWithDocumentHavingDoubleQuotes_getSignedUrl_shouldAddResponseContentDispositionToCommandWithDoubleQuotesEscaped(
     )
     {
+        if (PHP_OS == "Darwin") {
+            $this->markTestSkipped("This test is broken on Darwin/macOS because libiconv implementation differs from GNU and handles 'à' as '`a' instead of 'a' when encoding in ASCII");
+            return;
+        }
+
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
         $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
-        $this->s3Client->method('createPresignedRequest')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+        $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
             ->expects(self::once())
@@ -213,14 +218,14 @@ class S3Test extends PHPUnit_Framework_TestCase
                     'ResponseContentDisposition' => 'attachment;filename=' . self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED,
                 ]
             )
-            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+            ->willReturn($this->createMock(CommandInterface::class));
 
         $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER, true);
     }
 
     public function test_command_getSignedUrl_shouldGetCommandToGetFile()
     {
-        $command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
+        $command = $this->createMock(CommandInterface::class);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
 
@@ -228,16 +233,16 @@ class S3Test extends PHPUnit_Framework_TestCase
             ->expects(self::once())
             ->method('createPresignedRequest')
             ->with($command, S3::PRESIGNED_URL_LIFE_TIME)
-            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class));
+            ->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
     }
 
     public function test_request_getSignedUrl_shouldGetUriFromRequest()
     {
-        $request = $this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class);
+        $request = $this->createMock(RequestInterface::class);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($request);
 
         $request
@@ -249,9 +254,9 @@ class S3Test extends PHPUnit_Framework_TestCase
 
     public function test_uri_getSignedUrl_shouldReturnUri()
     {
-        $request = $this->getMockWithoutInvokingTheOriginalConstructor(RequestInterface::class);
+        $request = $this->createMock(RequestInterface::class);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($request);
         $request->method('getUri')->willReturn(self::AN_URI);
 
@@ -422,7 +427,7 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_retreive_shouldGetS3Client()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
 
         $this->s3Adaptor
             ->expects(self::once())
@@ -434,7 +439,7 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_uuid_retreive_shouldGetPathOfFile()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
 
         $this->pathGenerator
             ->expects(self::once())
@@ -447,7 +452,7 @@ class S3Test extends PHPUnit_Framework_TestCase
     public function test_path_retreive_shouldGetFileLocation()
     {
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Client->method('getCommand')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+        $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
         $this->s3Adaptor
@@ -480,14 +485,14 @@ class S3Test extends PHPUnit_Framework_TestCase
                     ]
                 ]
             )
-            ->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class));
+            ->willReturn($this->createMock(CommandInterface::class));
 
         $this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
     }
 
     public function test_command_retreive_shouldExecuteCommand()
     {
-        $command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
+        $command = $this->createMock(CommandInterface::class);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
 
@@ -501,10 +506,10 @@ class S3Test extends PHPUnit_Framework_TestCase
 
     public function test_commandFailed_retreive_shouldCatchAndThrowNewException()
     {
-        $command = $this->getMockWithoutInvokingTheOriginalConstructor(CommandInterface::class);
+        $command = $this->createMock(CommandInterface::class);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
-        $this->s3Client->method('execute')->willThrowException($this->getMockWithoutInvokingTheOriginalConstructor(S3Exception::class));
+        $this->s3Client->method('execute')->willThrowException($this->createMock(S3Exception::class));
 
         self::expectException(CantRetreiveFileException::class);
 

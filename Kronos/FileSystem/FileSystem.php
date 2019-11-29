@@ -99,7 +99,8 @@ class FileSystem implements FileSystemInterface
         $this->forceDownloadList = $extensionList;
     }
 
-    protected function shouldForceDownload($fileName) {
+    protected function shouldForceDownload($fileName)
+    {
         return $this->forceDownloadList ? $this->forceDownloadList->isInList($fileName) : false;
     }
 
