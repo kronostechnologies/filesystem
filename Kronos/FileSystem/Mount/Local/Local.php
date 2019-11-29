@@ -43,7 +43,8 @@ class Local extends FlySystemBaseMount
         $this->baseUrl = $url;
     }
 
-    public function setForceDownloadParameter($parameter) {
+    public function setForceDownloadParameter($parameter)
+    {
         $this->forceDownloadParameter = $parameter;
     }
 

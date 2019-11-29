@@ -176,7 +176,8 @@ abstract class FlySystemBaseMount implements MountInterface
      * @param string $charset
      * @return string
      */
-    private function getASCIIFileName($filename, $charset){
+    private function getASCIIFileName($filename, $charset)
+    {
         //Avoid using non-ASCII characters in the filename parameter.
         //Although most existing implementations will decode them as ISO‑8859‑1,
         //some will apply heuristics to detect UTF-8, and thus might fail on certain names.

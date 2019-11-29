@@ -59,7 +59,7 @@ class ExtensionListTest extends TestCase
         $list = new ExtensionList();
         $list->addExtension(self::PNG);
 
-        $inList = $list->isInList(self::FILENAME. '.' . self::PNG_UPPERCASE);
+        $inList = $list->isInList(self::FILENAME . '.' . self::PNG_UPPERCASE);
 
         $this->assertTrue($inList);
     }
@@ -69,7 +69,7 @@ class ExtensionListTest extends TestCase
         $list = new ExtensionList();
         $list->addExtension(self::PNG_UPPERCASE);
 
-        $inList = $list->isInList(self::FILENAME. '.' . self::PNG);
+        $inList = $list->isInList(self::FILENAME . '.' . self::PNG);
 
         $this->assertTrue($inList);
     }
