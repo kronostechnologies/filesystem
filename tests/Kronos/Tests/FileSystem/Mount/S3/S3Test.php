@@ -23,7 +23,7 @@ class S3Test extends TestCase
     const A_PATH = 'A_PATH';
     const A_FILE_NAME = 'A_FILE_NAME';
     const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER = 'T"ESTà0';
-    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED = '"T\"EST`a0";filename*=UTF-8\'fr\'T%22EST%C3%A00';
+    const A_FILE_NAME_WITH_DOUBLE_QUOTES_AND_SPECIAL_CHARACTER_ESCAPED = '"T\"ESTa0";filename*=UTF-8\'fr\'T%22EST%C3%A00';
     const A_FILE_PATH = 'A_FILE_PATH';
     const A_LOCATION = 'A_LOCATION';
     const S3_BUCKET = 'S3_BUCKET';
@@ -197,6 +197,11 @@ class S3Test extends TestCase
     public function test_locationAndForceDownloadWithDocumentHavingDoubleQuotes_getSignedUrl_shouldAddResponseContentDispositionToCommandWithDoubleQuotesEscaped(
     )
     {
+        if (PHP_OS == "Darwin") {
+            $this->markTestSkipped("This test is broken on Darwin/macOS because libiconv implementation differs from GNU and handles 'à' as '`a' instead of 'a' when encoding in ASCII");
+            return;
+        }
+
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
         $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
         $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
