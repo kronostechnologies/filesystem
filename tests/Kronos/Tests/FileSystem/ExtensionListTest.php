@@ -3,8 +3,9 @@
 namespace Kronos\Tests\FileSystem;
 
 use Kronos\FileSystem\ExtensionList;
+use PHPUnit\Framework\TestCase;
 
-class ExtensionListTest extends \PHPUnit_Framework_TestCase
+class ExtensionListTest extends TestCase
 {
 
     const JPG = 'jpg';
@@ -58,7 +59,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
         $list = new ExtensionList();
         $list->addExtension(self::PNG);
 
-        $inList = $list->isInList(self::FILENAME. '.' . self::PNG_UPPERCASE);
+        $inList = $list->isInList(self::FILENAME . '.' . self::PNG_UPPERCASE);
 
         $this->assertTrue($inList);
     }
@@ -68,7 +69,7 @@ class ExtensionListTest extends \PHPUnit_Framework_TestCase
         $list = new ExtensionList();
         $list->addExtension(self::PNG_UPPERCASE);
 
-        $inList = $list->isInList(self::FILENAME. '.' . self::PNG);
+        $inList = $list->isInList(self::FILENAME . '.' . self::PNG);
 
         $this->assertTrue($inList);
     }

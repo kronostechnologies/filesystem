@@ -27,7 +27,7 @@ interface MountInterface
      * @param bool $forceDownload
      * @return mixed
      */
-    public function getUrl($uuid, $fileName, $forceDownload=false);
+    public function getUrl($uuid, $fileName, $forceDownload = false);
 
     /**
      * @param $sourceUuid
