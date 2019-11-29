@@ -4,14 +4,14 @@ namespace Kronos\Tests\FileSystem\Mount;
 use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
-use PHPUnit_Framework_MockObject_MockObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class SelectorTest extends PHPUnit_Framework_TestCase{
+class SelectorTest extends TestCase{
 
 	const MOUNT_KEY = 'MOUNT_KEY';
 	/**
-	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var MountInterface|MockObject
 	 */
 	private $mount;
 
@@ -20,8 +20,8 @@ class SelectorTest extends PHPUnit_Framework_TestCase{
 	 */
 	private $selector;
 
-	public function setUp() {
-		$this->mount = $this->getMockWithoutInvokingTheOriginalConstructor(MountInterface::class);
+	public function setUp(): void {
+		$this->mount = $this->createMock(MountInterface::class);
 
 		$this->selector = new Selector();
 	}
@@ -69,7 +69,7 @@ class SelectorTest extends PHPUnit_Framework_TestCase{
 		$this->mount->method('getMountType')->willReturn(self::MOUNT_KEY);
 		$this->selector->addMount($this->mount);
 
-		$mount2 = $this->getMockWithoutInvokingTheOriginalConstructor(MountInterface::class);
+		$mount2 = $this->createMock(MountInterface::class);
 		$mount2->method('getMountType')->willReturn(self::MOUNT_KEY);
 
 		$this->selector->addMount($mount2);

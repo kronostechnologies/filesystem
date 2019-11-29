@@ -4,9 +4,9 @@ namespace Kronos\Tests\FileSystem\File\Translator;
 use DateTime;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\File\Translator\MetadataTranslator;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
-class MetadataTranslatorTest extends PHPUnit_Framework_TestCase{
+class MetadataTranslatorTest extends TestCase{
 	const FILE_SIZE = 12;
 	const FILE_MIMETYPE = 'a_file_type';
 	const FILE_NAME = 'a_file_name';
@@ -21,7 +21,7 @@ class MetadataTranslatorTest extends PHPUnit_Framework_TestCase{
 	 */
 	private $translator;
 
-	public function setUp(){
+	public function setUp(): void {
 		$this->givenInternalMetadata();
 		$this->translator = new MetadataTranslator();
 	}
@@ -60,7 +60,7 @@ class MetadataTranslatorTest extends PHPUnit_Framework_TestCase{
 	private function givenInternalMetadata(){
 		$this->metadata = new Metadata();
 		$this->metadata->size = self::FILE_SIZE;
-		$this->metadata->lastModifiedDate = $this->getMockWithoutInvokingTheOriginalConstructor(DateTime::class);
+		$this->metadata->lastModifiedDate = $this->createMock(DateTime::class);
 		$this->metadata->mimetype = self::FILE_MIMETYPE;
 		$this->metadata->name = self::FILE_NAME;
 	}

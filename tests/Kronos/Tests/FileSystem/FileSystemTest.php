@@ -11,10 +11,10 @@ use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\FileSystem;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
-use PHPUnit_Framework_MockObject_MockObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class FileSystemTest extends PHPUnit_Framework_TestCase{
+class FileSystemTest extends TestCase {
 
 	const A_FILE_PATH = 'A_FILE_PATH';
 	const FILE_NAME = 'FILE_NAME';
@@ -28,22 +28,22 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	const HAS_FILE = true;
 
 	/**
-	 * @var File|PHPUnit_Framework_MockObject_MockObject
+	 * @var File|MockObject
 	 */
 	private $file;
 
 	/**
-	 * @var Metadata|PHPUnit_Framework_MockObject_MockObject
+	 * @var Metadata|MockObject
 	 */
 	private $metadata;
 
 	/**
-	 * @var Selector|PHPUnit_Framework_MockObject_MockObject
+	 * @var Selector|MockObject
 	 */
 	private $mountSelector;
 
 	/**
-	 * @var FileRepositoryInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var FileRepositoryInterface|MockObject
 	 */
 	private $fileRepository;
 
@@ -53,37 +53,37 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	private $fileSystem;
 
 	/**
-	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var MountInterface|MockObject
 	 */
 	private $mount;
 
 	/**
-	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var MountInterface|MockObject
 	 */
 	private $sourceMount;
 
 	/**
-	 * @var MountInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var MountInterface|MockObject
 	 */
 	private $importationMount;
 
 	/**
-	 * @var MetadataTranslator|PHPUnit_Framework_MockObject_MockObject
+	 * @var MetadataTranslator|MockObject
 	 */
 	private $metadataTranslator;
 
-	public function setUp(){
+	public function setUp(): void {
 
-		$this->mount = $this->getMockWithoutInvokingTheOriginalConstructor(MountInterface::class);
+		$this->mount = $this->createMock(MountInterface::class);
 
-		$this->metadataTranslator = $this->getMockWithoutInvokingTheOriginalConstructor(MetadataTranslator::class);
-		$this->mountSelector = $this->getMockWithoutInvokingTheOriginalConstructor(Selector::class);
-		$this->fileRepository = $this->getMockWithoutInvokingTheOriginalConstructor(FileRepositoryInterface::class);
+		$this->metadataTranslator = $this->createMock(MetadataTranslator::class);
+		$this->mountSelector = $this->createMock(Selector::class);
+		$this->fileRepository = $this->createMock(FileRepositoryInterface::class);
 
 		$this->fileSystem = new FileSystem($this->mountSelector,$this->fileRepository,$this->metadataTranslator);
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		unset($this->metadata);
 		unset($this->file);
 	}
@@ -228,7 +228,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
     {
         $this->givenMountSelected();
         $this->givenFileName();
-        $extensionList = $this->getMock(ExtensionList::class);
+        $extensionList = $this->createMock(ExtensionList::class);
         $extensionList
             ->expects(self::once())
             ->method('isInList')
@@ -242,7 +242,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
     {
         $this->givenMountSelected();
         $this->givenFileName();
-        $extensionList = $this->getMock(ExtensionList::class);
+        $extensionList = $this->createMock(ExtensionList::class);
         $extensionList->method('isInList')->willReturn(true);
         $this->fileSystem->setForceDownloadExtensionList($extensionList);
         $this->mount
@@ -406,7 +406,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	public function test_givenId_getMetadata_shouldMountAssociatedWithId(){
 		$this->metadata = new Metadata();
 		$this->mount->method('getMetadata')->willReturn($this->metadata);
-		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
+		$this->file = $this->createMock(File::class);
 		$this->mount->method('get')->willReturn($this->file);
 		$this->givenMountSelected();
 
@@ -558,7 +558,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_Metadata_get_shouldBeTheMetadataInFileObject(){
-		$this->metadataTranslator->method('translateInternalToExposed')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(\Kronos\FileSystem\File\Metadata::class));
+		$this->metadataTranslator->method('translateInternalToExposed')->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
 		$this->givenWillReturnFile();
 		$this->givenMountSelected();
 
@@ -769,7 +769,7 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	private function givenWillReturnFile(){
 		$this->metadata = new Metadata();
 		$this->mount->method('getMetadata')->willReturn($this->metadata);
-		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
+		$this->file = $this->createMock(File::class);
 		$this->mount->method('get')->willReturn($this->file);
 	}
 
@@ -790,10 +790,10 @@ class FileSystemTest extends PHPUnit_Framework_TestCase{
 	}
 
 	protected function givenSourceAndImporationMounts() {
-		$this->file = $this->getMockWithoutInvokingTheOriginalConstructor(File::class);
-		$this->sourceMount = $this->getMock(MountInterface::class);
+		$this->file = $this->createMock(File::class);
+		$this->sourceMount = $this->createMock(MountInterface::class);
 		$this->sourceMount->method('get')->willReturn($this->file);
-		$this->importationMount = $this->getMock(MountInterface::class);
+		$this->importationMount = $this->createMock(MountInterface::class);
 		$this->mountSelector->method('selectMount')->willReturnMap([[self::SOURCE_MOUNT_TYPE, $this->sourceMount], [self::IMPORTATION_MOUNT_TYPE, $this->importationMount]]);
 	}
 

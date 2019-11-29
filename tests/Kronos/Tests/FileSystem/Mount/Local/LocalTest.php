@@ -6,10 +6,10 @@ use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;
 use League\Flysystem\Filesystem;
-use PHPUnit_Framework_MockObject_MockObject;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class LocalTest extends PHPUnit_Framework_TestCase{
+class LocalTest extends TestCase{
 
 	const UUID = 'UUID';
 	const A_PATH = 'A_PATH';
@@ -28,17 +28,17 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	const HAS_RESULT = true;
 
 	/**
-	 * @var PathGeneratorInterface|PHPUnit_Framework_MockObject_MockObject
+	 * @var PathGeneratorInterface|MockObject
 	 */
 	private $pathGenerator;
 
 	/**
-	 * @var Local|PHPUnit_Framework_MockObject_MockObject
+	 * @var Local|MockObject
 	 */
 	private $localAdaptor;
 
 	/**
-	 * @var FileSystem|PHPUnit_Framework_MockObject_MockObject
+	 * @var FileSystem|MockObject
 	 */
 	private $fileSystem;
 
@@ -49,10 +49,10 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 
     const FORCE_DOWNLOAD_PARAMETER = '&force=1';
 
-    public function setUp(){
-		$this->fileSystem = $this->getMockWithoutInvokingTheOriginalConstructor(Filesystem::class);
-		$this->localAdaptor = $this->getMockWithoutInvokingTheOriginalConstructor(Local::class);
-		$this->pathGenerator = $this->getMockWithoutInvokingTheOriginalConstructor(PathGeneratorInterface::class);
+    public function setUp(): void {
+		$this->fileSystem = $this->createMock(Filesystem::class);
+		$this->localAdaptor = $this->createMock(Local::class);
+		$this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
 
 		$this->fileSystem->method('getAdapter')->willReturn($this->localAdaptor);
 
@@ -60,7 +60,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_uuid_get_shouldGetPathOfFile(){
-		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
+		$this->fileSystem->method('get')->willReturn($this->createMock(File::class));
 		$this->pathGenerator
 			->expects(self::once())
 			->method('generatePath')
@@ -70,7 +70,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_path_get_shouldReadStream(){
-		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
+		$this->fileSystem->method('get')->willReturn($this->createMock(File::class));
 		$this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
 		$this->fileSystem
@@ -82,7 +82,7 @@ class LocalTest extends PHPUnit_Framework_TestCase{
 	}
 
 	public function test_stream_get_shouldReturnStream(){
-		$this->fileSystem->method('get')->willReturn($this->getMockWithoutInvokingTheOriginalConstructor(File::class));
+		$this->fileSystem->method('get')->willReturn($this->createMock(File::class));
 
 		$file = $this->localMount->get(self::UUID, self::A_FILE_NAME);
 

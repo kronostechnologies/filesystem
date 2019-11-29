@@ -3,8 +3,9 @@
 namespace Kronos\Tests\FileSystem;
 
 use Kronos\FileSystem\ExtensionList;
+use PHPUnit\Framework\TestCase;
 
-class ExtensionListTest extends \PHPUnit_Framework_TestCase
+class ExtensionListTest extends TestCase
 {
 
     const JPG = 'jpg';
