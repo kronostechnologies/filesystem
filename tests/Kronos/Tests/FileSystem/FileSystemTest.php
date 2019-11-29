@@ -524,7 +524,6 @@ class FileSystemTest extends TestCase
         self::assertSame($actualMetadata, $actualMetadata);
     }
 
-
     public function test_givenId_get_shouldMountAssociatedWithId()
     {
         $this->givenWillReturnFile();
@@ -600,7 +599,9 @@ class FileSystemTest extends TestCase
 
     public function test_Metadata_get_shouldBeTheMetadataInFileObject()
     {
-        $this->metadataTranslator->method('translateInternalToExposed')->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
+        $this->metadataTranslator
+            ->method('translateInternalToExposed')
+            ->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
         $this->givenWillReturnFile();
         $this->givenMountSelected();
 
