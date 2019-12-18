@@ -524,7 +524,6 @@ class FileSystemTest extends TestCase
         self::assertSame($actualMetadata, $actualMetadata);
     }
 
-
     public function test_givenId_get_shouldMountAssociatedWithId()
     {
         $this->givenWillReturnFile();
@@ -600,7 +599,9 @@ class FileSystemTest extends TestCase
 
     public function test_Metadata_get_shouldBeTheMetadataInFileObject()
     {
-        $this->metadataTranslator->method('translateInternalToExposed')->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
+        $this->metadataTranslator
+            ->method('translateInternalToExposed')
+            ->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
         $this->givenWillReturnFile();
         $this->givenMountSelected();
 
@@ -638,9 +639,22 @@ class FileSystemTest extends TestCase
         $this->givenFileInImportationMount();
         $this->givenMountSelected();
         $this->mountSelector
-            ->expects(self::once())
+            ->expects(self::exactly(2))
             ->method('selectMount')
             ->with(self::IMPORTATION_MOUNT_TYPE);
+
+        $this->fileSystem->copy(self::UUID);
+    }
+
+    public function test_selfContainedSourceMountType_copy_shouldSelectSourceMount()
+    {
+        $this->givenMountSelected();
+        $this->givenDifferentSourceMount();
+        $this->givenMountIsSelfContained();
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('selectMount')
+            ->with(self::SOURCE_MOUNT_TYPE);
 
         $this->fileSystem->copy(self::UUID);
     }
@@ -651,6 +665,21 @@ class FileSystemTest extends TestCase
         $this->givenFileName();
         $this->givenFileInImportationMount();
         $this->givenMountSelected();
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('addNewFile')
+            ->with(self::IMPORTATION_MOUNT_TYPE, self::FILE_NAME);
+
+        $this->fileSystem->copy(self::UUID);
+    }
+
+    public function test_SelfContainedImportationMountTypeAndFileName_copy_shouldAddNewFile()
+    {
+        $this->givenImporationMountType();
+        $this->givenFileName();
+        $this->givenFileInImportationMount();
+        $this->givenMountSelected();
+        $this->givenMountIsSelfContained();
         $this->fileRepository
             ->expects(self::once())
             ->method('addNewFile')
@@ -704,13 +733,13 @@ class FileSystemTest extends TestCase
         $this->givenDifferentSourceMount();
         $this->givenSourceAndImporationMounts();
         $this->mountSelector
-            ->expects(self::at(1))
+            ->expects(self::at(0))
             ->method('selectMount')
-            ->with(self::IMPORTATION_MOUNT_TYPE);
+            ->with(self::SOURCE_MOUNT_TYPE);
         $this->mountSelector
             ->expects(self::at(2))
             ->method('selectMount')
-            ->with(self::SOURCE_MOUNT_TYPE);
+            ->with(self::IMPORTATION_MOUNT_TYPE);
 
         $this->fileSystem->copy(self::UUID);
     }
@@ -753,6 +782,25 @@ class FileSystemTest extends TestCase
             ->expects(self::once())
             ->method('putStream')
             ->with(self::NEW_FILE_UUID, $stream, self::FILE_NAME);
+
+        $this->fileSystem->copy(self::UUID);
+    }
+
+    public function test_SelfContainedSourceMount_copy_shouldCallCopy()
+    {
+        $this->givenImporationMountType();
+        $this->givenDifferentSourceMount();
+        $this->givenSourceAndImporationMounts();
+        $this->givenSourceMountIsSelfContained();
+        $this->sourceMount
+            ->expects(self::once())
+            ->method('copy');
+        $this->sourceMount
+            ->expects(self::never())
+            ->method('get');
+        $this->importationMount
+            ->expects(self::never())
+            ->method('putStream');
 
         $this->fileSystem->copy(self::UUID);
     }
@@ -867,6 +915,16 @@ class FileSystemTest extends TestCase
     protected function givenMountSelected()
     {
         $this->mountSelector->method('selectMount')->willReturn($this->mount);
+    }
+
+    protected function givenMountIsSelfContained()
+    {
+        $this->mount->method('isSelfContained')->willReturn(true);
+    }
+
+    protected function givenSourceMountIsSelfContained()
+    {
+        $this->sourceMount->method('isSelfContained')->willReturn(true);
     }
 
     protected function givenMountHasFile()
