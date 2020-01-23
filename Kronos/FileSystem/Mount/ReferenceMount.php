@@ -16,12 +16,30 @@ abstract class ReferenceMount implements MountInterface
     private $getter;
 
     /**
+     * @var bool
+     */
+    private $useDirectDownload = true;
+
+    /**
      * ReferenceMount constructor.
      * @param GetterInterface $getter
      */
     public function __construct(GetterInterface $getter)
     {
         $this->getter = $getter;
+    }
+
+    /**
+     * @param bool $useDirectDownload
+     */
+    public function setUseDirectDownload(bool $useDirectDownload): void
+    {
+        $this->useDirectDownload = $useDirectDownload;
+    }
+
+    public function useDirectDownload() : bool
+    {
+        return $this->useDirectDownload;
     }
 
     /**

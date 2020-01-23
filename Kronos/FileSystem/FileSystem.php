@@ -189,6 +189,16 @@ class FileSystem implements FileSystemInterface
 
     /**
      * @param string $id
+     * @return bool
+     * @throws MountNotFoundException
+     */
+    public function useDirectDownload(string $id): bool
+    {
+        return $this->getMountForId($id)->useDirectDownload();
+    }
+
+    /**
+     * @param string $id
      * @return MountInterface
      * @throws MountNotFoundException
      */

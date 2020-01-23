@@ -872,6 +872,45 @@ class FileSystemTest extends TestCase
         $this->assertSame(self::HAS_FILE, $actualResult);
     }
 
+    public function test_uuid_useDirectDownload_shouldGetFileMountType()
+    {
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('getFileMountType')
+            ->with(self::UUID);
+        $this->givenMountSelected();
+
+        $this->fileSystem->useDirectDownload(self::UUID);
+    }
+
+    public function test_mountType_useDirectDownload_shouldSelectMount()
+    {
+        $this->fileRepository
+            ->method('getFileMountType')
+            ->willReturn(self::MOUNT_TYPE);
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('selectMount')
+            ->with(self::MOUNT_TYPE)
+            ->willReturn($this->mount);
+
+        $this->fileSystem->useDirectDownload(self::UUID);
+    }
+
+    public function test_mount_useDirectDownload_shouldReturnMountUseDirectDownload()
+    {
+        $expectedValue = true;
+        $this->givenMountSelected();
+        $this->mount
+            ->expects(self::once())
+            ->method('useDirectDownload')
+            ->willReturn($expectedValue);
+
+        $actualValue = $this->fileSystem->useDirectDownload(self::UUID);
+
+        $this->assertSame($expectedValue, $actualValue);
+    }
+
     private function givenWillReturnFile()
     {
         $this->metadata = new Metadata();

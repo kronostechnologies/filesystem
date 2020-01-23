@@ -20,6 +20,11 @@ abstract class FlySystemBaseMount implements MountInterface
      */
     protected $pathGenerator;
 
+    /**
+     * @var bool
+     */
+    private $useDirectDownload = true;
+
     public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount)
     {
         if (!$this->isFileSystemValid($mount)) {
@@ -27,6 +32,19 @@ abstract class FlySystemBaseMount implements MountInterface
         }
         $this->mount = $mount;
         $this->pathGenerator = $pathGenerator;
+    }
+
+    /**
+     * @param bool $useDirectDownload
+     */
+    public function setUseDirectDownload(bool $useDirectDownload): void
+    {
+        $this->useDirectDownload = $useDirectDownload;
+    }
+
+    public function useDirectDownload() : bool
+    {
+        return $this->useDirectDownload;
     }
 
     /**
