@@ -530,7 +530,7 @@ class FileSystemTest extends TestCase
         $this->givenMountSelected();
 
         $this->fileRepository
-            ->expects(self::exactly(2))
+            ->expects(self::once())
             ->method('getFileMountType')
             ->with(self::UUID);
 
@@ -543,7 +543,7 @@ class FileSystemTest extends TestCase
         $this->fileRepository->method('getFileMountType')->willReturn(self::MOUNT_TYPE);
 
         $this->mountSelector
-            ->expects(self::exactly(2))
+            ->expects(self::once())
             ->method('selectMount')
             ->with(self::MOUNT_TYPE)
             ->willReturn($this->mount);
@@ -574,19 +574,6 @@ class FileSystemTest extends TestCase
         $this->fileSystem->get(self::UUID);
     }
 
-    public function test_mount_get_shouldGetMetadata()
-    {
-        $this->givenWillReturnFile();
-        $this->givenMountSelected();
-
-        $this->mount
-            ->expects(self::once())
-            ->method('getMetadata')
-            ->with(self::UUID);
-
-        $this->fileSystem->get(self::UUID);
-    }
-
     public function test_File_get_shouldReturnFile()
     {
         $this->givenWillReturnFile();
@@ -595,19 +582,6 @@ class FileSystemTest extends TestCase
         $this->file = $this->fileSystem->get(self::UUID);
 
         self::assertInstanceOf(File::class, $this->file);
-    }
-
-    public function test_Metadata_get_shouldBeTheMetadataInFileObject()
-    {
-        $this->metadataTranslator
-            ->method('translateInternalToExposed')
-            ->willReturn($this->createMock(\Kronos\FileSystem\File\Metadata::class));
-        $this->givenWillReturnFile();
-        $this->givenMountSelected();
-
-        $file = $this->fileSystem->get(self::UUID);
-
-        self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class, $file->metadata);
     }
 
     public function test_copy_shouldGetFileMountType()

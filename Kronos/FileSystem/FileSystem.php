@@ -73,10 +73,7 @@ class FileSystem implements FileSystemInterface
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
 
-        $file = $mount->get($id, $fileName);
-        $file->metadata = $this->getMetadata($id);
-
-        return $file;
+        return  $mount->get($id, $fileName);
     }
 
     /**

@@ -35,9 +35,4 @@ class File
     {
         return $this->file->readStream();
     }
-
-    /**
-     * @var Metadata
-     */
-    public $metadata;
 }
