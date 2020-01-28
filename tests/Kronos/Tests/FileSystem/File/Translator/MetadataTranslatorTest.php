@@ -31,40 +31,47 @@ class MetadataTranslatorTest extends TestCase
 
     public function test_internalMetadata_translateInternalToExposed_ShouldReturnMetadata()
     {
-        $actualMetadta = $this->translator->translateInternalToExposed($this->metadata);
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
 
-        self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class, $actualMetadta);
+        self::assertInstanceOf(\Kronos\FileSystem\File\Metadata::class, $actualMetadata);
     }
 
     public function test_internalMetadataSize_translateInternalToExposed_MetadataSizeShouldBeTheSame()
     {
-        $actualMetadta = $this->translator->translateInternalToExposed($this->metadata);
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
 
-        self::assertSame($this->metadata->size, $actualMetadta->getSize());
+        self::assertSame($this->metadata->size, $actualMetadata->getSize());
     }
 
     public function test_internalMetadataMimetype_translateInternalToExposed_MetadataMimeTypeShouldBeTheSame()
     {
-        $actualMetadta = $this->translator->translateInternalToExposed($this->metadata);
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
 
-        self::assertSame($this->metadata->mimetype, $actualMetadta->getMimetype());
+        self::assertSame($this->metadata->mimetype, $actualMetadata->getMimetype());
     }
 
     public function test_internalMetadataName_translateInternalToExposed_MetadataNameShouldBeTheSame()
     {
-        $actualMetadta = $this->translator->translateInternalToExposed($this->metadata);
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
 
-        self::assertSame($this->metadata->name, $actualMetadta->getName());
+        self::assertSame($this->metadata->name, $actualMetadata->getName());
     }
 
     public function test_internalMetadataLastModifiedDate_translateInternalToExposed_MetadataLastModifiedDateShouldBeTheSame(
     )
     {
-        $actualMetadta = $this->translator->translateInternalToExposed($this->metadata);
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
 
-        self::assertSame($this->metadata->lastModifiedDate, $actualMetadta->getLastModifiedDate());
+        self::assertSame($this->metadata->lastModifiedDate, $actualMetadata->getLastModifiedDate());
     }
 
+    public function test_nullLastModifiedDate_translateInternalToExposed_shouldHaveNullModifiedDate()
+    {
+        $this->metadata->lastModifiedDate = null;
+        $actualMetadata = $this->translator->translateInternalToExposed($this->metadata);
+
+        self::assertNull($actualMetadata->getLastModifiedDate());
+    }
 
     private function givenInternalMetadata()
     {
