@@ -103,8 +103,5 @@ interface MountInterface
      */
     public function isSelfContained();
 
-    /**
-     * @return bool
-     */
-    public function useDirectDownload() : bool;
+    public function useDirectDownload(): bool;
 }

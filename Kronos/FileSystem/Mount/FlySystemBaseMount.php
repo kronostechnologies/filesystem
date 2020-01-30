@@ -42,7 +42,7 @@ abstract class FlySystemBaseMount implements MountInterface
         $this->useDirectDownload = $useDirectDownload;
     }
 
-    public function useDirectDownload() : bool
+    public function useDirectDownload(): bool
     {
         return $this->useDirectDownload;
     }
