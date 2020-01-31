@@ -18,7 +18,7 @@ abstract class ReferenceMount implements MountInterface
     /**
      * @var bool
      */
-    private $useDirectDownload = true;
+    private $useDirectDownload = false;
 
     /**
      * ReferenceMount constructor.
