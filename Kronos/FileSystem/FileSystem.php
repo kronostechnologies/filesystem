@@ -73,10 +73,7 @@ class FileSystem implements FileSystemInterface
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
 
-        $file = $mount->get($id, $fileName);
-        $file->metadata = $this->getMetadata($id);
-
-        return $file;
+        return  $mount->get($id, $fileName);
     }
 
     /**
@@ -185,6 +182,16 @@ class FileSystem implements FileSystemInterface
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
         return $mount->has($id, $fileName);
+    }
+
+    /**
+     * @param string $id
+     * @return bool
+     * @throws MountNotFoundException
+     */
+    public function useDirectDownload(string $id): bool
+    {
+        return $this->getMountForId($id)->useDirectDownload();
     }
 
     /**

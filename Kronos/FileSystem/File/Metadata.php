@@ -35,18 +35,18 @@ class Metadata
      * @param DateTime $lastModifiedDate
      * @param int $size
      */
-    public function __construct($name, $mimetype, DateTime $lastModifiedDate, $size)
+    public function __construct(string $name, string $mimetype, int $size, DateTime $lastModifiedDate = null)
     {
         $this->name = $name;
         $this->mimetype = $mimetype;
-        $this->lastModifiedDate = $lastModifiedDate;
         $this->size = $size;
+        $this->lastModifiedDate = $lastModifiedDate;
     }
 
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -54,7 +54,7 @@ class Metadata
     /**
      * @return string
      */
-    public function getMimetype()
+    public function getMimetype(): string
     {
         return $this->mimetype;
     }
@@ -62,7 +62,7 @@ class Metadata
     /**
      * @return DateTime
      */
-    public function getLastModifiedDate()
+    public function getLastModifiedDate(): ?DateTime
     {
         return $this->lastModifiedDate;
     }
@@ -70,10 +70,8 @@ class Metadata
     /**
      * @return int (bytes)
      */
-    public function getSize()
+    public function getSize(): int
     {
         return $this->size;
     }
-
-
 }

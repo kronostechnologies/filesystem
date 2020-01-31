@@ -13,7 +13,10 @@ class MetadataTranslator
      */
     public function translateInternalToExposed(\Kronos\FileSystem\File\Internal\Metadata $internalMetadata)
     {
-        return new Metadata($internalMetadata->name, $internalMetadata->mimetype, $internalMetadata->lastModifiedDate,
-            $internalMetadata->size);
+        return new Metadata($internalMetadata->name,
+            $internalMetadata->mimetype,
+            $internalMetadata->size,
+            $internalMetadata->lastModifiedDate
+        );
     }
 }

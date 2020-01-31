@@ -13,7 +13,7 @@ use League\Flysystem\Filesystem;
 class S3 extends FlySystemBaseMount
 {
 
-    const PRESIGNED_URL_LIFE_TIME = '+5 minutes';
+    const PRESIGNED_URL_LIFE_TIME = '+30 seconds';
     const MOUNT_TYPE = 'S3';
     const RESTORED_OBJECT_LIFE_TIME_IN_DAYS = 2;
 
