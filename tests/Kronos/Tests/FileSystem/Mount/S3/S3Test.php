@@ -332,7 +332,7 @@ class S3Test extends TestCase
         $this->assertSame(self::PUT_RESULT, $actualResult);
     }
 
-    public function test_getMountType_ShouldReutrnMountType()
+    public function test_getMountType_ShouldReturnMountType()
     {
         $actualMountType = $this->s3mount->getMountType();
 
