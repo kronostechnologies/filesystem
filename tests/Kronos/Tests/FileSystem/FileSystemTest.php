@@ -143,7 +143,7 @@ class FileSystemTest extends TestCase
         self::assertSame(self::UUID, $actualFileUuid);
     }
 
-    public function test_putHaveNotBeenSucessfull_put_shouldThrowException()
+    public function test_putHaveNotBeenSuccessful_put_shouldThrowException()
     {
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->mount->method('put')->willReturn(false);
@@ -154,7 +154,7 @@ class FileSystemTest extends TestCase
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
     }
 
-    public function test_putHaveNotBeenSucessfull_put_shouldDeleteNewUuid()
+    public function test_putHaveNotBeenSuccessful_put_shouldDeleteNewUuid()
     {
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->mount->method('put')->willReturn(false);
