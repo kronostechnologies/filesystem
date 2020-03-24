@@ -127,7 +127,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->expects(self::once())
             ->method('put')
-            ->with(self::UUID, self::A_FILE_PATH);
+            ->with(self::UUID, self::A_FILE_PATH, self::FILE_NAME);
 
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
     }
@@ -143,7 +143,7 @@ class FileSystemTest extends TestCase
         self::assertSame(self::UUID, $actualFileUuid);
     }
 
-    public function test_putHaveNotBeenSucessfull_put_shouldThrowException()
+    public function test_putHaveNotBeenSuccessful_put_shouldThrowException()
     {
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->mount->method('put')->willReturn(false);
@@ -154,7 +154,7 @@ class FileSystemTest extends TestCase
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
     }
 
-    public function test_putHaveNotBeenSucessfull_put_shouldDeleteNewUuid()
+    public function test_putHaveNotBeenSuccessful_put_shouldDeleteNewUuid()
     {
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->mount->method('put')->willReturn(false);
@@ -168,6 +168,90 @@ class FileSystemTest extends TestCase
             ->with(self::UUID);
 
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_resource_putStream_shouldGetImportationMount()
+    {
+        $stream = tmpfile();
+        $this->mount->method('putStream')->willReturn(self::PUT_STREAM_RESULT);
+
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('getImportationMount')
+            ->willReturn($this->mount);
+
+        $this->fileSystem->putStream($stream, self::FILE_NAME);
+    }
+
+    public function test_mount_putStream_shouldAddNewFile()
+    {
+        $stream = tmpfile();
+        $this->mount->method('putStream')->willReturn(self::PUT_STREAM_RESULT);
+        $this->mount->method('getMountType')->willReturn(self::MOUNT_TYPE);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('addNewFile')
+            ->with(self::MOUNT_TYPE, self::FILE_NAME);
+
+        $this->fileSystem->putStream($stream, self::FILE_NAME);
+    }
+
+    public function test_mountAndUuid_putStream_putFile()
+    {
+        $stream = tmpfile();
+        $this->mount->method('putStream')->willReturn(self::PUT_STREAM_RESULT);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+
+        $this->mount
+            ->expects(self::once())
+            ->method('putStream')
+            ->with(self::UUID, $stream, self::FILE_NAME);
+
+        $this->fileSystem->putStream($stream, self::FILE_NAME);
+    }
+
+    public function test_fileAsBeenWritten_putStream_shouldReturnFileUuid()
+    {
+        $stream = tmpfile();
+        $this->mount->method('putStream')->willReturn(self::PUT_STREAM_RESULT);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+
+        $actualFileUuid = $this->fileSystem->putStream($stream, self::FILE_NAME);
+
+        self::assertSame(self::UUID, $actualFileUuid);
+    }
+
+    public function test_putStreamHaveNotBeenSucessful_put_shouldThrowException()
+    {
+        $stream = tmpfile();
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->mount->method('putStream')->willReturn(false);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+
+        $this->expectException(FileCantBeWrittenException::class);
+
+        $this->fileSystem->putStream($stream, self::FILE_NAME);
+    }
+
+    public function test_putStreamHaveNotBeenSuccessful_put_shouldDeleteNewUuid()
+    {
+        $stream = tmpfile();
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->mount->method('putStream')->willReturn(false);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+
+        $this->expectException(FileCantBeWrittenException::class);
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('delete')
+            ->with(self::UUID);
+
+        $this->fileSystem->putStream($stream, self::FILE_NAME);
     }
 
     public function test_givenId_getUrl_shouldMountAssociatedWithId()

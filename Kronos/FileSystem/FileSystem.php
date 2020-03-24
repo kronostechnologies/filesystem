@@ -65,6 +65,26 @@ class FileSystem implements FileSystemInterface
     }
 
     /**
+     * @param resource $stream
+     * @param string $fileName
+     * @return string
+     * @throws FileCantBeWrittenException
+     */
+    public function putStream($stream, $fileName)
+    {
+        $mount = $this->mountSelector->getImportationMount();
+        $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
+
+
+        if (!$mount->putStream($fileUuid, $stream, $fileName)) {
+            $this->fileRepository->delete($fileUuid);
+            throw new FileCantBeWrittenException($mount->getMountType());
+        }
+
+        return $fileUuid;
+    }
+
+    /**
      * @param string $id
      * @return File
      */
