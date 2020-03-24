@@ -127,7 +127,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->expects(self::once())
             ->method('put')
-            ->with(self::UUID, self::A_FILE_PATH);
+            ->with(self::UUID, self::A_FILE_PATH, self::FILE_NAME);
 
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
     }
