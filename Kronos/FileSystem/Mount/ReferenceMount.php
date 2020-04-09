@@ -13,7 +13,7 @@ abstract class ReferenceMount implements MountInterface
     /**
      * @var GetterInterface
      */
-    private $getter;
+    protected $getter;
 
     /**
      * @var bool
