@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
@@ -45,6 +46,7 @@ interface MountInterface
      */
     public function delete($uuid, $fileName);
 
+    public function deleteAsync($uuid, $filename): PromiseInterface;
 
     /**
      * Write a new file using a stream.

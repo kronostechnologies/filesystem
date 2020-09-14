@@ -2,7 +2,12 @@
 
 namespace Kronos\Tests\FileSystem\Mount\Local;
 
+use Exception;
+use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\File\Internal\Metadata;
+use Kronos\FileSystem\GuzzleFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;
@@ -45,6 +50,11 @@ class LocalTest extends TestCase
     private $fileSystem;
 
     /**
+     * @var GuzzleFactory
+     */
+    private $guzzleFactory;
+
+    /**
      * @var \Kronos\FileSystem\Mount\Local\Local
      */
     private $localMount;
@@ -56,10 +66,11 @@ class LocalTest extends TestCase
         $this->fileSystem = $this->createMock(Filesystem::class);
         $this->localAdaptor = $this->createMock(Local::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
+        $this->guzzleFactory = $this->createMock(GuzzleFactory::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->localAdaptor);
 
-        $this->localMount = new localMountTestable($this->pathGenerator, $this->fileSystem);
+        $this->localMount = new localMountTestable($this->pathGenerator, $this->fileSystem, $this->guzzleFactory);
     }
 
     public function test_uuid_get_shouldGetPathOfFile()
@@ -135,6 +146,63 @@ class LocalTest extends TestCase
         $deleted = $this->localMount->delete(self::UUID, self::A_FILE_NAME);
 
         $this->assertFalse($deleted);
+    }
+
+    public function test_uuid_deleteAsync_shouldGetPathOfFile(): void
+    {
+        $this->givenFulfilledPromise();
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID);
+
+        $this->localMount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_path_deleteAsync_shouldDeleteFile(): void
+    {
+        $this->givenFulfilledPromise();
+        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('delete')
+            ->with(self::A_PATH);
+
+        $this->localMount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_FileDeleted_deleteAsync_shouldCreateAndReturnPromise(): void
+    {
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->fileSystem->method('delete')->willReturn(self::PUT_RESULT);
+        $this->guzzleFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(self::PUT_RESULT)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->deleteAsync(self::UUID, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_deleteThrowsException_deleteAsync_shouldCreateAndReturnPromise(): void
+    {
+        $exception = new Exception();
+        $expectedPromise = $this->createMock(RejectedPromise::class);
+        $this->fileSystem
+            ->method('delete')
+            ->willThrowException($exception);
+        $this->guzzleFactory
+            ->expects(self::once())
+            ->method('createRejectedPromise')
+            ->with($exception)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->deleteAsync(self::UUID, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
     }
 
     public function test_uuid_put_shouldGetPathOfFile()
@@ -306,7 +374,7 @@ class LocalTest extends TestCase
 
     public function test_NoBaseUrl_getUrl_shouldThrowException()
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
 
         $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
     }
@@ -368,6 +436,11 @@ class LocalTest extends TestCase
         $actualResult = $this->localMount->has(self::UUID, self::A_FILE_NAME);
 
         $this->assertSame(self::HAS_RESULT, $actualResult);
+    }
+
+    protected function givenFulfilledPromise(): void
+    {
+        $this->guzzleFactory->method('createFulfilledPromise')->willReturn($this->createMock(FulfilledPromise::class));
     }
 }
 

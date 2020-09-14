@@ -5,9 +5,12 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
+use Kronos\FileSystem\GuzzleFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
@@ -36,6 +39,7 @@ class S3Test extends TestCase
     const TARGET_PATH = 'target path';
     const COPY_RESULT = self::HAS_RESULT;
     const HAS_RESULT = true;
+    const PREFIXED_PATH = 'prefixed path';
 
     /**
      * @var PathGeneratorInterface|MockObject
@@ -62,16 +66,23 @@ class S3Test extends TestCase
      */
     private $s3mount;
 
+    /**
+     * @var GuzzleFactory
+     */
+    private $guzzleFactory;
+
     public function setUp(): void
     {
         $this->fileSystem = $this->createMock(Filesystem::class);
         $this->s3Client = $this->createMock(S3Client::class);
         $this->s3Adaptor = $this->createMock(AwsS3Adapter::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
+        $this->guzzleFactory = $this->createMock(GuzzleFactory::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
+        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
 
-        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem);
+        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->guzzleFactory);
     }
 
     public function test_uuid_get_shouldGetPathOfFile()
@@ -344,7 +355,7 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->expects(self::once())
             ->method('generatePath')
-            ->with(self::UUID);
+            ->with(self::UUID, self::A_FILE_NAME);
 
         $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
     }
@@ -373,13 +384,140 @@ class S3Test extends TestCase
 
     public function test_FileNotDeleted_delete_shouldReturnFalse()
     {
-
         $this->fileSystem->method('delete')->willReturn(false);
 
         $deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
 
         $this->assertFalse($deleted);
     }
+
+    public function test_uuid_deleteAsync_shouldGetPathOfFile()
+    {
+        $this->givenS3CommandAndPromise();
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID, self::A_FILE_NAME);
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_uuid_deleteAsync_shouldGetAdaptor(): void
+    {
+        $this->givenS3CommandAndPromise();
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('getAdapter');
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_path_deleteAsync_shouldApplyPathPrefix(): void
+    {
+        $this->givenS3CommandAndPromise();
+        $this->pathGenerator
+            ->method('generatePath')
+            ->willReturn(self::A_PATH);
+        $this->s3Adaptor
+            ->expects(self::once())
+            ->method('applyPathPrefix')
+            ->with(self::A_PATH);
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_adaptor_deleteAsync_shouldGetS3Client(): void
+    {
+        $this->givenS3CommandAndPromise();
+        $this->s3Adaptor
+            ->expects(self::once())
+            ->method('getClient');
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_adaptor_deleteAsync_shouldGetBucket(): void
+    {
+        $this->givenS3CommandAndPromise();
+        $this->s3Adaptor
+            ->expects(self::once())
+            ->method('getBucket');
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_s3ClientAndPrefixedPath_deleteAsync_shouldDeleteObjectAsync(): void
+    {
+        $this->givenS3CommandAndPromise();
+        $this->s3Adaptor
+            ->method('getBucket')
+            ->willReturn(self::S3_BUCKET);
+        $this->s3Adaptor
+            ->method('applyPathPrefix')
+            ->willReturn(self::PREFIXED_PATH);
+        $this->s3Client
+            ->expects(self::once())
+            ->method('getCommand')
+            ->with(
+                'deleteObjectAsync',
+                [
+                    'Bucket' => self::S3_BUCKET,
+                    'Key' => self::PREFIXED_PATH
+                ]
+            );
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_command_deleteAsync_shouldExecuteAsyncAndReturnPromise(): void
+    {
+        $command = $this->createMock(CommandInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->s3Client
+            ->method('getCommand')
+            ->willReturn($command);
+        $this->s3Client
+            ->expects(self::once())
+            ->method('executeAsync')
+            ->with($command)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+
+        $this->assertSame($expectedPromise, $actualPromise);
+    }
+
+//    public function test_path_delete_shouldDeleteFile()
+//    {
+//        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+//
+//        $this->fileSystem
+//            ->expects(self::once())
+//            ->method('delete')
+//            ->with(self::A_PATH);
+//
+//        $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
+//    }
+//
+//    public function test_FileDeleted_delete_shouldReturnTrue()
+//    {
+//
+//        $this->fileSystem->method('delete')->willReturn(self::HAS_RESULT);
+//
+//        $deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
+//
+//        $this->assertTrue($deleted);
+//    }
+//
+//    public function test_FileNotDeleted_delete_shouldReturnFalse()
+//    {
+//
+//        $this->fileSystem->method('delete')->willReturn(false);
+//
+//        $deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
+//
+//        $this->assertFalse($deleted);
+//    }
 
     public function test_uuid_getMetadata_shouldGetPathOfFile()
     {
@@ -573,6 +711,18 @@ class S3Test extends TestCase
         $actualResult = $this->s3mount->has(self::UUID, self::A_FILE_NAME);
 
         $this->assertSame(self::HAS_RESULT, $actualResult);
+    }
+
+    protected function givenS3CommandAndPromise(): void
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $command = $this->createMock(CommandInterface::class);
+        $this->s3Client
+            ->method('getCommand')
+            ->willReturn($command);
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($promise);
     }
 }
 

@@ -3,9 +3,12 @@
 namespace Kronos\FileSystem\Mount;
 
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\File;
+use Kronos\FileSystem\GuzzleFactory;
 use League\Flysystem\Filesystem;
+use Throwable;
 
 abstract class FlySystemBaseMount implements MountInterface
 {
@@ -21,17 +24,23 @@ abstract class FlySystemBaseMount implements MountInterface
     protected $pathGenerator;
 
     /**
+     * @var GuzzleFactory
+     */
+    protected $guzzleFactory;
+
+    /**
      * @var bool
      */
     private $useDirectDownload = true;
 
-    public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount)
+    public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount, GuzzleFactory $factory = null)
     {
         if (!$this->isFileSystemValid($mount)) {
             throw new WrongFileSystemTypeException($this->getMountType(), get_class($mount->getAdapter()));
         }
         $this->mount = $mount;
         $this->pathGenerator = $pathGenerator;
+        $this->guzzleFactory = $factory ?? new GuzzleFactory();
     }
 
     /**
@@ -111,6 +120,18 @@ abstract class FlySystemBaseMount implements MountInterface
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         return $this->mount->delete($path);
+    }
+
+    public function deleteAsync(
+        $uuid,
+        $filename
+    ): PromiseInterface {
+        try {
+            $didDelete = $this->delete($uuid, $filename);
+            return $this->guzzleFactory->createFulfilledPromise($didDelete);
+        } catch (Throwable $throwable) {
+            return $this->guzzleFactory->createRejectedPromise($throwable);
+        }
     }
 
     /**
@@ -238,7 +259,6 @@ abstract class FlySystemBaseMount implements MountInterface
      */
     private function quoteRFC2616HeaderValue($value)
     {
-
         if (!preg_match('/[\x00-\x20*%\'()<>@,;:\\\\"\/[\]?={}\x80-\xFF\s\t]/', $value)) {
             //token
             return $value;
