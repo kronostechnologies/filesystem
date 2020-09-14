@@ -139,6 +139,11 @@ class S3 extends FlySystemBaseMount
             ]
         );
 
-        return $s3Client->executeAsync($command);
+        $promise = $s3Client->executeAsync($command);
+        $promise->then(function($response) {
+            // We dont care about the response but the method should return a bool if the file was actually deleted
+            return true;
+        });
+        return $promise;
     }
 }

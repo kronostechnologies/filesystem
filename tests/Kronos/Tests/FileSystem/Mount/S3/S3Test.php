@@ -5,8 +5,10 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Closure;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
@@ -18,6 +20,8 @@ use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+
+use function GuzzleHttp\Promise\queue;
 
 class S3Test extends TestCase
 {
@@ -469,10 +473,10 @@ class S3Test extends TestCase
         $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
     }
 
-    public function test_command_deleteAsync_shouldExecuteAsyncAndReturnPromise(): void
+    public function test_command_deleteAsync_shouldExecuteAsync(): void
     {
         $command = $this->createMock(CommandInterface::class);
-        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $s3promise = $this->createMock(PromiseInterface::class);
         $this->s3Client
             ->method('getCommand')
             ->willReturn($command);
@@ -480,44 +484,50 @@ class S3Test extends TestCase
             ->expects(self::once())
             ->method('executeAsync')
             ->with($command)
+            ->willReturn($s3promise);
+
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_promise_deleteAsync_shouldSetOnFulfilledAndRejectCallbacks(): void
+    {
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
             ->willReturn($expectedPromise);
+        $expectedPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                self::isInstanceOf(Closure::class)
+            );
 
         $actualPromise = $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
 
         $this->assertSame($expectedPromise, $actualPromise);
     }
 
-//    public function test_path_delete_shouldDeleteFile()
-//    {
-//        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
-//
-//        $this->fileSystem
-//            ->expects(self::once())
-//            ->method('delete')
-//            ->with(self::A_PATH);
-//
-//        $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
-//    }
-//
-//    public function test_FileDeleted_delete_shouldReturnTrue()
-//    {
-//
-//        $this->fileSystem->method('delete')->willReturn(self::HAS_RESULT);
-//
-//        $deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
-//
-//        $this->assertTrue($deleted);
-//    }
-//
-//    public function test_FileNotDeleted_delete_shouldReturnFalse()
-//    {
-//
-//        $this->fileSystem->method('delete')->willReturn(false);
-//
-//        $deleted = $this->s3mount->delete(self::UUID, self::A_FILE_NAME);
-//
-//        $this->assertFalse($deleted);
-//    }
+    public function test_promiseFulfilled_deleteAsync_shouldChainTrueAsValue(): void
+    {
+        $promise = new Promise();
+        $called = false;
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($promise);
+        $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
+        $promise->then(function ($value) use (&$called) {
+            $called = true;
+            $this->assertIsBool($value);
+            $this->assertTrue($value);
+        });
+
+        $promise->resolve($this->createMock(Response::class));
+        queue()->run();
+
+        self::assertTrue($called);
+    }
 
     public function test_uuid_getMetadata_shouldGetPathOfFile()
     {
@@ -723,6 +733,13 @@ class S3Test extends TestCase
         $this->s3Client
             ->method('executeAsync')
             ->willReturn($promise);
+    }
+
+    protected function givenCommand(): void
+    {
+        $this->s3Client
+            ->method('getCommand')
+            ->willReturn($this->createMock(CommandInterface::class));
     }
 }
 
