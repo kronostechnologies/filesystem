@@ -203,13 +203,12 @@ class FileSystem implements FileSystemInterface
                 $promise = $this->guzzleFactory->createFulfilledPromise(true);
             }
 
-            $promise->then(function ($didDelete) use ($id) {
+            return $promise->then(function ($didDelete) use ($id) {
                 if ($didDelete) {
                     $this->fileRepository->delete($id);
                 }
+                return $didDelete;
             });
-
-            return $promise;
         } catch(Throwable $throwable) {
             return $this->guzzleFactory->createRejectedPromise($throwable);
         }

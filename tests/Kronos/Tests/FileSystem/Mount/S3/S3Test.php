@@ -476,7 +476,7 @@ class S3Test extends TestCase
     public function test_command_deleteAsync_shouldExecuteAsync(): void
     {
         $command = $this->createMock(CommandInterface::class);
-        $s3promise = $this->createMock(PromiseInterface::class);
+        $s3promise = new Promise();
         $this->s3Client
             ->method('getCommand')
             ->willReturn($command);
@@ -491,21 +491,23 @@ class S3Test extends TestCase
 
     public function test_promise_deleteAsync_shouldSetOnFulfilledAndRejectCallbacks(): void
     {
+        $s3Promise = $this->createMock(PromiseInterface::class);
         $expectedPromise = $this->createMock(PromiseInterface::class);
         $this->givenCommand();
         $this->s3Client
             ->method('executeAsync')
-            ->willReturn($expectedPromise);
-        $expectedPromise
+            ->willReturn($s3Promise);
+        $s3Promise
             ->expects(self::once())
             ->method('then')
             ->with(
                 self::isInstanceOf(Closure::class)
-            );
+            )
+            ->willReturn($expectedPromise);
 
         $actualPromise = $this->s3mount->deleteAsync(self::UUID, self::A_FILE_NAME);
 
-        $this->assertSame($expectedPromise, $actualPromise);
+        self::assertSame($expectedPromise, $actualPromise);
     }
 
     public function test_promiseFulfilled_deleteAsync_shouldChainTrueAsValue(): void
@@ -725,7 +727,7 @@ class S3Test extends TestCase
 
     protected function givenS3CommandAndPromise(): void
     {
-        $promise = $this->createMock(PromiseInterface::class);
+        $promise = new Promise();
         $command = $this->createMock(CommandInterface::class);
         $this->s3Client
             ->method('getCommand')
