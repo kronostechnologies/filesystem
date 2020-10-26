@@ -16,7 +16,7 @@ use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\File\Translator\MetadataTranslator;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\FileSystem;
-use Kronos\FileSystem\GuzzleFactory;
+use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -85,9 +85,9 @@ class FileSystemTest extends TestCase
     private $metadataTranslator;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory|MockObject
      */
-    private $guzzleFactory;
+    private $promiseFactory;
 
     public function setUp(): void
     {
@@ -96,10 +96,10 @@ class FileSystemTest extends TestCase
         $this->metadataTranslator = $this->createMock(MetadataTranslator::class);
         $this->mountSelector = $this->createMock(Selector::class);
         $this->fileRepository = $this->createMock(FileRepositoryInterface::class);
-        $this->guzzleFactory = $this->createMock(GuzzleFactory::class);
+        $this->promiseFactory = $this->createMock(PromiseFactory::class);
 
         $this->fileSystem = new FileSystem($this->mountSelector, $this->fileRepository, $this->metadataTranslator,
-            $this->guzzleFactory);
+            $this->promiseFactory);
     }
 
     public function tearDown(): void
@@ -623,7 +623,7 @@ class FileSystemTest extends TestCase
         $this->givenMountSelected();
         $this->givenFileName();
         $this->mount->method('has')->willReturn(false);
-        $this->guzzleFactory
+        $this->promiseFactory
             ->expects(self::once())
             ->method('createFulfilledPromise')
             ->with(true)
@@ -644,7 +644,7 @@ class FileSystemTest extends TestCase
         $this->givenMountSelected();
         $this->givenFileName();
         $this->mount->method('has')->willReturn(false);
-        $this->guzzleFactory
+        $this->promiseFactory
             ->expects(self::once())
             ->method('createFulfilledPromise')
             ->with(true);
@@ -656,7 +656,7 @@ class FileSystemTest extends TestCase
     {
         $this->mountSelector->method('selectMount')->willReturn(null);
         $expectedPromise = $this->createMock(RejectedPromise::class);
-        $this->guzzleFactory
+        $this->promiseFactory
             ->expects(self::once())
             ->method('createRejectedPromise')
             ->with(self::isInstanceOf(MountNotFoundException::class))

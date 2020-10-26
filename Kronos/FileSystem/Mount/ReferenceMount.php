@@ -8,7 +8,7 @@ use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\InvalidOperationException;
 use Kronos\FileSystem\File\File;
-use Kronos\FileSystem\GuzzleFactory;
+use Kronos\FileSystem\PromiseFactory;
 
 abstract class ReferenceMount implements MountInterface
 {
@@ -20,9 +20,9 @@ abstract class ReferenceMount implements MountInterface
     protected $getter;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory
      */
-    protected $guzzleFactory;
+    protected $promiseFactory;
 
     /**
      * @var bool
@@ -33,10 +33,10 @@ abstract class ReferenceMount implements MountInterface
      * ReferenceMount constructor.
      * @param GetterInterface $getter
      */
-    public function __construct(GetterInterface $getter, GuzzleFactory $factory = null)
+    public function __construct(GetterInterface $getter, PromiseFactory $factory = null)
     {
         $this->getter = $getter;
-        $this->guzzleFactory = $factory ?? new GuzzleFactory();
+        $this->promiseFactory = $factory ?? new PromiseFactory();
     }
 
     /**
@@ -87,7 +87,7 @@ abstract class ReferenceMount implements MountInterface
         $uuid,
         $filename
     ): PromiseInterface {
-        return $this->guzzleFactory->createRejectedPromise('Reference mounts do not support delete');
+        return $this->promiseFactory->createRejectedPromise('Reference mounts do not support delete');
     }
 
     /**

@@ -33,9 +33,9 @@ class FileSystem implements FileSystemInterface
     private $metadataTranslator;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory
      */
-    private $guzzleFactory;
+    private $promiseFactory;
 
     /**
      * @var ExtensionList
@@ -46,12 +46,12 @@ class FileSystem implements FileSystemInterface
         Selector $mountSelector,
         FileRepositoryInterface $fileRepository,
         MetadataTranslator $metadataTranslator = null,
-        GuzzleFactory $factory = null
+        PromiseFactory $factory = null
     ) {
         $this->mountSelector = $mountSelector;
         $this->fileRepository = $fileRepository;
         $this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
-        $this->guzzleFactory = $factory ?? new GuzzleFactory();
+        $this->promiseFactory = $factory ?? new PromiseFactory();
     }
 
     /**
@@ -200,7 +200,7 @@ class FileSystem implements FileSystemInterface
             if ($mount->has($id, $fileName)) {
                 $promise = $mount->deleteAsync($id, $fileName);
             } else {
-                $promise = $this->guzzleFactory->createFulfilledPromise(true);
+                $promise = $this->promiseFactory->createFulfilledPromise(true);
             }
 
             return $promise->then(function ($didDelete) use ($id) {
@@ -210,7 +210,7 @@ class FileSystem implements FileSystemInterface
                 return $didDelete;
             });
         } catch(Throwable $throwable) {
-            return $this->guzzleFactory->createRejectedPromise($throwable);
+            return $this->promiseFactory->createRejectedPromise($throwable);
         }
     }
 

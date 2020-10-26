@@ -6,7 +6,7 @@ namespace Kronos\FileSystem\Mount;
 use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\File;
-use Kronos\FileSystem\GuzzleFactory;
+use Kronos\FileSystem\PromiseFactory;
 use League\Flysystem\Filesystem;
 use Throwable;
 
@@ -24,23 +24,23 @@ abstract class FlySystemBaseMount implements MountInterface
     protected $pathGenerator;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory
      */
-    protected $guzzleFactory;
+    protected $promiseFactory;
 
     /**
      * @var bool
      */
     private $useDirectDownload = true;
 
-    public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount, GuzzleFactory $factory = null)
+    public function __construct(PathGeneratorInterface $pathGenerator, Filesystem $mount, PromiseFactory $factory = null)
     {
         if (!$this->isFileSystemValid($mount)) {
             throw new WrongFileSystemTypeException($this->getMountType(), get_class($mount->getAdapter()));
         }
         $this->mount = $mount;
         $this->pathGenerator = $pathGenerator;
-        $this->guzzleFactory = $factory ?? new GuzzleFactory();
+        $this->promiseFactory = $factory ?? new PromiseFactory();
     }
 
     /**
@@ -128,9 +128,9 @@ abstract class FlySystemBaseMount implements MountInterface
     ): PromiseInterface {
         try {
             $didDelete = $this->delete($uuid, $filename);
-            return $this->guzzleFactory->createFulfilledPromise($didDelete);
+            return $this->promiseFactory->createFulfilledPromise($didDelete);
         } catch (Throwable $throwable) {
-            return $this->guzzleFactory->createRejectedPromise($throwable);
+            return $this->promiseFactory->createRejectedPromise($throwable);
         }
     }
 

@@ -12,7 +12,7 @@ use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
-use Kronos\FileSystem\GuzzleFactory;
+use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
@@ -71,9 +71,9 @@ class S3Test extends TestCase
     private $s3mount;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory|MockObject
      */
-    private $guzzleFactory;
+    private $promiseFactory;
 
     public function setUp(): void
     {
@@ -81,12 +81,12 @@ class S3Test extends TestCase
         $this->s3Client = $this->createMock(S3Client::class);
         $this->s3Adaptor = $this->createMock(AwsS3Adapter::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
-        $this->guzzleFactory = $this->createMock(GuzzleFactory::class);
+        $this->promiseFactory = $this->createMock(PromiseFactory::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
 
-        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->guzzleFactory);
+        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory);
     }
 
     public function test_uuid_get_shouldGetPathOfFile()

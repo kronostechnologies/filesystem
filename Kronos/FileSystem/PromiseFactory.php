@@ -6,7 +6,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\RejectedPromise;
 
-class GuzzleFactory
+class PromiseFactory
 {
     public function createPromise(): Promise
     {

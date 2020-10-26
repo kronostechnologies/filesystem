@@ -7,7 +7,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\File\Internal\Metadata;
-use Kronos\FileSystem\GuzzleFactory;
+use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;
@@ -50,9 +50,9 @@ class LocalTest extends TestCase
     private $fileSystem;
 
     /**
-     * @var GuzzleFactory
+     * @var PromiseFactory|MockObject
      */
-    private $guzzleFactory;
+    private $promiseFactory;
 
     /**
      * @var \Kronos\FileSystem\Mount\Local\Local
@@ -66,11 +66,11 @@ class LocalTest extends TestCase
         $this->fileSystem = $this->createMock(Filesystem::class);
         $this->localAdaptor = $this->createMock(Local::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
-        $this->guzzleFactory = $this->createMock(GuzzleFactory::class);
+        $this->promiseFactory = $this->createMock(PromiseFactory::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->localAdaptor);
 
-        $this->localMount = new localMountTestable($this->pathGenerator, $this->fileSystem, $this->guzzleFactory);
+        $this->localMount = new localMountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory);
     }
 
     public function test_uuid_get_shouldGetPathOfFile()
@@ -176,7 +176,7 @@ class LocalTest extends TestCase
     {
         $expectedPromise = $this->createMock(FulfilledPromise::class);
         $this->fileSystem->method('delete')->willReturn(self::PUT_RESULT);
-        $this->guzzleFactory
+        $this->promiseFactory
             ->expects(self::once())
             ->method('createFulfilledPromise')
             ->with(self::PUT_RESULT)
@@ -194,7 +194,7 @@ class LocalTest extends TestCase
         $this->fileSystem
             ->method('delete')
             ->willThrowException($exception);
-        $this->guzzleFactory
+        $this->promiseFactory
             ->expects(self::once())
             ->method('createRejectedPromise')
             ->with($exception)
@@ -440,7 +440,7 @@ class LocalTest extends TestCase
 
     protected function givenFulfilledPromise(): void
     {
-        $this->guzzleFactory->method('createFulfilledPromise')->willReturn($this->createMock(FulfilledPromise::class));
+        $this->promiseFactory->method('createFulfilledPromise')->willReturn($this->createMock(FulfilledPromise::class));
     }
 }
 
