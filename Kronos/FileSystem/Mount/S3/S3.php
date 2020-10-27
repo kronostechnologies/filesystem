@@ -3,7 +3,10 @@
 namespace Kronos\FileSystem\Mount\S3;
 
 use Aws\S3\Exception\S3Exception;
+use Aws\S3\S3Client;
 use DateTime;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\Mount\FlySystemBaseMount;
@@ -112,5 +115,34 @@ class S3 extends FlySystemBaseMount
         }
 
         return false;
+    }
+
+    public function deleteAsync(
+        $uuid,
+        $filename
+    ): PromiseInterface {
+        /** @var AwsS3Adapter $s3Adaptor */
+        $s3Adaptor = $this->mount->getAdapter();
+
+        /** @var S3Client $s3Client */
+        $s3Client = $s3Adaptor->getClient();
+
+        $path = $this->pathGenerator->generatePath($uuid, $filename);
+        $prefixedPath = $s3Adaptor->applyPathPrefix($path);
+        $bucket = $s3Adaptor->getBucket();
+
+        $command = $s3Client->getCommand(
+            'deleteObjectAsync',
+            [
+                'Bucket' => $bucket,
+                'Key' => $prefixedPath,
+            ]
+        );
+
+        $promise = $s3Client->executeAsync($command);
+        return $promise->then(function($response) {
+            // We dont care about the response but the method should return a bool if the file was actually deleted
+            return true;
+        });
     }
 }

@@ -2,6 +2,12 @@
 
 namespace Kronos\Tests\FileSystem;
 
+use Closure;
+use Exception;
+use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\ExtensionList;
@@ -10,10 +16,13 @@ use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\File\Translator\MetadataTranslator;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\FileSystem;
+use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+
+use function GuzzleHttp\Promise\queue;
 
 class FileSystemTest extends TestCase
 {
@@ -28,6 +37,7 @@ class FileSystemTest extends TestCase
     const SOURCE_MOUNT_TYPE = 'Source mount type';
     const PUT_STREAM_RESULT = self::HAS_FILE;
     const HAS_FILE = true;
+    const REPOSITORY_DELETE_EXCEPTION_MESSAGE = 'failed';
 
     /**
      * @var File|MockObject
@@ -74,16 +84,22 @@ class FileSystemTest extends TestCase
      */
     private $metadataTranslator;
 
+    /**
+     * @var PromiseFactory|MockObject
+     */
+    private $promiseFactory;
+
     public function setUp(): void
     {
-
         $this->mount = $this->createMock(MountInterface::class);
 
         $this->metadataTranslator = $this->createMock(MetadataTranslator::class);
         $this->mountSelector = $this->createMock(Selector::class);
         $this->fileRepository = $this->createMock(FileRepositoryInterface::class);
+        $this->promiseFactory = $this->createMock(PromiseFactory::class);
 
-        $this->fileSystem = new FileSystem($this->mountSelector, $this->fileRepository, $this->metadataTranslator);
+        $this->fileSystem = new FileSystem($this->mountSelector, $this->fileRepository, $this->metadataTranslator,
+            $this->promiseFactory);
     }
 
     public function tearDown(): void
@@ -304,7 +320,6 @@ class FileSystemTest extends TestCase
 
     public function test_mountCouldNotHaveBeenSelected_getUrl_shouldThrowMountNotFoundException()
     {
-
         $this->mountSelector->method('selectMount')->willReturn(null);
 
         $this->expectException(MountNotFoundException::class);
@@ -390,7 +405,6 @@ class FileSystemTest extends TestCase
 
     public function test_mountCouldNotHaveBeenSelected_delete_shouldThrowMountNotFoundException()
     {
-
         $this->mountSelector->method('selectMount')->willReturn(null);
 
         $this->expectException(MountNotFoundException::class);
@@ -467,6 +481,221 @@ class FileSystemTest extends TestCase
             ->method('delete');
 
         $this->fileSystem->delete(self::UUID, self::FILE_NAME);
+    }
+
+    public function test_givenId_deleteAsync_shouldGetFileName()
+    {
+        $this->givenMountSelected();
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('getFileName')
+            ->with(self::UUID);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_givenId_deleteAsync_shouldGetMountAssociatedWithId()
+    {
+        $this->givenMountSelected();
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('getFileMountType')
+            ->with(self::UUID);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_mountType_deleteAsync_shouldSelectMount()
+    {
+        $this->fileRepository->method('getFileMountType')->willReturn(self::MOUNT_TYPE);
+
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('selectMount')
+            ->with(self::MOUNT_TYPE)
+            ->willReturn($this->mount);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_mountSelect_deleteAsync_ShouldCheckIfMountHasId()
+    {
+        $this->givenFileName();
+        $this->givenMountSelected();
+        $this->mount
+            ->expects(self::once())
+            ->method('has')
+            ->with(self::UUID, self::FILE_NAME);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_mountHasFile_deleteAsync_ShouldDeleteAsyncInMount()
+    {
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->givenMountHasFile();
+        $this->mount
+            ->expects(self::once())
+            ->method('deleteAsync')
+            ->with(self::UUID, self::FILE_NAME);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_promise_deleteAsync_ShouldAddOnFulfillCallbackAndRetournPromise()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->givenMountHasFile();
+        $this->mount
+            ->method('deleteAsync')
+            ->willReturn($promise);
+        $promise
+            ->expects(self::once())
+            ->method('then')
+            ->with(self::isInstanceOf(Closure::class))
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->deleteAsync(self::UUID);
+
+        $this->assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_didDelete_deleteAsync_ShouldDeleteInRepository()
+    {
+        $didDelete = true;
+        $promise = new Promise();
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->givenMountHasFile();
+        $this->mount
+            ->method('deleteAsync')
+            ->willReturn($promise);
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('delete')
+            ->with(self::UUID);
+        $this->fileSystem->deleteAsync(self::UUID);
+
+        $promise->resolve($didDelete);
+        queue()->run();
+    }
+
+    public function test_didNotDelete_deleteAsync_ShouldNotDeleteInRepository()
+    {
+        $didDelete = false;
+        $promise = new Promise();
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->givenMountHasFile();
+        $this->mount
+            ->method('deleteAsync')
+            ->willReturn($promise);
+        $this->fileRepository
+            ->expects(self::never())
+            ->method('delete');
+        $this->fileSystem->deleteAsync(self::UUID);
+
+        $promise->resolve($didDelete);
+        queue()->run();
+    }
+
+    public function test_fileNotInMount_deleteAsync_ShouldNotdeleteAsyncInMount()
+    {
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->mount->method('has')->willReturn(false);
+        $this->mount
+            ->expects(self::never())
+            ->method('deleteAsync');
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_fileNotInMount_deleteAsync_ShouldCreateFulfilledPromise()
+    {
+        $promise = $this->createMock(FulfilledPromise::class);
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->mount->method('has')->willReturn(false);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(true)
+            ->willReturn($promise);
+        $promise
+            ->expects(self::once())
+            ->method('then')
+            ->with(self::isInstanceOf(Closure::class))
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->deleteAsync(self::UUID);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_fileNotInMountAndPromise_deleteAsyncshould_CreateFulfilledPromise()
+    {
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->mount->method('has')->willReturn(false);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(true);
+
+        $this->fileSystem->deleteAsync(self::UUID);
+    }
+
+    public function test_mountCouldNotBeSelected_deleteAsync_shouldReturnRejectedPromise()
+    {
+        $this->mountSelector->method('selectMount')->willReturn(null);
+        $expectedPromise = $this->createMock(RejectedPromise::class);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createRejectedPromise')
+            ->with(self::isInstanceOf(MountNotFoundException::class))
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->deleteAsync(self::UUID);
+
+        $this->assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_repositoryThrowsException_deleteAsync_shouldReturnRejectedPromise()
+    {
+        $exception = new Exception(self::REPOSITORY_DELETE_EXCEPTION_MESSAGE);
+        $promise = new Promise();
+        $didDelete = true;
+        $this->givenMountSelected();
+        $this->givenFileName();
+        $this->givenMountHasFile();
+        $this->mount
+            ->method('deleteAsync')
+            ->willReturn($promise);
+        $this->fileRepository
+            ->method('delete')
+            ->willThrowException($exception);
+        $actualReason = null;
+        $actualPromise = $this->fileSystem->deleteAsync(self::UUID);
+        $actualPromise->then(
+            null,
+            function ($reason) use (&$actualReason) {
+                $actualReason = $reason;
+            }
+        );
+
+        $promise->resolve($didDelete);
+        queue()->run();
+        queue()->run();
+
+        $this->assertEquals($actualPromise->getState(), Promise::REJECTED);
+        $this->assertSame($actualReason, $exception);
     }
 
     public function test_givenId_retrieve_shouldMountAssociatedWithId()

@@ -2,9 +2,13 @@
 
 namespace Kronos\FileSystem\Mount;
 
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\InvalidOperationException;
 use Kronos\FileSystem\File\File;
+use Kronos\FileSystem\PromiseFactory;
 
 abstract class ReferenceMount implements MountInterface
 {
@@ -16,6 +20,11 @@ abstract class ReferenceMount implements MountInterface
     protected $getter;
 
     /**
+     * @var PromiseFactory
+     */
+    protected $promiseFactory;
+
+    /**
      * @var bool
      */
     private $useDirectDownload = false;
@@ -24,9 +33,10 @@ abstract class ReferenceMount implements MountInterface
      * ReferenceMount constructor.
      * @param GetterInterface $getter
      */
-    public function __construct(GetterInterface $getter)
+    public function __construct(GetterInterface $getter, PromiseFactory $factory = null)
     {
         $this->getter = $getter;
+        $this->promiseFactory = $factory ?? new PromiseFactory();
     }
 
     /**
@@ -37,7 +47,7 @@ abstract class ReferenceMount implements MountInterface
         $this->useDirectDownload = $useDirectDownload;
     }
 
-    public function useDirectDownload() : bool
+    public function useDirectDownload(): bool
     {
         return $this->useDirectDownload;
     }
@@ -71,6 +81,13 @@ abstract class ReferenceMount implements MountInterface
      */
     public function delete($uuid, $fileName)
     {
+    }
+
+    public function deleteAsync(
+        $uuid,
+        $filename
+    ): PromiseInterface {
+        return $this->promiseFactory->createRejectedPromise('Reference mounts do not support delete');
     }
 
     /**

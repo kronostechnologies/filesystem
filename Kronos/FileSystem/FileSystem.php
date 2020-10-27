@@ -2,6 +2,8 @@
 
 namespace Kronos\FileSystem;
 
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\FileNotFoundException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
@@ -10,6 +12,7 @@ use Kronos\FileSystem\File\Metadata;
 use Kronos\FileSystem\File\Translator\MetadataTranslator;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
+use Throwable;
 
 class FileSystem implements FileSystemInterface
 {
@@ -30,6 +33,11 @@ class FileSystem implements FileSystemInterface
     private $metadataTranslator;
 
     /**
+     * @var PromiseFactory
+     */
+    private $promiseFactory;
+
+    /**
      * @var ExtensionList
      */
     protected $forceDownloadList;
@@ -37,12 +45,13 @@ class FileSystem implements FileSystemInterface
     public function __construct(
         Selector $mountSelector,
         FileRepositoryInterface $fileRepository,
-        MetadataTranslator $metadataTranslator = null
+        MetadataTranslator $metadataTranslator = null,
+        PromiseFactory $factory = null
     ) {
         $this->mountSelector = $mountSelector;
         $this->fileRepository = $fileRepository;
         $this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
-
+        $this->promiseFactory = $factory ?? new PromiseFactory();
     }
 
     /**
@@ -179,6 +188,29 @@ class FileSystem implements FileSystemInterface
 
         if (!$mount->has($id, $fileName) || $mount->delete($id, $fileName)) {
             $this->fileRepository->delete($id);
+        }
+    }
+
+    public function deleteAsync($id): PromiseInterface
+    {
+        try {
+            $fileName = $this->fileRepository->getFileName($id);
+            $mount = $this->getMountForId($id);
+
+            if ($mount->has($id, $fileName)) {
+                $promise = $mount->deleteAsync($id, $fileName);
+            } else {
+                $promise = $this->promiseFactory->createFulfilledPromise(true);
+            }
+
+            return $promise->then(function ($didDelete) use ($id) {
+                if ($didDelete) {
+                    $this->fileRepository->delete($id);
+                }
+                return $didDelete;
+            });
+        } catch(Throwable $throwable) {
+            return $this->promiseFactory->createRejectedPromise($throwable);
         }
     }
 
