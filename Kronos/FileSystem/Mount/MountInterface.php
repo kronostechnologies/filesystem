@@ -59,6 +59,8 @@ interface MountInterface
      */
     public function put($uuid, $filePath, $fileName);
 
+    public function putAsync($uuid, $filePath, $fileName): PromiseInterface;
+
     /**
      * @param $uuid
      * @param $stream
@@ -66,6 +68,8 @@ interface MountInterface
      * @return mixed
      */
     public function putStream($uuid, $stream, $fileName);
+
+    public function putStreamAsync($uuid, $filePath, $fileName): PromiseInterface;
 
     /**
      * @param string $uuid
