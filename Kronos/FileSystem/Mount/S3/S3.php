@@ -7,11 +7,13 @@ use Aws\S3\S3Client;
 use DateTime;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\Mount\FlySystemBaseMount;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
+use League\Flysystem\Util;
 
 class S3 extends FlySystemBaseMount
 {
@@ -56,8 +58,7 @@ class S3 extends FlySystemBaseMount
         $command = $s3Client->getCommand('GetObject', $commandOptions);
         $request = $s3Client->createPresignedRequest($command, self::PRESIGNED_URL_LIFE_TIME);
 
-        $presignedUrl = (string)$request->getUri();
-        return $presignedUrl;
+        return (string)$request->getUri();
     }
 
     /**
@@ -144,5 +145,21 @@ class S3 extends FlySystemBaseMount
             // We dont care about the response but the method should return a bool if the file was actually deleted
             return true;
         });
+    }
+
+    public function putAsync($uuid, $filePath, $fileName): PromiseInterface
+    {
+
+        /**
+         * $path = $this->pathGenerator->generatePath($uuid, $fileName);
+         * $content = $this->getFileContent($filePath);
+         * return AsyncUploader
+         *  ->upload($path, $content)
+         *  ->then(function($response) {
+                return true;
+            });
+         */
+
+        return new RejectedPromise('not finished');
     }
 }

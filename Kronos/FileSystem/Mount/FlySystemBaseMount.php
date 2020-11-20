@@ -4,6 +4,7 @@ namespace Kronos\FileSystem\Mount;
 
 
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\PromiseFactory;
@@ -88,6 +89,12 @@ abstract class FlySystemBaseMount implements MountInterface
         return $this->mount->put($path, $this->getFileContent($filePath));
     }
 
+    public function putAsync($uuid, $filePath, $fileName): PromiseInterface {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $didPut = $this->mount->put($path, $this->getFileContent($filePath));
+        return $this->promiseFactory->createFulfilledPromise($didPut);
+    }
+
     /**
      * @param $uuid
      * @param $stream
@@ -98,6 +105,12 @@ abstract class FlySystemBaseMount implements MountInterface
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         return $this->mount->putStream($path, $stream);
+    }
+
+    public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $didPut = $this->mount->putStream($path, $stream);
+        return $this->promiseFactory->createFulfilledPromise($didPut);
     }
 
     public function copy($sourceUuid, $targetUuid, $fileName)

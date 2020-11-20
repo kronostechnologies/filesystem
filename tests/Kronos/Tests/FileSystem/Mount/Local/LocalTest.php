@@ -247,6 +247,45 @@ class LocalTest extends TestCase
         $this->assertFalse($written);
     }
 
+    public function test_uuid_putAsync_shouldGetPathOfFile()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID);
+
+        $this->localMount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_path_putAsync_shouldPut()
+    {
+        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('put')
+            ->with(self::A_PATH, self::A_FILE_CONTENT);
+
+        $this->localMount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_FileWritten_putAsync_shouldCreateAndReturnFulfilledPromise()
+    {
+        $this->fileSystem
+            ->method('put')
+            ->willReturn(self::PUT_RESULT);
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(self::PUT_RESULT)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
     public function test_putStream_shouldGetPathOfFile()
     {
         $this->pathGenerator
@@ -270,6 +309,45 @@ class LocalTest extends TestCase
         $actualResult = $this->localMount->putStream(self::UUID, $resource, self::A_FILE_NAME);
 
         $this->assertSame(self::PUT_RESULT, $actualResult);
+    }
+
+    public function test_putStreamAsync_shouldGetPathOfFile()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID);
+
+        $this->localMount->putStreamAsync(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+    }
+
+    public function test_path_putStreamAsync_shouldPutStream()
+    {
+        $resource = tmpfile();
+        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('putStream')
+            ->with(self::A_PATH, $resource);
+
+        $this->localMount->putStreamAsync(self::UUID, $resource, self::A_FILE_NAME);
+    }
+
+    public function test_FileWritten_putStreamAsync_shouldCreateAndReturnFulfilledPromise()
+    {
+        $this->fileSystem
+            ->method('putStream')
+            ->willReturn(self::PUT_RESULT);
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(self::PUT_RESULT)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->putStreamAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
     }
 
     public function test_getMountType_ShouldReturnMountType()
