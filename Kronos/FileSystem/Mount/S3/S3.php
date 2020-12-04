@@ -11,6 +11,8 @@ use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\Mount\FlySystemBaseMount;
+use Kronos\FileSystem\Mount\PathGeneratorInterface;
+use Kronos\FileSystem\PromiseFactory;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Util;
@@ -21,6 +23,28 @@ class S3 extends FlySystemBaseMount
     const PRESIGNED_URL_LIFE_TIME = '+30 seconds';
     const MOUNT_TYPE = 'S3';
     const RESTORED_OBJECT_LIFE_TIME_IN_DAYS = 2;
+
+    /**
+     * @var S3Factory
+     */
+    private $s3factory;
+
+    /**
+     * @var AsyncUploader
+     */
+    private $asyncUploader;
+
+    public function __construct(
+        PathGeneratorInterface $pathGenerator,
+        Filesystem $mount,
+        PromiseFactory $factory = null,
+        S3Factory $s3Factory = null
+    ) {
+        parent::__construct($pathGenerator, $mount, $factory);
+
+        $this->s3factory = $s3Factory ?: new S3Factory();
+        $this->asyncUploader = $this->s3factory->createAsyncUploader($mount);
+    }
 
     /**
      * @param Filesystem $mount
@@ -149,17 +173,22 @@ class S3 extends FlySystemBaseMount
 
     public function putAsync($uuid, $filePath, $fileName): PromiseInterface
     {
-
-        /**
-         * $path = $this->pathGenerator->generatePath($uuid, $fileName);
-         * $content = $this->getFileContent($filePath);
-         * return AsyncUploader
-         *  ->upload($path, $content)
-         *  ->then(function($response) {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $content = $this->getFileContent($filePath);
+        return $this->asyncUploader
+            ->upload($path, $content)
+            ->then(function($response) {
                 return true;
             });
-         */
+    }
 
-        return new RejectedPromise('not finished');
+    public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->asyncUploader
+            ->upload($path, $stream)
+            ->then(function($response) {
+                return true;
+            });
     }
 }

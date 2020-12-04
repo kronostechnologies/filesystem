@@ -44,7 +44,7 @@ class ConfigToOptionsTranslatorTest extends TestCase
         $this->translator->translate($this->config);
     }
 
-    public function test_optionInconfig_translate_shouldReturnOptionWithConfigValue(): void
+    public function test_optionInConfig_translate_shouldReturnOptionWithConfigValue(): void
     {
         $this->config
             ->method('get')

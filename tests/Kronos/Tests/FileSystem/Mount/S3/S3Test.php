@@ -12,6 +12,8 @@ use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
+use Kronos\FileSystem\Mount\S3\AsyncUploader;
+use Kronos\FileSystem\Mount\S3\S3Factory;
 use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
@@ -75,6 +77,16 @@ class S3Test extends TestCase
      */
     private $promiseFactory;
 
+    /**
+     * @var S3Factory|MockObject
+     */
+    private $factory;
+
+    /**
+     * @var AsyncUploader|MockObject
+     */
+    private $asyncUploader;
+
     public function setUp(): void
     {
         $this->fileSystem = $this->createMock(Filesystem::class);
@@ -82,11 +94,24 @@ class S3Test extends TestCase
         $this->s3Adaptor = $this->createMock(AwsS3Adapter::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
         $this->promiseFactory = $this->createMock(PromiseFactory::class);
+        $this->factory = $this->createMock(S3Factory::class);
+        $this->asyncUploader = $this->createMock(AsyncUploader::class);
 
         $this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
         $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->factory->method('createAsyncUploader')->willReturn($this->asyncUploader);
 
-        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory);
+        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory, $this->factory);
+    }
+
+    public function test_mount_constructor_shouldCreateAsyncUploader(): void
+    {
+        $this->factory
+            ->expects(self::once())
+            ->method('createAsyncUploader')
+            ->with($this->fileSystem);
+
+        $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory, $this->factory);
     }
 
     public function test_uuid_get_shouldGetPathOfFile()
@@ -531,137 +556,119 @@ class S3Test extends TestCase
         self::assertTrue($called);
     }
 
-//    public function test_uuid_putAsync_shouldGetPathOfFile()
-//    {
-//        $this->pathGenerator
-//            ->expects(self::once())
-//            ->method('generatePath')
-//            ->with(self::UUID, self::A_FILE_NAME);
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_uuid_putAsync_shouldGetAdaptor(): void
-//    {
-//        $this->fileSystem
-//            ->expects(self::once())
-//            ->method('getAdapter');
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_path_putAsync_shouldApplyPathPrefix(): void
-//    {
-//        $this->pathGenerator
-//            ->method('generatePath')
-//            ->willReturn(self::A_PATH);
-//        $this->s3Adaptor
-//            ->expects(self::once())
-//            ->method('applyPathPrefix')
-//            ->with(self::A_PATH);
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_adaptor_putAsync_shouldGetS3Client(): void
-//    {
-//        $this->s3Adaptor
-//            ->expects(self::once())
-//            ->method('getClient');
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
+    public function test_uuid_putAsync_shouldGetPathOfFile()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID, self::A_FILE_NAME);
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $returnedPromise = $this->createMock(PromiseInterface::class);
+        $this->asyncUploader
+            ->method('upload')
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->method('then')
+            ->willReturn($returnedPromise);
 
-//    public function test_adaptor_putAsync_shouldGetBucket(): void
-//    {
-//        $this->givenS3CommandAndPromise();
-//        $this->s3Adaptor
-//            ->expects(self::once())
-//            ->method('getBucket');
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_s3ClientAndPrefixedPath_putAsync_shouldDeleteObjectAsync(): void
-//    {
-//        $this->givenS3CommandAndPromise();
-//        $this->s3Adaptor
-//            ->method('getBucket')
-//            ->willReturn(self::S3_BUCKET);
-//        $this->s3Adaptor
-//            ->method('applyPathPrefix')
-//            ->willReturn(self::PREFIXED_PATH);
-//        $this->s3Client
-//            ->expects(self::once())
-//            ->method('getCommand')
-//            ->with(
-//                'deleteObjectAsync',
-//                [
-//                    'Bucket' => self::S3_BUCKET,
-//                    'Key' => self::PREFIXED_PATH
-//                ]
-//            );
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_command_putAsync_shouldExecuteAsync(): void
-//    {
-//        $command = $this->createMock(CommandInterface::class);
-//        $s3promise = new Promise();
-//        $this->s3Client
-//            ->method('getCommand')
-//            ->willReturn($command);
-//        $this->s3Client
-//            ->expects(self::once())
-//            ->method('executeAsync')
-//            ->with($command)
-//            ->willReturn($s3promise);
-//
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//    }
-//
-//    public function test_promise_putAsync_shouldSetOnFulfilledAndRejectCallbacks(): void
-//    {
-//        $s3Promise = $this->createMock(PromiseInterface::class);
-//        $expectedPromise = $this->createMock(PromiseInterface::class);
-//        $this->givenCommand();
-//        $this->s3Client
-//            ->method('executeAsync')
-//            ->willReturn($s3Promise);
-//        $s3Promise
-//            ->expects(self::once())
-//            ->method('then')
-//            ->with(
-//                self::isInstanceOf(Closure::class)
-//            )
-//            ->willReturn($expectedPromise);
-//
-//        $actualPromise = $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//
-//        self::assertSame($expectedPromise, $actualPromise);
-//    }
-//
-//    public function test_promiseFulfilled_putAsync_shouldChainTrueAsValue(): void
-//    {
-//        $promise = new Promise();
-//        $called = false;
-//        $this->givenCommand();
-//        $this->s3Client
-//            ->method('executeAsync')
-//            ->willReturn($promise);
-//        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
-//        $promise->then(function ($value) use (&$called) {
-//            $called = true;
-//            $this->assertIsBool($value);
-//            $this->assertTrue($value);
-//        });
-//
-//        $promise->resolve($this->createMock(Response::class));
-//        queue()->run();
-//
-//        self::assertTrue($called);
-//    }
+        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_path_putAsync_shouldUploadPathAndContents(): void
+    {
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $returnedPromise = $this->createMock(PromiseInterface::class);
+        $this->pathGenerator
+            ->method('generatePath')
+            ->willReturn(self::A_PATH);
+        $this->asyncUploader
+            ->expects(self::once())
+            ->method('upload')
+            ->with(self::A_PATH, self::A_FILE_CONTENT)
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->method('then')
+            ->willReturn($returnedPromise);
+
+        $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_promise_putAsync_shouldAddFulfilledCallbackAndReturnPromise(): void
+    {
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->asyncUploader
+            ->method('upload')
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                self::isInstanceOf(Closure::class)
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->s3mount->putAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_uuid_putStreamAsync_shouldGetPathOfFile()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID, self::A_FILE_NAME);
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $returnedPromise = $this->createMock(PromiseInterface::class);
+        $this->asyncUploader
+            ->method('upload')
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->method('then')
+            ->willReturn($returnedPromise);
+
+        $this->s3mount->putStreamAsync(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_path_putStreamAsync_shouldUploadPathAndContents(): void
+    {
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $returnedPromise = $this->createMock(PromiseInterface::class);
+        $this->pathGenerator
+            ->method('generatePath')
+            ->willReturn(self::A_PATH);
+        $this->asyncUploader
+            ->expects(self::once())
+            ->method('upload')
+            ->with(self::A_PATH, self::A_FILE_CONTENT)
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->method('then')
+            ->willReturn($returnedPromise);
+
+        $this->s3mount->putStreamAsync(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+    }
+
+    public function test_promise_putStreamAsync_shouldAddFulfilledCallbackAndReturnPromise(): void
+    {
+        $adaptorPromise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->asyncUploader
+            ->method('upload')
+            ->willReturn($adaptorPromise);
+        $adaptorPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                self::isInstanceOf(Closure::class)
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->s3mount->putStreamAsync(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
 
     public function test_uuid_getMetadata_shouldGetPathOfFile()
     {
