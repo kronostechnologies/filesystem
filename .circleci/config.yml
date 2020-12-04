@@ -3,7 +3,7 @@ version: 2
 jobs:
   phpunit-7-2:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: http://ghcr.io/kronostechnologies/php:7.2-node
     steps:
       - checkout
       - run: sudo composer self-update
