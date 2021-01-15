@@ -164,11 +164,12 @@ class S3 extends FlySystemBaseMount
             ]
         );
 
-        $promise = $s3Client->executeAsync($command);
-        return $promise->then(function($response) {
-            // We dont care about the response but the method should return a bool if the file was actually deleted
-            return true;
-        });
+        return $s3Client
+            ->executeAsync($command)
+            ->then(function($response) {
+                // We dont care about the response but the method should return a bool if the file was actually deleted
+                return true;
+            });
     }
 
     public function putAsync($uuid, $filePath, $fileName): PromiseInterface
@@ -187,6 +188,18 @@ class S3 extends FlySystemBaseMount
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         return $this->asyncAdapter
             ->upload($path, $stream)
+            ->then(function($response) {
+                return true;
+            });
+    }
+
+    public function copyAsync($sourceUuid, $targetUuid, $fileName): PromiseInterface
+    {
+        $sourcePath = $this->pathGenerator->generatePath($sourceUuid, $fileName);
+        $targetPath = $this->pathGenerator->generatePath($targetUuid, $fileName);
+
+        return $this->asyncAdapter
+            ->copy($sourcePath, $targetPath)
             ->then(function($response) {
                 return true;
             });
