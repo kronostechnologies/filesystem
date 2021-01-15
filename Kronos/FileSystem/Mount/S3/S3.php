@@ -30,9 +30,9 @@ class S3 extends FlySystemBaseMount
     private $s3factory;
 
     /**
-     * @var AsyncUploader
+     * @var AsyncAdapter
      */
-    private $asyncUploader;
+    private $asyncAdapter;
 
     public function __construct(
         PathGeneratorInterface $pathGenerator,
@@ -43,7 +43,7 @@ class S3 extends FlySystemBaseMount
         parent::__construct($pathGenerator, $mount, $factory);
 
         $this->s3factory = $s3Factory ?: new S3Factory();
-        $this->asyncUploader = $this->s3factory->createAsyncUploader($mount);
+        $this->asyncAdapter = $this->s3factory->createAsyncUploader($mount);
     }
 
     /**
@@ -175,7 +175,7 @@ class S3 extends FlySystemBaseMount
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         $content = $this->getFileContent($filePath);
-        return $this->asyncUploader
+        return $this->asyncAdapter
             ->upload($path, $content)
             ->then(function($response) {
                 return true;
@@ -185,7 +185,7 @@ class S3 extends FlySystemBaseMount
     public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
-        return $this->asyncUploader
+        return $this->asyncAdapter
             ->upload($path, $stream)
             ->then(function($response) {
                 return true;

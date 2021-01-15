@@ -4,7 +4,7 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 
 use Aws\S3\S3Client;
 use GuzzleHttp\Promise\PromiseInterface;
-use Kronos\FileSystem\Mount\S3\AsyncUploader;
+use Kronos\FileSystem\Mount\S3\AsyncAdapter;
 use Kronos\FileSystem\Mount\S3\ConfigToOptionsTranslator;
 use Kronos\FileSystem\Mount\S3\SupportedOptionsEnum;
 use League\Flysystem\Adapter\Local;
@@ -14,7 +14,7 @@ use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class AsyncUploaderTest extends TestCase
+class AsyncApapterTest extends TestCase
 {
     const PATH = 'path';
     const CONTENTS = 'contents';
@@ -50,7 +50,7 @@ class AsyncUploaderTest extends TestCase
     private $configToOptionsTranslator;
 
     /**
-     * @var AsyncUploader
+     * @var AsyncAdapter
      */
     private $uploader;
 
@@ -73,7 +73,7 @@ class AsyncUploaderTest extends TestCase
             ->expects(self::once())
             ->method('getAdapter');
 
-        $this->uploader = new AsyncUploader($this->mount);
+        $this->uploader = new AsyncAdapter($this->mount);
     }
 
     public function test_adaptor_constructor_shouldGetS3Client(): void
@@ -82,7 +82,7 @@ class AsyncUploaderTest extends TestCase
             ->expects(self::once())
             ->method('getClient');
 
-        $this->uploader = new AsyncUploader($this->mount);
+        $this->uploader = new AsyncAdapter($this->mount);
     }
 
     public function test_nonS3Adaptor_constructor_shouldThrowException(): void
@@ -94,7 +94,7 @@ class AsyncUploaderTest extends TestCase
             ->willReturn($nonS3Adaptor);
         $this->expectException(\RuntimeException::class);
 
-        $this->uploader = new AsyncUploader($this->mount);
+        $this->uploader = new AsyncAdapter($this->mount);
     }
 
     public function test_path_upload_shouldApplyPathPrefix(): void
@@ -241,7 +241,7 @@ class AsyncUploaderTest extends TestCase
     protected function givenSetup($withPromise = true): void
     {
         $this->configToOptionsTranslator = $this->createMock(ConfigToOptionsTranslator::class);
-        $this->uploader = new AsyncUploader($this->mount, $this->configToOptionsTranslator);
+        $this->uploader = new AsyncAdapter($this->mount, $this->configToOptionsTranslator);
 
         $this->config = $this->createMock(Config::class);
         $this->mount

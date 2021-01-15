@@ -12,7 +12,7 @@ use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
-use Kronos\FileSystem\Mount\S3\AsyncUploader;
+use Kronos\FileSystem\Mount\S3\AsyncAdapter;
 use Kronos\FileSystem\Mount\S3\S3Factory;
 use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
@@ -55,7 +55,7 @@ class S3Test extends TestCase
     /**
      * @var AwsS3Adapter|MockObject
      */
-    private $s3Adaptor;
+    private $s3Adapter;
 
     /**
      * @var FileSystem|MockObject
@@ -83,23 +83,23 @@ class S3Test extends TestCase
     private $factory;
 
     /**
-     * @var AsyncUploader|MockObject
+     * @var AsyncAdapter|MockObject
      */
-    private $asyncUploader;
+    private $asyncAdapter;
 
     public function setUp(): void
     {
         $this->fileSystem = $this->createMock(Filesystem::class);
         $this->s3Client = $this->createMock(S3Client::class);
-        $this->s3Adaptor = $this->createMock(AwsS3Adapter::class);
+        $this->s3Adapter = $this->createMock(AwsS3Adapter::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
         $this->promiseFactory = $this->createMock(PromiseFactory::class);
         $this->factory = $this->createMock(S3Factory::class);
-        $this->asyncUploader = $this->createMock(AsyncUploader::class);
+        $this->asyncAdapter = $this->createMock(AsyncAdapter::class);
 
-        $this->fileSystem->method('getAdapter')->willReturn($this->s3Adaptor);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->factory->method('createAsyncUploader')->willReturn($this->asyncUploader);
+        $this->fileSystem->method('getAdapter')->willReturn($this->s3Adapter);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
+        $this->factory->method('createAsyncUploader')->willReturn($this->asyncAdapter);
 
         $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory, $this->factory);
     }
@@ -149,11 +149,11 @@ class S3Test extends TestCase
 
     public function test_getSignedUrl_shouldGetS3Client()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('getClient');
 
@@ -162,7 +162,7 @@ class S3Test extends TestCase
 
     public function test_uuid_getSignedUrl_shouldGetPathOfFile()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
@@ -176,12 +176,12 @@ class S3Test extends TestCase
 
     public function test_path_getSignedUrl_shouldGetFileLocation()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('applyPathPrefix')
             ->with(self::A_PATH);
@@ -191,9 +191,9 @@ class S3Test extends TestCase
 
     public function test_location_getSignedUrl_shouldGetCommandToGetFile()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
-        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adapter->method('getBucket')->willReturn(self::S3_BUCKET);
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
@@ -213,9 +213,9 @@ class S3Test extends TestCase
 
     public function test_locationAndForceDownload_getSignedUrl_shouldAddResponseContentDispositionToCommand()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
-        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adapter->method('getBucket')->willReturn(self::S3_BUCKET);
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
@@ -242,9 +242,9 @@ class S3Test extends TestCase
             return;
         }
 
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
-        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adapter->method('getBucket')->willReturn(self::S3_BUCKET);
         $this->s3Client->method('createPresignedRequest')->willReturn($this->createMock(RequestInterface::class));
 
         $this->s3Client
@@ -266,7 +266,7 @@ class S3Test extends TestCase
     public function test_command_getSignedUrl_shouldGetCommandToGetFile()
     {
         $command = $this->createMock(CommandInterface::class);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
 
         $this->s3Client
@@ -281,7 +281,7 @@ class S3Test extends TestCase
     public function test_request_getSignedUrl_shouldGetUriFromRequest()
     {
         $request = $this->createMock(RequestInterface::class);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($request);
 
@@ -295,7 +295,7 @@ class S3Test extends TestCase
     public function test_uri_getSignedUrl_shouldReturnUri()
     {
         $request = $this->createMock(RequestInterface::class);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($request);
         $request->method('getUri')->willReturn(self::AN_URI);
@@ -447,7 +447,7 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->method('generatePath')
             ->willReturn(self::A_PATH);
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('applyPathPrefix')
             ->with(self::A_PATH);
@@ -458,7 +458,7 @@ class S3Test extends TestCase
     public function test_adaptor_deleteAsync_shouldGetS3Client(): void
     {
         $this->givenS3CommandAndPromise();
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('getClient');
 
@@ -468,7 +468,7 @@ class S3Test extends TestCase
     public function test_adaptor_deleteAsync_shouldGetBucket(): void
     {
         $this->givenS3CommandAndPromise();
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('getBucket');
 
@@ -478,10 +478,10 @@ class S3Test extends TestCase
     public function test_s3ClientAndPrefixedPath_deleteAsync_shouldDeleteObjectAsync(): void
     {
         $this->givenS3CommandAndPromise();
-        $this->s3Adaptor
+        $this->s3Adapter
             ->method('getBucket')
             ->willReturn(self::S3_BUCKET);
-        $this->s3Adaptor
+        $this->s3Adapter
             ->method('applyPathPrefix')
             ->willReturn(self::PREFIXED_PATH);
         $this->s3Client
@@ -564,7 +564,7 @@ class S3Test extends TestCase
             ->with(self::UUID, self::A_FILE_NAME);
         $adaptorPromise = $this->createMock(PromiseInterface::class);
         $returnedPromise = $this->createMock(PromiseInterface::class);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->method('upload')
             ->willReturn($adaptorPromise);
         $adaptorPromise
@@ -581,7 +581,7 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->method('generatePath')
             ->willReturn(self::A_PATH);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->expects(self::once())
             ->method('upload')
             ->with(self::A_PATH, self::A_FILE_CONTENT)
@@ -597,7 +597,7 @@ class S3Test extends TestCase
     {
         $adaptorPromise = $this->createMock(PromiseInterface::class);
         $expectedPromise = $this->createMock(PromiseInterface::class);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->method('upload')
             ->willReturn($adaptorPromise);
         $adaptorPromise
@@ -621,7 +621,7 @@ class S3Test extends TestCase
             ->with(self::UUID, self::A_FILE_NAME);
         $adaptorPromise = $this->createMock(PromiseInterface::class);
         $returnedPromise = $this->createMock(PromiseInterface::class);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->method('upload')
             ->willReturn($adaptorPromise);
         $adaptorPromise
@@ -638,7 +638,7 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->method('generatePath')
             ->willReturn(self::A_PATH);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->expects(self::once())
             ->method('upload')
             ->with(self::A_PATH, self::A_FILE_CONTENT)
@@ -654,7 +654,7 @@ class S3Test extends TestCase
     {
         $adaptorPromise = $this->createMock(PromiseInterface::class);
         $expectedPromise = $this->createMock(PromiseInterface::class);
-        $this->asyncUploader
+        $this->asyncAdapter
             ->method('upload')
             ->willReturn($adaptorPromise);
         $adaptorPromise
@@ -715,10 +715,10 @@ class S3Test extends TestCase
 
     public function test_retreive_shouldGetS3Client()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
 
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('getClient');
 
@@ -727,7 +727,7 @@ class S3Test extends TestCase
 
     public function test_uuid_retreive_shouldGetPathOfFile()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
 
         $this->pathGenerator
@@ -740,11 +740,11 @@ class S3Test extends TestCase
 
     public function test_path_retreive_shouldGetFileLocation()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
 
-        $this->s3Adaptor
+        $this->s3Adapter
             ->expects(self::once())
             ->method('applyPathPrefix')
             ->with(self::A_PATH);
@@ -754,9 +754,9 @@ class S3Test extends TestCase
 
     public function test_location_retreive_shouldRestoreObject()
     {
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
-        $this->s3Adaptor->method('applyPathPrefix')->willReturn(self::A_LOCATION);
-        $this->s3Adaptor->method('getBucket')->willReturn(self::S3_BUCKET);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('applyPathPrefix')->willReturn(self::A_LOCATION);
+        $this->s3Adapter->method('getBucket')->willReturn(self::S3_BUCKET);
 
         $this->s3Client
             ->expects(self::once())
@@ -782,7 +782,7 @@ class S3Test extends TestCase
     public function test_command_retreive_shouldExecuteCommand()
     {
         $command = $this->createMock(CommandInterface::class);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
 
         $this->s3Client
@@ -796,7 +796,7 @@ class S3Test extends TestCase
     public function test_commandFailed_retreive_shouldCatchAndThrowNewException()
     {
         $command = $this->createMock(CommandInterface::class);
-        $this->s3Adaptor->method('getClient')->willReturn($this->s3Client);
+        $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($command);
         $this->s3Client->method('execute')->willThrowException($this->createMock(S3Exception::class));
 

@@ -73,6 +73,10 @@ abstract class ReferenceMount implements MountInterface
         return true;
     }
 
+    public function copyAsync($sourceUuid, $targetUuid, $fileName): PromiseInterface {
+        return $this->promiseFactory->createRejectedPromise(new InvalidOperationException(static::MOUNT_TYPE));
+    }
+
     /**
      * Delete a file.
      *

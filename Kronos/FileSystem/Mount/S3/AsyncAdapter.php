@@ -10,7 +10,7 @@ use \RuntimeException;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 
-class AsyncUploader
+class AsyncAdapter
 {
     /**
      * @var Filesystem

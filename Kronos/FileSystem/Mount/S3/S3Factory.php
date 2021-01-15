@@ -6,8 +6,8 @@ use League\Flysystem\Filesystem;
 
 class S3Factory
 {
-    public function createAsyncUploader(Filesystem $mount): AsyncUploader
+    public function createAsyncUploader(Filesystem $mount): AsyncAdapter
     {
-        return new AsyncUploader($mount);
+        return new AsyncAdapter($mount);
     }
 }
