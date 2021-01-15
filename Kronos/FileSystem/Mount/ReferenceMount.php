@@ -87,7 +87,7 @@ abstract class ReferenceMount implements MountInterface
         $uuid,
         $filename
     ): PromiseInterface {
-        return $this->promiseFactory->createRejectedPromise('Reference mounts do not support delete');
+        return $this->promiseFactory->createRejectedPromise(new InvalidOperationException(static::MOUNT_TYPE));
     }
 
     /**
@@ -105,6 +105,20 @@ abstract class ReferenceMount implements MountInterface
     }
 
     /**
+     * Write a new file using a stream.
+     *
+     * @param $uuid
+     * @param $filePath
+     * @param $fileName
+     * @return PromiseInterface
+     *
+     */
+    public function putAsync($uuid, $filePath, $fileName): PromiseInterface
+    {
+        return $this->promiseFactory->createFulfilledPromise(true);
+    }
+
+    /**
      * @param $uuid
      * @param $stream
      * @param $fileName
@@ -114,6 +128,17 @@ abstract class ReferenceMount implements MountInterface
     public function putStream($uuid, $stream, $fileName)
     {
         throw new InvalidOperationException(static::MOUNT_TYPE);
+    }
+
+    /**
+     * @param $uuid
+     * @param $stream
+     * @param $fileName
+     * @return PromiseInterface
+     */
+    public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface
+    {
+        return $this->promiseFactory->createRejectedPromise(new InvalidOperationException(static::MOUNT_TYPE));
     }
 
     /**

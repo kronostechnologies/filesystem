@@ -3,7 +3,7 @@ version: 2
 jobs:
   phpunit-7-2:
     docker:
-      - image: circleci/php:7.2-node-browsers
+      - image: ghcr.io/kronostechnologies/php:7.2-node
     steps:
       - checkout
       - run: sudo composer self-update
@@ -15,7 +15,6 @@ jobs:
           paths:
             - ./vendor
           key: v2-deps-7-2-{{ checksum "composer.lock" }}
-      - run: sudo pecl install pcov
       - run:
           name: "phpunit"
           command: php -d pcov.enabled=1 -d pcov.directory=. ./vendor/bin/phpunit --coverage-clover ~/php-test-coverage.xml --log-junit ~/test-results/phpunit/junit.xml
