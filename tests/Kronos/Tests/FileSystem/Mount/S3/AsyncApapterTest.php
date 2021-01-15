@@ -24,6 +24,10 @@ class AsyncApapterTest extends TestCase
     const PRIVATE = 'private';
     const PUBLIC_READ = 'public-read';
     const TEXT_PLAIN = 'text/plain';
+    const SOURCE_PATH = 'source path';
+    const PREFIXED_SOURCE_PATH = 'prefixed source path';
+    const TARGET_PATH = 'target path';
+    const PREFIXED_TARGET_PATH = 'prefixed target path';
     /**
      * @var Filesystem|MockObject
      */
@@ -52,7 +56,7 @@ class AsyncApapterTest extends TestCase
     /**
      * @var AsyncAdapter
      */
-    private $uploader;
+    private $asyncAdapter;
 
     protected function setUp(): void
     {
@@ -73,7 +77,7 @@ class AsyncApapterTest extends TestCase
             ->expects(self::once())
             ->method('getAdapter');
 
-        $this->uploader = new AsyncAdapter($this->mount);
+        $this->asyncAdapter = new AsyncAdapter($this->mount);
     }
 
     public function test_adaptor_constructor_shouldGetS3Client(): void
@@ -82,7 +86,7 @@ class AsyncApapterTest extends TestCase
             ->expects(self::once())
             ->method('getClient');
 
-        $this->uploader = new AsyncAdapter($this->mount);
+        $this->asyncAdapter = new AsyncAdapter($this->mount);
     }
 
     public function test_nonS3Adaptor_constructor_shouldThrowException(): void
@@ -94,7 +98,7 @@ class AsyncApapterTest extends TestCase
             ->willReturn($nonS3Adaptor);
         $this->expectException(\RuntimeException::class);
 
-        $this->uploader = new AsyncAdapter($this->mount);
+        $this->asyncAdapter = new AsyncAdapter($this->mount);
     }
 
     public function test_path_upload_shouldApplyPathPrefix(): void
@@ -105,7 +109,7 @@ class AsyncApapterTest extends TestCase
             ->method('applyPathPrefix')
             ->with(self::PATH);
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_mount_upload_shouldGetConfig(): void
@@ -115,7 +119,7 @@ class AsyncApapterTest extends TestCase
             ->expects(self::once())
             ->method('getConfig');
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_config_upload_shouldTranslateToOptionsArray(): void
@@ -126,7 +130,7 @@ class AsyncApapterTest extends TestCase
             ->method('translate')
             ->with($this->config);
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_s3Adapter_upload_shouldGetBucket(): void
@@ -136,7 +140,7 @@ class AsyncApapterTest extends TestCase
             ->expects(self::once())
             ->method('getBucket');
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_prefixedPathAndOptionsAndBucket_upload_shouldUploadAsyncAndReturnPromise(): void
@@ -165,7 +169,7 @@ class AsyncApapterTest extends TestCase
             )
             ->willReturn($expectedPromise);
 
-        $actualPromise = $this->uploader->upload(self::PATH, self::CONTENTS);
+        $actualPromise = $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
 
         $this->assertSame($expectedPromise, $actualPromise);
     }
@@ -188,7 +192,7 @@ class AsyncApapterTest extends TestCase
                 ['params' => $options]
             );
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_aclInOptions_upload_shouldSetAclToOptionsValue(): void
@@ -209,7 +213,7 @@ class AsyncApapterTest extends TestCase
                 ['params' => $options]
             );
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
     }
 
     public function test_option_upload_shouldEnsureContentTypeLength(): void
@@ -235,13 +239,110 @@ class AsyncApapterTest extends TestCase
                 ]
             );
 
-        $this->uploader->upload(self::PATH, self::CONTENTS);
+        $this->asyncAdapter->upload(self::PATH, self::CONTENTS);
+    }
+
+    public function test_mount_copy_shouldGetConfig(): void
+    {
+        $this->givenSetup();
+        $this->mount
+            ->expects(self::once())
+            ->method('getConfig');
+        $this->s3Client
+            ->method('copyAsync')
+            ->willReturn($this->createMock(PromiseInterface::class));
+
+        $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
+    }
+
+    public function test_config_copy_shouldTranslateToOptionsArray(): void
+    {
+        $this->givenSetup();
+        $this->configToOptionsTranslator
+            ->expects(self::once())
+            ->method('translate')
+            ->with($this->config);
+        $this->s3Client
+            ->method('copyAsync')
+            ->willReturn($this->createMock(PromiseInterface::class));
+
+        $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
+    }
+
+    public function test_sourceAndTargetPaths_copy_shouldApplyPathPrefix(): void
+    {
+        $this->givenSetup();
+        $this->s3Adapter
+            ->expects(self::exactly(2))
+            ->method('applyPathPrefix')
+            ->withConsecutive(
+                [self::SOURCE_PATH],
+                [self::TARGET_PATH]
+            )
+            ->willReturnMap([
+                [self::SOURCE_PATH, self::PREFIXED_SOURCE_PATH],
+                [self::TARGET_PATH, self::PREFIXED_TARGET_PATH]
+            ]);
+        $this->s3Client
+            ->method('copyAsync')
+            ->willReturn($this->createMock(PromiseInterface::class));
+
+        $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
+    }
+
+    public function test_s3Adaptor_copy_shouldGetBucket(): void
+    {
+        $this->givenSetup();
+        $this->s3Adapter
+            ->expects(self::once())
+            ->method('getBucket')
+            ->willReturn(self::BUCKET_NAME);
+        $this->s3Client
+            ->method('copyAsync')
+            ->willReturn($this->createMock(PromiseInterface::class));
+
+        $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
+    }
+
+    public function test_optionsBucketAndPaths_copy_shouldCopyAsyncAndReturnPromise(): void
+    {
+        $options = [ 'some option' => 'some value' ];
+        $this->givenSetup();
+        $this->configToOptionsTranslator
+            ->method('translate')
+            ->willReturn($options);
+        $this->s3Adapter
+            ->method('getBucket')
+            ->willReturn(self::BUCKET_NAME);
+        $this->s3Adapter
+            ->method('applyPathPrefix')
+            ->willReturnMap([
+                [self::SOURCE_PATH, self::PREFIXED_SOURCE_PATH],
+                [self::TARGET_PATH, self::PREFIXED_TARGET_PATH]
+            ]);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->s3Client
+            ->expects(self::once())
+            ->method('copyAsync')
+            ->with(
+                self::BUCKET_NAME,
+                self::PREFIXED_SOURCE_PATH,
+                self::BUCKET_NAME,
+                self::PREFIXED_TARGET_PATH,
+                'private',
+                $options
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
+
+        $this->assertSame($expectedPromise, $actualPromise);
     }
 
     protected function givenSetup($withPromise = true): void
     {
         $this->configToOptionsTranslator = $this->createMock(ConfigToOptionsTranslator::class);
-        $this->uploader = new AsyncAdapter($this->mount, $this->configToOptionsTranslator);
+        $this->asyncAdapter = new AsyncAdapter($this->mount, $this->configToOptionsTranslator);
 
         $this->config = $this->createMock(Config::class);
         $this->mount

@@ -76,4 +76,18 @@ class AsyncAdapter
             ['params' => $options]
          );
     }
+
+    public function copy($sourcePath, $targetPath): PromiseInterface
+    {
+        $bucketName = $this->s3Adapter->getBucket();
+
+        return $this->s3Client->copyAsync(
+            $bucketName,
+            $this->s3Adapter->applyPathPrefix($sourcePath),
+            $bucketName,
+            $this->s3Adapter->applyPathPrefix($targetPath),
+            'private',
+            $this->configTranslator->translate($this->mount->getConfig())
+        );
+    }
 }
