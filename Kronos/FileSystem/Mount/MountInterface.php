@@ -38,6 +38,8 @@ interface MountInterface
      */
     public function copy($sourceUuid, $targetUuid, $fileName);
 
+    public function copyAsync($sourceUUid, $targetUuid, $filename): PromiseInterface;
+
     /**
      * Delete a file.
      *
@@ -69,7 +71,7 @@ interface MountInterface
      */
     public function putStream($uuid, $stream, $fileName);
 
-    public function putStreamAsync($uuid, $filePath, $fileName): PromiseInterface;
+    public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface;
 
     /**
      * @param string $uuid

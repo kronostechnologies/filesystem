@@ -121,6 +121,16 @@ abstract class FlySystemBaseMount implements MountInterface
         return $this->mount->copy($sourcePath, $targetPath);
     }
 
+    public function copyAsync($sourceUuid, $targetUuid, $fileName): PromiseInterface
+    {
+        $sourcePath = $this->pathGenerator->generatePath($sourceUuid, $fileName);
+        $targetPath = $this->pathGenerator->generatePath($targetUuid, $fileName);
+
+        $didCopy = $this->mount->copy($sourcePath, $targetPath);
+
+        return $this->promiseFactory->createFulfilledPromise($didCopy);
+    }
+
     /**
      *
      * Delete a file.

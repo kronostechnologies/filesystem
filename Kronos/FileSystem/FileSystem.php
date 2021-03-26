@@ -2,8 +2,9 @@
 
 namespace Kronos\FileSystem;
 
-use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use Kronos\FileSystem\Copy\DestinationChooserFactory;
+use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\FileNotFoundException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
@@ -38,6 +39,11 @@ class FileSystem implements FileSystemInterface
     private $promiseFactory;
 
     /**
+     * @var DestinationChooserFactory
+     */
+    private $destinationChooserFactory;
+
+    /**
      * @var ExtensionList
      */
     protected $forceDownloadList;
@@ -46,12 +52,19 @@ class FileSystem implements FileSystemInterface
         Selector $mountSelector,
         FileRepositoryInterface $fileRepository,
         MetadataTranslator $metadataTranslator = null,
-        PromiseFactory $factory = null
+        PromiseFactory $promiseFactory = null,
+        CopyFactory $copyFactory = null
     ) {
         $this->mountSelector = $mountSelector;
         $this->fileRepository = $fileRepository;
-        $this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
-        $this->promiseFactory = $factory ?? new PromiseFactory();
+        $this->metadataTranslator = $metadataTranslator ?? new MetadataTranslator();
+        $this->promiseFactory = $promiseFactory ?? new PromiseFactory();
+
+        $safeCopyFactory = $copyFactory ?? new CopyFactory();
+        $this->destinationChooserFactory = $safeCopyFactory->createDestinationChooserFactory(
+            $fileRepository,
+            $mountSelector
+        );
     }
 
     /**
@@ -176,6 +189,24 @@ class FileSystem implements FileSystemInterface
         return $destinationId;
     }
 
+    public function copyAsync($id): PromiseInterface
+    {
+        $chooser = $this->destinationChooserFactory->getChooserForFileId($id);
+
+        $fileName = $this->fileRepository->getFileName($id);
+        $destinationId = $this->fileRepository->addNewFile($chooser->getDestinationMountType(), $fileName);
+
+        if ($chooser->canUseCopy()) {
+            $promise = $chooser->getDestinationMount()->copyAsync($id, $destinationId, $fileName);
+        } else {
+            $file = $chooser->getSourceMount()->get($id, $fileName);
+            $promise = $chooser->getDestinationMount()->putStreamAsync($destinationId, $file->readStream(), $fileName);
+        }
+
+        return $promise->then(function($didCopyOrPut) use ($destinationId) {
+           return $destinationId;
+        });
+    }
 
     /**
      * @param string $id
