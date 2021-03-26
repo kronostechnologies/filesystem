@@ -71,7 +71,7 @@ interface MountInterface
      */
     public function putStream($uuid, $stream, $fileName);
 
-    public function putStreamAsync($uuid, $filePath, $fileName): PromiseInterface;
+    public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface;
 
     /**
      * @param string $uuid
