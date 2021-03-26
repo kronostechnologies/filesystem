@@ -8,9 +8,9 @@ use Kronos\FileSystem\Mount\Selector;
 
 class Factory
 {
-    public function createDestinationChooserBuilder(FileRepositoryInterface $fileRepository, Selector $selector): DestinationChooserBuilder
+    public function createDestinationChooserFactory(FileRepositoryInterface $fileRepository, Selector $selector): DestinationChooserFactory
     {
-        return new DestinationChooserBuilder($fileRepository, $selector, $this);
+        return new DestinationChooserFactory($fileRepository, $selector, $this);
     }
 
     public function createDestinationChooser(

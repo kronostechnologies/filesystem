@@ -13,12 +13,12 @@ class DestinationChooserTest extends TestCase
     private const IMPORTATION_MOUNT_TYPE = 'importation mount type';
 
     /**
-     * @var MountInterface | MockObject
+     * @var MountInterface & MockObject
      */
     private $sourceMount;
 
     /**
-     * @var MountInterface | MockObject
+     * @var MountInterface & MockObject
      */
     private $importationMount;
 

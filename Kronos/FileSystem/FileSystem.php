@@ -2,10 +2,8 @@
 
 namespace Kronos\FileSystem;
 
-use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
-use Kronos\FileSystem\Copy\DestinationChooserBuilder;
+use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\FileNotFoundException;
@@ -41,9 +39,9 @@ class FileSystem implements FileSystemInterface
     private $promiseFactory;
 
     /**
-     * @var DestinationChooserBuilder
+     * @var DestinationChooserFactory
      */
-    private $destinationChooserBuilder;
+    private $destinationChooserFactory;
 
     /**
      * @var ExtensionList
@@ -59,11 +57,11 @@ class FileSystem implements FileSystemInterface
     ) {
         $this->mountSelector = $mountSelector;
         $this->fileRepository = $fileRepository;
-        $this->metadataTranslator = ($metadataTranslator ?: new MetadataTranslator());
+        $this->metadataTranslator = $metadataTranslator ?? new MetadataTranslator();
         $this->promiseFactory = $promiseFactory ?? new PromiseFactory();
 
         $safeCopyFactory = $copyFactory ?? new CopyFactory();
-        $this->destinationChooserBuilder = $safeCopyFactory->createDestinationChooserBuilder(
+        $this->destinationChooserFactory = $safeCopyFactory->createDestinationChooserFactory(
             $fileRepository,
             $mountSelector
         );
@@ -193,7 +191,7 @@ class FileSystem implements FileSystemInterface
 
     public function copyAsync($id): PromiseInterface
     {
-        $chooser = $this->destinationChooserBuilder->getChooserForFileId($id);
+        $chooser = $this->destinationChooserFactory->getChooserForFileId($id);
 
         $fileName = $this->fileRepository->getFileName($id);
         $destinationId = $this->fileRepository->addNewFile($chooser->getDestinationMountType(), $fileName);

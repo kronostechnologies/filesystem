@@ -14,7 +14,7 @@ use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class AsyncApapterTest extends TestCase
+class AsyncAdapterTest extends TestCase
 {
     const PATH = 'path';
     const CONTENTS = 'contents';
@@ -336,7 +336,7 @@ class AsyncApapterTest extends TestCase
 
         $actualPromise = $this->asyncAdapter->copy(self::SOURCE_PATH, self::TARGET_PATH);
 
-        $this->assertSame($expectedPromise, $actualPromise);
+        self::assertSame($expectedPromise, $actualPromise);
     }
 
     protected function givenSetup($withPromise = true): void

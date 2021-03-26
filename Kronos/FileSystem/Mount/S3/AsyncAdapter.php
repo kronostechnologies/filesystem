@@ -51,7 +51,7 @@ class AsyncAdapter
         $this->configTranslator = $configTranslator ?? new ConfigToOptionsTranslator();
     }
 
-    public function upload($path, $content): PromiseInterface
+    public function upload(string $path, $content): PromiseInterface
     {
         $options = $this->configTranslator->translate($this->mount->getConfig());
          if ( ! isset($options['ContentType'])) {
@@ -77,7 +77,7 @@ class AsyncAdapter
          );
     }
 
-    public function copy($sourcePath, $targetPath): PromiseInterface
+    public function copy(string $sourcePath, string $targetPath): PromiseInterface
     {
         $bucketName = $this->s3Adapter->getBucket();
 

@@ -5,7 +5,7 @@ namespace Kronos\FileSystem\Copy;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\Mount\Selector;
 
-class DestinationChooserBuilder
+class DestinationChooserFactory
 {
     /**
      * @var FileRepositoryInterface

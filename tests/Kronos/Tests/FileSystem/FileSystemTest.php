@@ -9,7 +9,7 @@ use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Copy\DestinationChooser;
-use Kronos\FileSystem\Copy\DestinationChooserBuilder;
+use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
@@ -45,22 +45,22 @@ class FileSystemTest extends TestCase
     const FILE_STREAM = 'file stream';
 
     /**
-     * @var File|MockObject
+     * @var File & MockObject
      */
     private $file;
 
     /**
-     * @var Metadata|MockObject
+     * @var Metadata & MockObject
      */
     private $metadata;
 
     /**
-     * @var Selector|MockObject
+     * @var Selector & MockObject
      */
     private $mountSelector;
 
     /**
-     * @var FileRepositoryInterface|MockObject
+     * @var FileRepositoryInterface & MockObject
      */
     private $fileRepository;
 
@@ -70,42 +70,42 @@ class FileSystemTest extends TestCase
     private $fileSystem;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $mount;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $sourceMount;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $importationMount;
 
     /**
-     * @var MetadataTranslator|MockObject
+     * @var MetadataTranslator & MockObject
      */
     private $metadataTranslator;
 
     /**
-     * @var PromiseFactory|MockObject
+     * @var PromiseFactory & MockObject
      */
     private $promiseFactory;
 
     /**
-     * @var CopyFactory|MockObject
+     * @var CopyFactory & MockObject
      */
     private $copyFactory;
 
     /**
-     * @var DestinationChooserBuilder|MockObject
+     * @var DestinationChooserFactory & MockObject
      */
-    private $destinationChooserBuilder;
+    private $destinationChooserFactory;
 
     /**
-     * @var DestinationChooser|MockObject
+     * @var DestinationChooser & MockObject
      */
     private $destinationChooser;
 
@@ -117,11 +117,11 @@ class FileSystemTest extends TestCase
         $this->mountSelector = $this->createMock(Selector::class);
         $this->fileRepository = $this->createMock(FileRepositoryInterface::class);
         $this->promiseFactory = $this->createMock(PromiseFactory::class);
-        $this->destinationChooserBuilder = $this->createMock(DestinationChooserBuilder::class);
+        $this->destinationChooserFactory = $this->createMock(DestinationChooserFactory::class);
         $this->copyFactory = $this->createMock(CopyFactory::class);
         $this->copyFactory
-            ->method('createDestinationChooserBuilder')
-            ->willReturn($this->destinationChooserBuilder);
+            ->method('createDestinationChooserFactory')
+            ->willReturn($this->destinationChooserFactory);
 
         $this->fileSystem = new FileSystem(
             $this->mountSelector,
@@ -138,11 +138,11 @@ class FileSystemTest extends TestCase
         unset($this->file);
     }
 
-    public function test_constructor_shouldCreateDestinationChooserBuilder(): void
+    public function test_constructor_shouldCreateDestinationChooserFactory(): void
     {
         $this->copyFactory
             ->expects(self::once())
-            ->method('createDestinationChooserBuilder')
+            ->method('createDestinationChooserFactory')
             ->with(
                 $this->fileRepository,
                 $this->mountSelector
@@ -1161,7 +1161,7 @@ class FileSystemTest extends TestCase
         $this->givenChooserCanUseCopy();
         $this->setupSourceMountAndFile();
         $this->setupCopyAsyncPromiseChain();
-        $this->destinationChooserBuilder
+        $this->destinationChooserFactory
             ->expects(self::once())
             ->method('getChooserForFileId')
             ->with(self::UUID);
@@ -1519,7 +1519,7 @@ class FileSystemTest extends TestCase
     protected function givenDestinationChooser(): void
     {
         $this->destinationChooser = $this->createMock(DestinationChooser::class);
-        $this->destinationChooserBuilder
+        $this->destinationChooserFactory
             ->method('getChooserForFileId')
             ->willReturn($this->destinationChooser);
     }

@@ -3,7 +3,7 @@
 namespace Kronos\Tests\FileSystem\Copy;
 
 use Kronos\FileSystem\Copy\DestinationChooser;
-use Kronos\FileSystem\Copy\DestinationChooserBuilder;
+use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\Mount\MountInterface;
@@ -17,27 +17,27 @@ class DestinationChooserBuilderTest extends TestCase
     const SOURCE_MOUNT_TYPE = 'source mount';
     const IMPORTATION_MOUNT_TYPE = 'importation mount';
     /**
-     * @var FileRepositoryInterface | MockObject
+     * @var FileRepositoryInterface & MockObject
      */
     private $fileRepository;
 
     /**
-     * @var Selector | MockObject
+     * @var Selector & MockObject
      */
     private $selector;
 
     /**
-     * @var Factory | MockObject
+     * @var Factory & MockObject
      */
     private $factory;
 
     /**
-     * @var MountInterface | MockObject
+     * @var MountInterface & MockObject
      */
     private $sourceMount;
 
     /**
-     * @var MountInterface | MockObject
+     * @var MountInterface & MockObject
      */
     private $importationMount;
 
@@ -55,7 +55,7 @@ class DestinationChooserBuilderTest extends TestCase
         $this->setUpMountTypes();
         $this->setUpSelectorAndMounts();
 
-        $this->builder = new DestinationChooserBuilder(
+        $this->builder = new DestinationChooserFactory(
             $this->fileRepository,
             $this->selector,
             $this->factory
