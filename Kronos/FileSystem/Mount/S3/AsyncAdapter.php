@@ -10,7 +10,7 @@ use \RuntimeException;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 
-class AsyncUploader
+class AsyncAdapter
 {
     /**
      * @var Filesystem
@@ -51,7 +51,7 @@ class AsyncUploader
         $this->configTranslator = $configTranslator ?? new ConfigToOptionsTranslator();
     }
 
-    public function upload($path, $content): PromiseInterface
+    public function upload(string $path, $content): PromiseInterface
     {
         $options = $this->configTranslator->translate($this->mount->getConfig());
          if ( ! isset($options['ContentType'])) {
@@ -75,5 +75,19 @@ class AsyncUploader
             $acl,
             ['params' => $options]
          );
+    }
+
+    public function copy(string $sourcePath, string $targetPath): PromiseInterface
+    {
+        $bucketName = $this->s3Adapter->getBucket();
+
+        return $this->s3Client->copyAsync(
+            $bucketName,
+            $this->s3Adapter->applyPathPrefix($sourcePath),
+            $bucketName,
+            $this->s3Adapter->applyPathPrefix($targetPath),
+            'private',
+            $this->configTranslator->translate($this->mount->getConfig())
+        );
     }
 }

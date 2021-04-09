@@ -8,6 +8,9 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
+use Kronos\FileSystem\Copy\DestinationChooser;
+use Kronos\FileSystem\Copy\DestinationChooserFactory;
+use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
 use Kronos\FileSystem\ExtensionList;
@@ -38,24 +41,26 @@ class FileSystemTest extends TestCase
     const PUT_STREAM_RESULT = self::HAS_FILE;
     const HAS_FILE = true;
     const REPOSITORY_DELETE_EXCEPTION_MESSAGE = 'failed';
+    const DESTINATION_MOUNT_TYPE = 'destination mount type';
+    const FILE_STREAM = 'file stream';
 
     /**
-     * @var File|MockObject
+     * @var File & MockObject
      */
     private $file;
 
     /**
-     * @var Metadata|MockObject
+     * @var Metadata & MockObject
      */
     private $metadata;
 
     /**
-     * @var Selector|MockObject
+     * @var Selector & MockObject
      */
     private $mountSelector;
 
     /**
-     * @var FileRepositoryInterface|MockObject
+     * @var FileRepositoryInterface & MockObject
      */
     private $fileRepository;
 
@@ -65,29 +70,44 @@ class FileSystemTest extends TestCase
     private $fileSystem;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $mount;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $sourceMount;
 
     /**
-     * @var MountInterface|MockObject
+     * @var MountInterface & MockObject
      */
     private $importationMount;
 
     /**
-     * @var MetadataTranslator|MockObject
+     * @var MetadataTranslator & MockObject
      */
     private $metadataTranslator;
 
     /**
-     * @var PromiseFactory|MockObject
+     * @var PromiseFactory & MockObject
      */
     private $promiseFactory;
+
+    /**
+     * @var CopyFactory & MockObject
+     */
+    private $copyFactory;
+
+    /**
+     * @var DestinationChooserFactory & MockObject
+     */
+    private $destinationChooserFactory;
+
+    /**
+     * @var DestinationChooser & MockObject
+     */
+    private $destinationChooser;
 
     public function setUp(): void
     {
@@ -97,15 +117,44 @@ class FileSystemTest extends TestCase
         $this->mountSelector = $this->createMock(Selector::class);
         $this->fileRepository = $this->createMock(FileRepositoryInterface::class);
         $this->promiseFactory = $this->createMock(PromiseFactory::class);
+        $this->destinationChooserFactory = $this->createMock(DestinationChooserFactory::class);
+        $this->copyFactory = $this->createMock(CopyFactory::class);
+        $this->copyFactory
+            ->method('createDestinationChooserFactory')
+            ->willReturn($this->destinationChooserFactory);
 
-        $this->fileSystem = new FileSystem($this->mountSelector, $this->fileRepository, $this->metadataTranslator,
-            $this->promiseFactory);
+        $this->fileSystem = new FileSystem(
+            $this->mountSelector,
+            $this->fileRepository,
+            $this->metadataTranslator,
+            $this->promiseFactory,
+            $this->copyFactory
+        );
     }
 
     public function tearDown(): void
     {
         unset($this->metadata);
         unset($this->file);
+    }
+
+    public function test_constructor_shouldCreateDestinationChooserFactory(): void
+    {
+        $this->copyFactory
+            ->expects(self::once())
+            ->method('createDestinationChooserFactory')
+            ->with(
+                $this->fileRepository,
+                $this->mountSelector
+            );
+
+        $this->fileSystem = new FileSystem(
+            $this->mountSelector,
+            $this->fileRepository,
+            $this->metadataTranslator,
+            $this->promiseFactory,
+            $this->copyFactory
+        );
     }
 
     public function test_resource_put_shouldGetImportationMount()
@@ -1320,6 +1369,215 @@ class FileSystemTest extends TestCase
         $this->assertEquals(self::NEW_FILE_UUID, $actualUuid);
     }
 
+    public function test_uuid_copyAsync_shouldGetChooserForFileId(): void
+    {
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->setupSourceMountAndFile();
+        $this->setupCopyAsyncPromiseChain();
+        $this->destinationChooserFactory
+            ->expects(self::once())
+            ->method('getChooserForFileId')
+            ->with(self::UUID);
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_chooser_copyAsync_shouldGetDestinationMountType(): void
+    {
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->setupSourceMountAndFile();
+        $this->setupCopyAsyncPromiseChain();
+        $this->destinationChooser
+            ->expects(self::once())
+            ->method('getDestinationMountType');
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_uuid_copyAsync_shouldGetFileName(): void
+    {
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->setupSourceMountAndFile();
+        $this->setupCopyAsyncPromiseChain();
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('getFileName')
+            ->with(self::UUID);
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_destinationMountTypeAndFileName_copyAsync_shouldAddNewFile(): void
+    {
+        $this->givenFileName();
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->setupSourceMountAndFile();
+        $this->setupCopyAsyncPromiseChain();
+        $this->destinationChooser
+            ->method('getDestinationMountType')
+            ->willReturn(self::DESTINATION_MOUNT_TYPE);
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('addNewFile')
+            ->with(
+                self::DESTINATION_MOUNT_TYPE,
+                self::FILE_NAME
+            );
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_chooser_copyAsync_shouldVerifyIfCopyCanBeUsed(): void
+    {
+        $this->givenDestinationChooser();
+        $this->setupSourceMountAndFile();
+        $this->setupCopyAsyncPromiseChain();
+        $this->destinationChooser
+            ->expects(self::once())
+            ->method('canUseCopy')
+            ->willReturn(true);
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_canUseCopy_copyAsync_shouldCopyAsync(): void
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $chainedPromise = $this->createMock(PromiseInterface::class);
+        $this->givenFileName();
+        $this->fileRepository
+            ->method('addNewFile')
+            ->willReturn(self::NEW_FILE_UUID);
+        $destinationMount = $this->createMock(MountInterface::class);
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->destinationChooser
+            ->expects(self::once())
+            ->method('getDestinationMount')
+            ->willReturn($destinationMount);
+        $destinationMount
+            ->expects(self::once())
+            ->method('copyAsync')
+            ->with(
+                self::UUID,
+                self::NEW_FILE_UUID,
+                self::FILE_NAME
+            )
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->method('then')
+            ->willReturn($chainedPromise);
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_cannotUseCopy_copyAsync_shouldGetFileFromSourceMountAndPutStreamAsync(): void
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $chainedPromise = $this->createMock(PromiseInterface::class);
+        $file = $this->createMock(File::class);
+        $file
+            ->expects(self::once())
+            ->method('readStream')
+            ->willReturn(self::FILE_STREAM);
+        $this->givenFileName();
+        $this->fileRepository
+            ->method('addNewFile')
+            ->willReturn(self::NEW_FILE_UUID);
+        $this->givenDestinationChooser();
+        $this->destinationChooser
+            ->method('canUseCopy')
+            ->willReturn(false);
+        $sourceMount = $this->createMock(MountInterface::class);
+        $this->destinationChooser
+            ->method('getSourceMount')
+            ->willReturn($sourceMount);
+        $sourceMount
+            ->method('get')
+            ->willReturn($file);
+        $destinationMount = $this->createMock(MountInterface::class);
+        $this->destinationChooser
+            ->method('getDestinationMount')
+            ->willReturn($destinationMount);
+        $destinationMount
+            ->expects(self::once())
+            ->method('putStreamAsync')
+            ->with(
+                self::NEW_FILE_UUID,
+                self::FILE_STREAM,
+                self::FILE_NAME
+            )
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->method('then')
+            ->willReturn($chainedPromise);
+
+        $this->fileSystem->copyAsync(self::UUID);
+    }
+
+    public function test_promise_copyAsync_shouldAddOnFulfilledCallbackAndReturnPromise(): void
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->givenFileName();
+        $this->fileRepository
+            ->method('addNewFile')
+            ->willReturn(self::NEW_FILE_UUID);
+        $destinationMount = $this->createMock(MountInterface::class);
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->destinationChooser
+            ->expects(self::once())
+            ->method('getDestinationMount')
+            ->willReturn($destinationMount);
+        $destinationMount
+            ->method('copyAsync')
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(self::isInstanceOf(Closure::class))
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->copyAsync(self::UUID);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_promiseFulfilled_copyAsync_shouldReturnDestinationId(): void
+    {
+        $this->givenDestinationChooser();
+        $this->givenChooserCanUseCopy();
+        $this->setupSourceMountAndFile();
+        $this->fileRepository
+            ->method('addNewFile')
+            ->willReturn(self::NEW_FILE_UUID);
+        $mountPromise = new FulfilledPromise(true);
+        $mount = $this->createMock(MountInterface::class);
+        $this->destinationChooser
+            ->method('getDestinationMount')
+            ->willReturn($mount);
+        $mount
+            ->method('copyAsync')
+            ->willReturn($mountPromise);
+        $called = false;
+        $fulfilledValue = null;
+
+        $promise = $this->fileSystem->copyAsync(self::UUID);
+        $promise->then(function ($value) use (&$called, &$fulfilledValue) {
+            $called = true;
+            $fulfilledValue = $value;
+        });
+        queue()->run();
+
+        self::assertTrue($called);
+        self::assertEquals(self::NEW_FILE_UUID, $fulfilledValue);
+    }
+
     public function test_Uuid_has_shouldGetFileMountType()
     {
         $this->fileRepository
@@ -1502,5 +1760,51 @@ class FileSystemTest extends TestCase
             ->method('then')
             ->willReturn($chainedPromise);
         return $mountPromise;
+    }
+  
+    protected function givenDestinationChooser(): void
+    {
+        $this->destinationChooser = $this->createMock(DestinationChooser::class);
+        $this->destinationChooserFactory
+            ->method('getChooserForFileId')
+            ->willReturn($this->destinationChooser);
+    }
+
+    protected function setupSourceMountAndFile(): void
+    {
+        $file = $this->createMock(File::class);
+        $file
+            ->method('readStream')
+            ->willReturn(self::FILE_STREAM);
+        $sourceMount = $this->createMock(MountInterface::class);
+        $this->destinationChooser
+            ->method('getSourceMount')
+            ->willReturn($sourceMount);
+        $sourceMount
+            ->method('get')
+            ->willReturn($file);
+    }
+
+    protected function givenChooserCanUseCopy(): void
+    {
+        $this->destinationChooser
+            ->method('canUseCopy')
+            ->willReturn(true);
+    }
+
+    protected function setupCopyAsyncPromiseChain(): void
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $copyAsyncPromise = $this->createMock(PromiseInterface::class);
+        $mount = $this->createMock(MountInterface::class);
+        $this->destinationChooser
+            ->method('getDestinationMount')
+            ->willReturn($mount);
+        $mount
+            ->method('copyAsync')
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->method('then')
+            ->willReturn($copyAsyncPromise);
     }
 }

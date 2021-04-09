@@ -492,6 +492,47 @@ class LocalTest extends TestCase
         $this->assertEquals(self::COPY_RESULT, $actualResult);
     }
 
+    public function test_copyAsync_shouldGeneratePathForSourceUuid()
+    {
+        $this->pathGenerator
+            ->expects(self::at(0))
+            ->method('generatePath')
+            ->with(self::SOURCE_UUID, self::A_FILE_NAME);
+
+        $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+    }
+
+    public function test_SourcePath_copyAsync_shouldGeneratePathForTargetUuid()
+    {
+        $this->pathGenerator
+            ->expects(self::at(1))
+            ->method('generatePath')
+            ->with(self::TARGET_UUID, self::A_FILE_NAME);
+
+        $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+    }
+
+    public function test_Paths_copyAsync_shouldCopySourcePathToTargetPathAndReturnFulfilledPromiseWithResult()
+    {
+        $this->pathGenerator->method('generatePath')->willReturnOnConsecutiveCalls(self::SOURCE_PATH,
+            self::TARGET_PATH);
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('copy')
+            ->with(self::SOURCE_PATH, self::TARGET_PATH)
+            ->willReturn(self::COPY_RESULT);
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(self::COPY_RESULT)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
     public function test_UuidAndName_has_shouldGeneratePath()
     {
         $this->pathGenerator
