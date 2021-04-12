@@ -271,6 +271,7 @@ class FileSystemTest extends TestCase
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
         $mountPromise = $this->buildMountPutAsyncPromiseChain();
+
         $this->mount
             ->expects(self::once())
             ->method('putAsync')
@@ -288,6 +289,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->method('putAsync')
             ->willReturn($mountPromise);
+
         $mountPromise
             ->expects(self::once())
             ->method('then')
@@ -332,6 +334,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->method('putAsync')
             ->willReturn($mountPromise);
+
         $this->fileRepository
             ->expects(self::once())
             ->method('delete')
@@ -428,14 +431,15 @@ class FileSystemTest extends TestCase
 
     public function test_resource_putStreamAsync_shouldGetImportationMount()
     {
-        $this->mountSelector
-            ->expects(self::once())
-            ->method('getImportationMount')
-            ->willReturn($this->mount);
         $mountPromise = $this->buildMountPutStreamAsyncPromiseChain();
         $this->mount
             ->method('putStreamAsync')
             ->willReturn($mountPromise);
+
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('getImportationMount')
+            ->willReturn($this->mount);
 
         $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
     }
@@ -462,6 +466,7 @@ class FileSystemTest extends TestCase
         $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
         $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
         $mountPromise = $this->buildMountPutStreamAsyncPromiseChain();
+
         $this->mount
             ->expects(self::once())
             ->method('putStreamAsync')
@@ -479,6 +484,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->method('putStreamAsync')
             ->willReturn($mountPromise);
+
         $mountPromise
             ->expects(self::once())
             ->method('then')
@@ -523,6 +529,7 @@ class FileSystemTest extends TestCase
         $this->mount
             ->method('putStreamAsync')
             ->willReturn($mountPromise);
+        
         $this->fileRepository
             ->expects(self::once())
             ->method('delete')
@@ -1761,7 +1768,7 @@ class FileSystemTest extends TestCase
             ->willReturn($chainedPromise);
         return $mountPromise;
     }
-  
+
     protected function givenDestinationChooser(): void
     {
         $this->destinationChooser = $this->createMock(DestinationChooser::class);
