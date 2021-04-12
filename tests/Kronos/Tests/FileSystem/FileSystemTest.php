@@ -235,6 +235,116 @@ class FileSystemTest extends TestCase
         $this->fileSystem->put(self::A_FILE_PATH, self::FILE_NAME);
     }
 
+    public function test_resource_putAsync_shouldGetImportationMount()
+    {
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('getImportationMount')
+            ->willReturn($this->mount);
+        $mountPromise = $this->buildMountPutAsyncPromiseChain();
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+
+        $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_mount_putAsync_shouldAddNewFile()
+    {
+        $this->mount->method('getMountType')->willReturn(self::MOUNT_TYPE);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $mountPromise = $this->buildMountPutAsyncPromiseChain();
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('addNewFile')
+            ->with(self::MOUNT_TYPE, self::FILE_NAME);
+
+        $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_mountAndUuid_putAsync_putFileAsync()
+    {
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $mountPromise = $this->buildMountPutAsyncPromiseChain();
+
+        $this->mount
+            ->expects(self::once())
+            ->method('putAsync')
+            ->with(self::UUID, self::A_FILE_PATH, self::FILE_NAME)
+            ->willReturn($mountPromise);
+
+        $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_fileAsBeenWritten_putAsync_shouldReturnFileUuid()
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+
+        $mountPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                self::isInstanceOf(Closure::class),
+                self::isInstanceOf(Closure::class)
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_mountPromiseFulfilled_putAsync_chainedPromiseShouldResolveToFileUUID()
+    {
+        $mountPromise = new FulfilledPromise(true);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+        $called = false;
+        $calledWith = null;
+
+        $actualPromise = $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+        $actualPromise->then(static function($value) use (&$called, &$calledWith) {
+            $called = true;
+            $calledWith = $value;
+        });
+        queue()->run();
+
+        self::assertTrue($called);
+        self::assertEquals(self::UUID, $calledWith);
+    }
+
+    public function test_mountPromiseRejected_putAsync_shouldDeleteNewFileAndThrowException()
+    {
+        $mountPromise = new RejectedPromise('rejected');
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('delete')
+            ->with(self::UUID);
+        $this->expectException(FileCantBeWrittenException::class);
+
+        $actualPromise = $this->fileSystem->putAsync(self::A_FILE_PATH, self::FILE_NAME);
+        $actualPromise->wait();
+    }
+
     public function test_resource_putStream_shouldGetImportationMount()
     {
         $stream = tmpfile();
@@ -317,6 +427,117 @@ class FileSystemTest extends TestCase
             ->with(self::UUID);
 
         $this->fileSystem->putStream($stream, self::FILE_NAME);
+    }
+
+    public function test_resource_putStreamAsync_shouldGetImportationMount()
+    {
+        $mountPromise = $this->buildMountPutStreamAsyncPromiseChain();
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+
+        $this->mountSelector
+            ->expects(self::once())
+            ->method('getImportationMount')
+            ->willReturn($this->mount);
+
+        $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_mount_putStreamAsync_shouldAddNewFile()
+    {
+        $this->mount->method('getMountType')->willReturn(self::MOUNT_TYPE);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $mountPromise = $this->buildMountPutStreamAsyncPromiseChain();
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('addNewFile')
+            ->with(self::MOUNT_TYPE, self::FILE_NAME);
+
+        $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_mountAndUuid_putStreamAsync_putFileAsync()
+    {
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $mountPromise = $this->buildMountPutStreamAsyncPromiseChain();
+
+        $this->mount
+            ->expects(self::once())
+            ->method('putStreamAsync')
+            ->with(self::UUID, self::A_FILE_PATH, self::FILE_NAME)
+            ->willReturn($mountPromise);
+
+        $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+    }
+
+    public function test_fileAsBeenWritten_putStreamAsync_shouldReturnFileUuid()
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+
+        $mountPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                self::isInstanceOf(Closure::class),
+                self::isInstanceOf(Closure::class)
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_mountPromiseFulfilled_putStreamAsync_chainedPromiseShouldResolveToFileUUID()
+    {
+        $mountPromise = new FulfilledPromise(true);
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+        $called = false;
+        $calledWith = null;
+
+        $actualPromise = $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+        $actualPromise->then(static function($value) use (&$called, &$calledWith) {
+            $called = true;
+            $calledWith = $value;
+        });
+        queue()->run();
+
+        self::assertTrue($called);
+        self::assertEquals(self::UUID, $calledWith);
+    }
+
+    public function test_mountPromiseRejected_putStreamAsync_shouldDeleteNewFileAndThrowException()
+    {
+        $mountPromise = new RejectedPromise('rejected');
+        $this->mountSelector->method('getImportationMount')->willReturn($this->mount);
+        $this->fileRepository->method('addNewFile')->willReturn(self::UUID);
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+        
+        $this->fileRepository
+            ->expects(self::once())
+            ->method('delete')
+            ->with(self::UUID);
+        $this->expectException(FileCantBeWrittenException::class);
+
+        $actualPromise = $this->fileSystem->putStreamAsync(self::A_FILE_PATH, self::FILE_NAME);
+        $actualPromise->wait();
     }
 
     public function test_givenId_getUrl_shouldMountAssociatedWithId()
@@ -1514,6 +1735,38 @@ class FileSystemTest extends TestCase
     protected function givenMountHasFile()
     {
         $this->mount->method('has')->willReturn(true);
+    }
+
+    /**
+     * @return PromiseInterface&MockObject
+     */
+    protected function buildMountPutAsyncPromiseChain()
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $chainedPromise = $this->createMock(PromiseInterface::class);
+        $this->mount
+            ->method('putAsync')
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->method('then')
+            ->willReturn($chainedPromise);
+        return $mountPromise;
+    }
+
+    /**
+     * @return PromiseInterface&MockObject
+     */
+    protected function buildMountPutStreamAsyncPromiseChain()
+    {
+        $mountPromise = $this->createMock(PromiseInterface::class);
+        $chainedPromise = $this->createMock(PromiseInterface::class);
+        $this->mount
+            ->method('putStreamAsync')
+            ->willReturn($mountPromise);
+        $mountPromise
+            ->method('then')
+            ->willReturn($chainedPromise);
+        return $mountPromise;
     }
 
     protected function givenDestinationChooser(): void

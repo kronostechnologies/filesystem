@@ -86,6 +86,27 @@ class FileSystem implements FileSystemInterface
         return $fileUuid;
     }
 
+    public function putAsync($filePath, $fileName): PromiseInterface
+    {
+        $mount = $this->mountSelector->getImportationMount();
+        $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
+
+        $promise = $mount->putAsync($fileUuid, $filePath, $fileName);
+
+        return $promise->then(
+            static function () use ($fileUuid) {
+                return $fileUuid;
+            },
+            function ($reason) use ($fileUuid, $mount) {
+                $this->fileRepository->delete($fileUuid);
+                throw new FileCantBeWrittenException(
+                    $mount->getMountType(),
+                    $reason instanceof Throwable ? $reason : null
+                );
+            }
+        );
+    }
+
     /**
      * @param resource $stream
      * @param string $fileName
@@ -97,13 +118,33 @@ class FileSystem implements FileSystemInterface
         $mount = $this->mountSelector->getImportationMount();
         $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
 
-
         if (!$mount->putStream($fileUuid, $stream, $fileName)) {
             $this->fileRepository->delete($fileUuid);
             throw new FileCantBeWrittenException($mount->getMountType());
         }
 
         return $fileUuid;
+    }
+
+    public function putStreamAsync($stream, $fileName): PromiseInterface
+    {
+        $mount = $this->mountSelector->getImportationMount();
+        $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
+
+        $promise = $mount->putStreamAsync($fileUuid, $stream, $fileName);
+
+        return $promise->then(
+            static function () use ($fileUuid) {
+                return $fileUuid;
+            },
+            function ($reason) use ($fileUuid, $mount) {
+                $this->fileRepository->delete($fileUuid);
+                throw new FileCantBeWrittenException(
+                    $mount->getMountType(),
+                    $reason instanceof Throwable ? $reason : null
+                );
+            }
+        );
     }
 
     /**
@@ -115,7 +156,7 @@ class FileSystem implements FileSystemInterface
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
 
-        return  $mount->get($id, $fileName);
+        return $mount->get($id, $fileName);
     }
 
     /**
@@ -240,7 +281,7 @@ class FileSystem implements FileSystemInterface
                 }
                 return $didDelete;
             });
-        } catch(Throwable $throwable) {
+        } catch (Throwable $throwable) {
             return $this->promiseFactory->createRejectedPromise($throwable);
         }
     }
