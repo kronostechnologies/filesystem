@@ -486,7 +486,7 @@ class S3Test extends TestCase
             ->expects(self::once())
             ->method('getCommand')
             ->with(
-                'deleteObjectAsync',
+                'deleteObject',
                 [
                     'Bucket' => self::S3_BUCKET,
                     'Key' => self::PREFIXED_PATH
