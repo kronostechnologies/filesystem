@@ -1,20 +1,20 @@
 version: 2
 
 jobs:
-  phpunit-7-2:
+  phpunit-7-4:
     docker:
-      - image: ghcr.io/kronostechnologies/php:7.2-node
+      - image: ghcr.io/kronostechnologies/php:7.4-node
     steps:
       - checkout
       - run: sudo composer self-update
       - restore_cache:
           keys:
-            - v2-deps-7-2-{{ checksum "composer.lock" }}
+            - v2-deps-7-4-{{ checksum "composer.lock" }}
       - run: composer install -n --prefer-dist --ignore-platform-reqs
       - save_cache:
           paths:
             - ./vendor
-          key: v2-deps-7-2-{{ checksum "composer.lock" }}
+          key: v2-deps-7-4-{{ checksum "composer.lock" }}
       - run:
           name: "phpunit"
           command: php -d pcov.enabled=1 -d pcov.directory=. ./vendor/bin/phpunit --coverage-clover ~/php-test-coverage.xml --log-junit ~/test-results/phpunit/junit.xml
@@ -28,4 +28,4 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - phpunit-7-2
+      - phpunit-7-4
