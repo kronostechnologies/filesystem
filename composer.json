@@ -27,7 +27,7 @@
     "elao/enum": "^1.12"
   },
   "require-dev": {
-    "phpunit/phpunit": "^8",
+    "phpunit/phpunit": "^8.5",
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
     "phpcompatibility/php-compatibility": "^9.3"
   }
