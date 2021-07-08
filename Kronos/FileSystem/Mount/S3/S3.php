@@ -157,7 +157,7 @@ class S3 extends FlySystemBaseMount
         $bucket = $s3Adaptor->getBucket();
 
         $command = $s3Client->getCommand(
-            'deleteObjectAsync',
+            'deleteObject',
             [
                 'Bucket' => $bucket,
                 'Key' => $prefixedPath,
