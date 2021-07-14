@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount\S3;
 
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
@@ -89,5 +90,31 @@ class AsyncAdapter
             'private',
             $this->configTranslator->translate($this->mount->getConfig())
         );
+    }
+
+    public function has(string $path): PromiseInterface
+    {
+        $command = $this->s3Client->getCommand(
+            'headObject',
+            [
+                'Bucket' => $this->s3Adapter->getBucket(),
+                'Key' => $this->s3Adapter->applyPathPrefix($path)
+            ]
+        );
+
+        return $this->s3Client
+            ->executeAsync($command)
+            ->then(
+                static function($response) {
+                    return true;
+                },
+                static function($reason) {
+                    if ($reason instanceof S3Exception && $reason->getStatusCode() === 404) {
+                        return false;
+                    }
+
+                    return new RejectedPromise($reason);
+                }
+            );
     }
 }

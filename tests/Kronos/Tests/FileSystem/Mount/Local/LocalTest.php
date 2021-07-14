@@ -557,6 +557,36 @@ class LocalTest extends TestCase
         $this->assertSame(self::HAS_RESULT, $actualResult);
     }
 
+    public function test_UuidAndName_hasAsync_shouldGeneratePath()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID, self::A_FILE_NAME);
+
+        $this->localMount->hasAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_path_hasAsync_shouldGetAndReturnPromiseWithHasResult()
+    {
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->pathGenerator->method('generatePath')->willReturn(self::A_FILE_PATH);
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('has')
+            ->with(self::A_FILE_PATH)
+            ->willReturn(self::HAS_RESULT);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(self::HAS_RESULT)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->localMount->hasAsync(self::UUID, self::A_FILE_NAME);
+
+        $this->assertSame($expectedPromise, $actualPromise);
+    }
+
     protected function givenFulfilledPromise(): void
     {
         $this->promiseFactory->method('createFulfilledPromise')->willReturn($this->createMock(FulfilledPromise::class));

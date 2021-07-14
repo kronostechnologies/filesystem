@@ -168,6 +168,14 @@ abstract class FlySystemBaseMount implements MountInterface
         return $this->mount->has($path);
     }
 
+    public function hasAsync($uuid, $fileName): PromiseInterface
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->promiseFactory->createFulfilledPromise(
+            $this->mount->has($path)
+        );
+    }
+
     /**
      * @return mixed
      */

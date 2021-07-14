@@ -2,6 +2,7 @@
 
 namespace Kronos\FileSystem\Mount;
 
+use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
@@ -163,6 +164,11 @@ abstract class ReferenceMount implements MountInterface
     public function has($uuid, $fileName)
     {
         return true;
+    }
+
+    public function hasAsync($uuid, $fileName): PromiseInterface
+    {
+        return $this->promiseFactory->createFulfilledPromise(true);
     }
 
     /**

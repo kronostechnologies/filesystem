@@ -2,8 +2,14 @@
 
 namespace Kronos\Tests\FileSystem\Mount\S3;
 
+use Aws\CommandInterface;
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Mount\S3\AsyncAdapter;
 use Kronos\FileSystem\Mount\S3\ConfigToOptionsTranslator;
 use Kronos\FileSystem\Mount\S3\SupportedOptionsEnum;
@@ -13,6 +19,8 @@ use League\Flysystem\Config;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+
+use function GuzzleHttp\Promise\queue;
 
 class AsyncAdapterTest extends TestCase
 {
@@ -28,6 +36,7 @@ class AsyncAdapterTest extends TestCase
     const PREFIXED_SOURCE_PATH = 'prefixed source path';
     const TARGET_PATH = 'target path';
     const PREFIXED_TARGET_PATH = 'prefixed target path';
+    const REASON = "REASON";
     /**
      * @var Filesystem|MockObject
      */
@@ -339,6 +348,189 @@ class AsyncAdapterTest extends TestCase
         self::assertSame($expectedPromise, $actualPromise);
     }
 
+    public function test_path_has_shouldApplyPathPrefix(): void
+    {
+        $this->givenSetup();
+        $this->givenCommand();
+        $this->setupHasPromise();
+        $this->s3Adapter
+            ->expects(self::once())
+            ->method('applyPathPrefix')
+            ->with(self::PATH)
+            ->willReturn(self::PREFIXED_PATH);
+
+        $this->asyncAdapter->has(self::PATH);
+    }
+
+    public function test_setup_has_shouldGetBucketName(): void
+    {
+        $this->givenSetup();
+        $this->givenCommand();
+        $this->setupHasPromise();
+        $this->s3Adapter
+            ->expects(self::once())
+            ->method('getBucket')
+            ->willReturn(self::BUCKET_NAME);
+
+        $this->asyncAdapter->has(self::PATH);
+    }
+
+    public function test_prefixedPathAndBucket_has_shouldGetHeadObjectCommand(): void
+    {
+        $this->givenFullSetup();
+        $this->setupHasPromise();
+        $this->s3Client
+            ->expects(self::once())
+            ->method('getCommand')
+            ->with(
+                'headObject',
+                [
+                    'Bucket' => self::BUCKET_NAME,
+                    'Key' => self::PREFIXED_PATH
+                ]
+            )
+            ->willReturn($this->createMock(CommandInterface::class));
+
+        $this->asyncAdapter->has(self::PATH);
+    }
+
+    public function test_command_has_shouldExecuteAsync(): void
+    {
+        $this->givenFullSetup();
+        $command = $this->createMock(CommandInterface::class);
+        $this->s3Client
+            ->method('getCommand')
+            ->willReturn($command);
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise
+            ->method('then')
+            ->willReturn($this->createMock(PromiseInterface::class));
+        $this->s3Client
+            ->expects(self::once())
+            ->method('executeAsync')
+            ->with($command)
+            ->willReturn($promise);
+
+        $this->asyncAdapter->has(self::PATH);
+    }
+
+    public function test_executeAsyncPromise_has_shouldChainAndReturnPromise(): void
+    {
+        $expectedPromise = $this->createMock(PromiseInterface::class);
+        $executeAsyncPromise = $this->createMock(PromiseInterface::class);
+        $this->givenFullSetup();
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($executeAsyncPromise);
+        $executeAsyncPromise
+            ->expects(self::once())
+            ->method('then')
+            ->with(
+                $this->isInstanceOf(\Closure::class),
+                $this->isInstanceOf(\Closure::class)
+            )
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->asyncAdapter->has(self::PATH);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
+
+    public function test_s3HasFile_has_shouldReturnFulfilledPromiseWithTrue(): void
+    {
+        $executeAsyncPromise = new FulfilledPromise($this->createMock(Response::class));
+        $this->givenFullSetup();
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($executeAsyncPromise);
+
+        $promise = $this->asyncAdapter->has(self::PATH);
+
+        $called = false;
+        $promise->then(function($value) use (&$called) {
+            $called = true;
+            self::assertIsBool($value);
+            self::assertTrue($value);
+        });
+
+        queue()->run();
+        self::assertTrue($called);
+    }
+
+    public function test_s3Return404Error_has_shouldReturnFulfilledPromiseWithFalse(): void
+    {
+        $exception = $this->createMock(S3Exception::class);
+        $exception
+            ->method('getStatusCode')
+            ->willReturn(404);
+        $executeAsyncPromise = new RejectedPromise($exception);
+        $this->givenFullSetup();
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($executeAsyncPromise);
+
+        $promise = $this->asyncAdapter->has(self::PATH);
+
+        $called = false;
+        $promise->then(function($value) use (&$called) {
+            $called = true;
+            self::assertIsBool($value);
+            self::assertFalse($value);
+        });
+
+        queue()->run();
+        self::assertTrue($called);
+    }
+
+    public function test_s3ReturnOtherError_has_shouldReturnRejectedPromiseWithError(): void
+    {
+        $exception = $this->createMock(S3Exception::class);
+        $exception
+            ->method('getStatusCode')
+            ->willReturn(401);
+        $executeAsyncPromise = new RejectedPromise($exception);
+        $this->givenFullSetup();
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($executeAsyncPromise);
+
+        $promise = $this->asyncAdapter->has(self::PATH);
+
+        $called = false;
+        $promise->then(null, function($reason) use (&$called) {
+            $called = true;
+            self::assertSame($exception, $reason);
+        });
+
+        queue()->run();
+        self::assertTrue($called);
+    }
+
+    public function test_s3ReturnOtherException_has_shouldReturnRejectedPromiseWithException(): void
+    {
+        $executeAsyncPromise = new RejectedPromise(self::REASON);
+        $this->givenFullSetup();
+        $this->givenCommand();
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($executeAsyncPromise);
+
+        $promise = $this->asyncAdapter->has(self::PATH);
+
+        $called = false;
+        $promise->then(null, function($reason) use (&$called) {
+            $called = true;
+            self::assertEquals(self::REASON, $reason);
+        });
+
+        queue()->run();
+        self::assertTrue($called);
+    }
+
     protected function givenSetup($withPromise = true): void
     {
         $this->configToOptionsTranslator = $this->createMock(ConfigToOptionsTranslator::class);
@@ -377,5 +569,23 @@ class AsyncAdapterTest extends TestCase
             ],
             $options
         );
+    }
+
+    protected function setupHasPromise()
+    {
+        $promise = $this->createMock(PromiseInterface::class);
+        $promise
+            ->method('then')
+            ->willReturn($this->createMock(PromiseInterface::class));
+        $this->s3Client
+            ->method('executeAsync')
+            ->willReturn($promise);
+    }
+
+    protected function givenCommand()
+    {
+        $this->s3Client
+            ->method('getCommand')
+            ->willReturn($this->createMock(CommandInterface::class));
     }
 }

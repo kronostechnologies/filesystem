@@ -6,6 +6,7 @@ use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Closure;
+use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Response;
@@ -992,6 +993,34 @@ class S3Test extends TestCase
         $actualResult = $this->s3mount->has(self::UUID, self::A_FILE_NAME);
 
         $this->assertSame(self::HAS_RESULT, $actualResult);
+    }
+
+    public function test_uuidAndName_hasAsync_shouldGeneratePath()
+    {
+        $this->pathGenerator
+            ->expects(self::once())
+            ->method('generatePath')
+            ->with(self::UUID, self::A_FILE_NAME)
+            ->willReturn(self::A_FILE_PATH);
+
+        $this->s3mount->hasAsync(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_path_hasAsync_shouldGetAndReturnPromiseWithHasResult()
+    {
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->pathGenerator
+            ->method('generatePath')
+            ->willReturn(self::A_FILE_PATH);
+        $this->asyncAdapter
+            ->expects(self::once())
+            ->method('has')
+            ->with(self::A_FILE_PATH)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->s3mount->hasAsync(self::UUID, self::A_FILE_NAME);
+
+        $this->assertSame($expectedPromise, $actualPromise);
     }
 
     protected function givenS3CommandAndPromise(): void

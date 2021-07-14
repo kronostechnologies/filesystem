@@ -204,4 +204,10 @@ class S3 extends FlySystemBaseMount
                 return true;
             });
     }
+
+    public function hasAsync($uuid, $fileName): PromiseInterface
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        return $this->asyncAdapter->has($path);
+    }
 }
