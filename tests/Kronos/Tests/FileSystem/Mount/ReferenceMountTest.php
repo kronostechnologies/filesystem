@@ -79,6 +79,19 @@ class ReferenceMountTest extends TestCase
 
         self::assertSame($expectedPromise, $actualPromise);
     }
+
+    public function test_uuidAndFilename_hasAsync_shouldReturnFulfilledPromise() {
+        $expectedPromise = $this->createMock(FulfilledPromise::class);
+        $this->promiseFactory
+            ->expects(self::once())
+            ->method('createFulfilledPromise')
+            ->with(true)
+            ->willReturn($expectedPromise);
+
+        $actualPromise = $this->mount->hasAsync(self::UUID, self::FILENAME);
+
+        self::assertSame($expectedPromise, $actualPromise);
+    }
 }
 
 class TestableReferenceMount extends ReferenceMount

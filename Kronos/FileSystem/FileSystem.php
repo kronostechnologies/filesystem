@@ -3,6 +3,7 @@
 namespace Kronos\FileSystem;
 
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
@@ -269,18 +270,20 @@ class FileSystem implements FileSystemInterface
             $fileName = $this->fileRepository->getFileName($id);
             $mount = $this->getMountForId($id);
 
-            if ($mount->has($id, $fileName)) {
-                $promise = $mount->deleteAsync($id, $fileName);
-            } else {
-                $promise = $this->promiseFactory->createFulfilledPromise(true);
-            }
-
-            return $promise->then(function ($didDelete) use ($id) {
-                if ($didDelete) {
-                    $this->fileRepository->delete($id);
-                }
-                return $didDelete;
-            });
+            return $mount
+                ->hasAsync($id, $fileName)
+                ->then(static function ($hasFile) use ($mount, $id, $fileName) {
+                    if ($hasFile) {
+                        return $mount->deleteAsync($id, $fileName);
+                    }
+                    return true; // Act as if file was deleted, it was not in mount anyway
+                })
+                ->then(function ($didDelete) use ($id) {
+                    if ($didDelete) {
+                        $this->fileRepository->delete($id);
+                    }
+                    return $didDelete;
+                });
         } catch (Throwable $throwable) {
             return $this->promiseFactory->createRejectedPromise($throwable);
         }
@@ -306,6 +309,17 @@ class FileSystem implements FileSystemInterface
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
         return $mount->has($id, $fileName);
+    }
+
+    /**
+     * @param string $id
+     * @return bool
+     */
+    public function hasAsync($id): PromiseInterface
+    {
+        $mount = $this->getMountForId($id);
+        $fileName = $this->fileRepository->getFileName($id);
+        return $mount->hasAsync($id, $fileName);
     }
 
     /**

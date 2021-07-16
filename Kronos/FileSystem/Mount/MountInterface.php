@@ -87,6 +87,8 @@ interface MountInterface
      */
     public function has($uuid, $fileName);
 
+    public function hasAsync($uuid, $fileName): PromiseInterface;
+
     /**
      * @param string $uuid
      * @param $fileName
