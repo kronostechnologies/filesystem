@@ -56,7 +56,7 @@ class AsyncAdapter
     {
         $options = $this->configTranslator->translate($this->mount->getConfig());
          if ( ! isset($options['ContentType'])) {
-            $options['ContentType'] = Util::guessMimeType($path, $content);
+            $options['ContentType'] = Util\MimeType::detectByFilename($path);
         }
 
         if ( ! isset($options['ContentLength'])) {
