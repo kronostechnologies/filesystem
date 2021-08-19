@@ -15,7 +15,7 @@ use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\PromiseFactory;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Util;
+use League\Flysystem\Util\MimeType;
 
 class S3 extends FlySystemBaseMount
 {
@@ -172,6 +172,21 @@ class S3 extends FlySystemBaseMount
             });
     }
 
+    /**
+     * Write a new file using a stream.
+     *
+     * @param string $uuid
+     * @param string $filePath
+     * @param $fileName
+     * @return bool
+     */
+    public function put($uuid, $filePath, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $mimeType = MimeType::detectByFilename($fileName);
+        return $this->mount->put($path, $this->getFileContent($filePath), ['ContentType' => $mimeType]);
+    }
+
     public function putAsync($uuid, $filePath, $fileName): PromiseInterface
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
@@ -181,6 +196,13 @@ class S3 extends FlySystemBaseMount
             ->then(function($response) {
                 return true;
             });
+    }
+
+    public function putStream($uuid, $stream, $fileName)
+    {
+        $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        $mimeType = MimeType::detectByFilename($fileName);
+        return $this->mount->putStream($path, $stream, ['ContentType' => $mimeType]);
     }
 
     public function putStreamAsync($uuid, $stream, $fileName): PromiseInterface

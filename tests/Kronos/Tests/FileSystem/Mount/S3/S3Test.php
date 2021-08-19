@@ -20,6 +20,8 @@ use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
+use League\Flysystem\Util\MimeType;
+use League\MimeTypeDetection\MimeTypeDetector;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -47,24 +49,25 @@ class S3Test extends TestCase
     const COPY_RESULT = self::HAS_RESULT;
     const HAS_RESULT = true;
     const PREFIXED_PATH = 'prefixed path';
+    const MIME_TYPE = 'mime/type';
 
     /**
-     * @var PathGeneratorInterface|MockObject
+     * @var PathGeneratorInterface&MockObject
      */
     private $pathGenerator;
 
     /**
-     * @var AwsS3Adapter|MockObject
+     * @var AwsS3Adapter&MockObject
      */
     private $s3Adapter;
 
     /**
-     * @var FileSystem|MockObject
+     * @var FileSystem&MockObject
      */
     private $fileSystem;
 
     /**
-     * @var S3Client|MockObject
+     * @var S3Client&MockObject
      */
     private $s3Client;
 
@@ -74,19 +77,25 @@ class S3Test extends TestCase
     private $s3mount;
 
     /**
-     * @var PromiseFactory|MockObject
+     * @var PromiseFactory&MockObject
      */
     private $promiseFactory;
 
     /**
-     * @var S3Factory|MockObject
+     * @var S3Factory&MockObject
      */
     private $factory;
 
     /**
-     * @var AsyncAdapter|MockObject
+     * @var AsyncAdapter&MockObject
      */
     private $asyncAdapter;
+
+    /**
+     * @var MimeTypeDetector&MockObject
+     */
+    private $mimeTypeDetector;
+
 
     public function setUp(): void
     {
@@ -101,6 +110,9 @@ class S3Test extends TestCase
         $this->fileSystem->method('getAdapter')->willReturn($this->s3Adapter);
         $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->factory->method('createAsyncUploader')->willReturn($this->asyncAdapter);
+
+        $this->mimeTypeDetector = $this->createMock(MimeTypeDetector::class);
+        MimeType::useDetector($this->mimeTypeDetector);
 
         $this->s3mount = new s3MountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory, $this->factory);
     }
@@ -316,14 +328,28 @@ class S3Test extends TestCase
         $this->s3mount->put(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
     }
 
-    public function test_path_put_shouldPut()
+    public function test_filename_put_shouldGetMimeType()
+    {
+        $this->mimeTypeDetector
+            ->expects(self::once())
+            ->method('detectMimeTypeFromPath')
+            ->with(self::A_FILE_NAME)
+            ->willReturn(self::MIME_TYPE);
+
+        $this->s3mount->put(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
+    }
+
+    public function test_pathAndMimeType_put_shouldPut()
     {
         $this->givenGeneratedPath();
+        $this->mimeTypeDetector
+            ->method('detectMimeTypeFromPath')
+            ->willReturn(self::MIME_TYPE);
 
         $this->fileSystem
             ->expects(self::once())
             ->method('put')
-            ->with(self::A_PATH, self::A_FILE_CONTENT);
+            ->with(self::A_PATH, self::A_FILE_CONTENT, ['ContentType' => self::MIME_TYPE]);
 
         $this->s3mount->put(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
     }
@@ -340,7 +366,6 @@ class S3Test extends TestCase
 
     public function test_FileNotWritten_put_shouldReturnFalse()
     {
-
         $this->fileSystem->method('put')->willReturn(false);
 
         $written = $this->s3mount->put(self::UUID, self::A_FILE_PATH, self::A_FILE_NAME);
@@ -358,14 +383,28 @@ class S3Test extends TestCase
         $this->s3mount->putStream(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
     }
 
-    public function test_path_putStream_shouldPutAndReturnResult()
+    public function test_filename_putStream_shouldGetMimeType()
+    {
+        $this->mimeTypeDetector
+            ->expects(self::once())
+            ->method('detectMimeTypeFromPath')
+            ->with(self::A_FILE_NAME)
+            ->willReturn(self::MIME_TYPE);
+
+        $this->s3mount->putStream(self::UUID, self::A_FILE_CONTENT, self::A_FILE_NAME);
+    }
+
+    public function test_pathAndMimeType_putStream_shouldPutAndReturnResult()
     {
         $stream = tmpfile();
         $this->givenGeneratedPath();
+        $this->mimeTypeDetector
+            ->method('detectMimeTypeFromPath')
+            ->willReturn(self::MIME_TYPE);
         $this->fileSystem
             ->expects(self::once())
             ->method('putStream')
-            ->with(self::A_PATH, $stream)
+            ->with(self::A_PATH, $stream, ['ContentType' => self::MIME_TYPE])
             ->willReturn(self::PUT_RESULT);
 
         $actualResult = $this->s3mount->putStream(self::UUID, $stream, self::A_FILE_NAME);
