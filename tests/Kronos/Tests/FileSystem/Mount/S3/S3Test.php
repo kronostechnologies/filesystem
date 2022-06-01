@@ -888,22 +888,15 @@ class S3Test extends TestCase
         $this->s3mount->retrieve(self::UUID, self::A_FILE_NAME);
     }
 
-    public function test_copy_shouldGeneratePathForSourceUuid()
+    public function test_copy_shouldGeneratePathForSourceAndTargetUuid()
     {
         $this->pathGenerator
-            ->expects(self::at(0))
+            ->expects(self::exactly(2))
             ->method('generatePath')
-            ->with(self::SOURCE_UUID, self::A_FILE_NAME);
-
-        $this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
-    }
-
-    public function test_SourcePath_copy_shouldGeneratePathForTargetUuid()
-    {
-        $this->pathGenerator
-            ->expects(self::at(1))
-            ->method('generatePath')
-            ->with(self::TARGET_UUID, self::A_FILE_NAME);
+            ->withConsecutive(
+                [self::SOURCE_UUID, self::A_FILE_NAME],
+                [self::TARGET_UUID, self::A_FILE_NAME]
+            );
 
         $this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
     }

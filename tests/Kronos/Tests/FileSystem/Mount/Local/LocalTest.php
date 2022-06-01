@@ -457,22 +457,15 @@ class LocalTest extends TestCase
         $this->localMount->getUrl(self::UUID, self::A_FILE_NAME);
     }
 
-    public function test_copy_shouldGeneratePathForSourceUuid()
+    public function test_copy_shouldGeneratePathForSourceAndTargetUuid()
     {
         $this->pathGenerator
-            ->expects(self::at(0))
+            ->expects(self::exactly(2))
             ->method('generatePath')
-            ->with(self::SOURCE_UUID, self::A_FILE_NAME);
-
-        $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
-    }
-
-    public function test_SourcePath_copy_shouldGeneratePathForTargetUuid()
-    {
-        $this->pathGenerator
-            ->expects(self::at(1))
-            ->method('generatePath')
-            ->with(self::TARGET_UUID, self::A_FILE_NAME);
+            ->withConsecutive(
+                [self::SOURCE_UUID, self::A_FILE_NAME],
+                [self::TARGET_UUID, self::A_FILE_NAME]
+            );
 
         $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
     }
@@ -492,22 +485,15 @@ class LocalTest extends TestCase
         $this->assertEquals(self::COPY_RESULT, $actualResult);
     }
 
-    public function test_copyAsync_shouldGeneratePathForSourceUuid()
+    public function test_copyAsync_shouldGeneratePathForSourceAndTargetUuid()
     {
         $this->pathGenerator
-            ->expects(self::at(0))
+            ->expects(self::exactly(2))
             ->method('generatePath')
-            ->with(self::SOURCE_UUID, self::A_FILE_NAME);
-
-        $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
-    }
-
-    public function test_SourcePath_copyAsync_shouldGeneratePathForTargetUuid()
-    {
-        $this->pathGenerator
-            ->expects(self::at(1))
-            ->method('generatePath')
-            ->with(self::TARGET_UUID, self::A_FILE_NAME);
+            ->withConsecutive(
+                [self::SOURCE_UUID, self::A_FILE_NAME],
+                [self::TARGET_UUID, self::A_FILE_NAME]
+            );
 
         $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
     }

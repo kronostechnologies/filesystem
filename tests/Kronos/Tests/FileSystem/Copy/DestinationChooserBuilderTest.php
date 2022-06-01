@@ -62,7 +62,7 @@ class DestinationChooserBuilderTest extends TestCase
         );
     }
 
-    public function test_id_getChooserForFileId_shouldGetFileMountType(): void
+    public function test_id_getChooserForFileId_shouldGetFileMountTypes(): void
     {
         $this->fileRepository
             ->expects(self::once())
@@ -72,12 +72,15 @@ class DestinationChooserBuilderTest extends TestCase
         $this->builder->getChooserForFileId(self::FILE_ID);
     }
 
-    public function test_fileMountType_getChooserForFileId_shouldSelectMount(): void
+    public function test_importationMountType_getChooserForFileId_shouldGetSelectSourceAndImportMount(): void
     {
         $this->selector
-            ->expects(self::at(0))
+            ->expects(self::exactly(2))
             ->method('selectMount')
-            ->with(self::SOURCE_MOUNT_TYPE);
+            ->withConsecutive(
+                [self::SOURCE_MOUNT_TYPE],
+                [self::IMPORTATION_MOUNT_TYPE]
+            );
 
         $this->builder->getChooserForFileId(self::FILE_ID);
     }
@@ -85,18 +88,8 @@ class DestinationChooserBuilderTest extends TestCase
     public function test_mountSelector_getChooserForFileId_shouldGetImportationMountType(): void
     {
         $this->selector
-            ->expects(self::at(1))
+            ->expects(self::once())
             ->method('getImportationMountType');
-
-        $this->builder->getChooserForFileId(self::FILE_ID);
-    }
-
-    public function test_importationMountType_getChooserForFileId_shouldGetSelectMount(): void
-    {
-        $this->selector
-            ->expects(self::at(2))
-            ->method('selectMount')
-            ->with(self::IMPORTATION_MOUNT_TYPE);
 
         $this->builder->getChooserForFileId(self::FILE_ID);
     }
