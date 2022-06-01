@@ -30,7 +30,6 @@
     "league/flysystem": "1.0.* || 1.1.*",
     "league/flysystem-aws-s3-v3": "1.0.*",
     "elao/enum": "^1.12",
-    "psalm/plugin-phpunit": "^0.16.1",
     "guzzlehttp/guzzle": "^6.5.5",
     "guzzlehttp/promises": "^1.5.1",
     "guzzlehttp/psr7": "^1.8.5"
@@ -40,6 +39,7 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
     "phpcompatibility/php-compatibility": "^9.3",
     "vimeo/psalm": "4.23.0",
-    "cyclonedx/cyclonedx-php-composer": "3.9.2"
+    "cyclonedx/cyclonedx-php-composer": "3.9.2",
+    "psalm/plugin-phpunit": "0.16.1"
   }
 }
