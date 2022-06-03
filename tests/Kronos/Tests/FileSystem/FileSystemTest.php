@@ -1282,13 +1282,12 @@ class FileSystemTest extends TestCase
         $this->givenDifferentSourceMount();
         $this->givenSourceAndImporationMounts();
         $this->mountSelector
-            ->expects(self::at(0))
+            ->expects(self::exactly(2))
             ->method('selectMount')
-            ->with(self::SOURCE_MOUNT_TYPE);
-        $this->mountSelector
-            ->expects(self::at(2))
-            ->method('selectMount')
-            ->with(self::IMPORTATION_MOUNT_TYPE);
+            ->withConsecutive(
+                [self::SOURCE_MOUNT_TYPE],
+                [self::IMPORTATION_MOUNT_TYPE]
+            );
 
         $this->fileSystem->copy(self::UUID);
     }
