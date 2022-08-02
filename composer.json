@@ -38,7 +38,7 @@
     "phpunit/phpunit": "9.5.21",
     "dealerdirect/phpcodesniffer-composer-installer": "0.7.2",
     "phpcompatibility/php-compatibility": "9.3.5",
-    "vimeo/psalm": "4.23.0",
+    "vimeo/psalm": "4.26.0",
     "cyclonedx/cyclonedx-php-composer": "3.10.0",
     "psalm/plugin-phpunit": "0.17.0"
   }
