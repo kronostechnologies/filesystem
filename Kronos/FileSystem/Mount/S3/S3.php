@@ -24,15 +24,7 @@ class S3 extends FlySystemBaseMount
     const MOUNT_TYPE = 'S3';
     const RESTORED_OBJECT_LIFE_TIME_IN_DAYS = 2;
 
-    /**
-     * @var S3Factory
-     */
-    private $s3factory;
-
-    /**
-     * @var AsyncAdapter
-     */
-    private $asyncAdapter;
+    private AsyncAdapter $asyncAdapter;
 
     public function __construct(
         PathGeneratorInterface $pathGenerator,
@@ -42,8 +34,8 @@ class S3 extends FlySystemBaseMount
     ) {
         parent::__construct($pathGenerator, $mount, $factory);
 
-        $this->s3factory = $s3Factory ?: new S3Factory();
-        $this->asyncAdapter = $this->s3factory->createAsyncUploader($mount);
+        $s3factory = $s3Factory ?: new S3Factory();
+        $this->asyncAdapter = $s3factory->createAsyncUploader($mount);
     }
 
     /**

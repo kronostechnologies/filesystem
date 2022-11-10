@@ -3,41 +3,21 @@
 namespace Kronos\FileSystem\Mount\S3;
 
 use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
+use Aws\S3\S3ClientInterface;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use League\Flysystem\Util;
-use \RuntimeException;
+use RuntimeException;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 
 class AsyncAdapter
 {
-    /**
-     * @var Filesystem
-     */
-    private $mount;
+    private Filesystem $mount;
+    private AwsS3Adapter $s3Adapter;
+    private S3ClientInterface $s3Client;
+    private ConfigToOptionsTranslator $configTranslator;
 
-    /**
-     * @var AwsS3Adapter;
-     */
-    private $s3Adapter;
-
-    /**
-     * @var S3Client
-     */
-    private $s3Client;
-
-    /**
-     * @var ConfigToOptionsTranslator
-     */
-    private $configTranslator;
-
-    /**
-     * AsyncUploader constructor.
-     * @param Filesystem $mount
-     * @param ConfigToOptionsTranslator $configTranslator
-     */
     public function __construct(Filesystem $mount, ConfigToOptionsTranslator $configTranslator = null)
     {
         $this->mount = $mount;
