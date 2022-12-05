@@ -8,7 +8,7 @@ DOCKER_PHP = docker run -it --rm \
     -v ~/.cache:/home/circleci/.cache --user "${USER_ID}:${GROUP_ID}" \
     --workdir /home/circleci/project \
     -e HOME=/home/circleci \
-    ghcr.io/kronostechnologies/php:7.4-node
+    ghcr.io/kronostechnologies/php:8.1-node
 
 .PHONY: all
 all: setup check test
