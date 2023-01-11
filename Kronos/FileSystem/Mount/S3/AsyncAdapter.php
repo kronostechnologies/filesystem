@@ -36,6 +36,7 @@ class AsyncAdapter
     {
         $options = $this->configTranslator->translate($this->mount->getConfig());
          if ( ! isset($options['ContentType'])) {
+             /** @psalm-suppress InternalClass, InternalMethod */
             $options['ContentType'] = Util\MimeType::detectByFilename($path);
         }
 

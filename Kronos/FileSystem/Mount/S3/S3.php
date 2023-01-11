@@ -115,7 +115,7 @@ class S3 extends FlySystemBaseMount
     /**
      * @param string $uuid
      * @param $fileName
-     * @return bool|Metadata
+     * @return Metadata|false
      */
     public function getMetadata($uuid, $fileName)
     {
@@ -175,6 +175,7 @@ class S3 extends FlySystemBaseMount
     public function put($uuid, $filePath, $fileName)
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        /** @psalm-suppress InternalClass, InternalMethod */
         $mimeType = MimeType::detectByFilename($fileName);
         return $this->mount->put($path, $this->getFileContent($filePath), ['ContentType' => $mimeType]);
     }
@@ -193,6 +194,7 @@ class S3 extends FlySystemBaseMount
     public function putStream($uuid, $stream, $fileName)
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        /** @psalm-suppress InternalClass, InternalMethod */
         $mimeType = MimeType::detectByFilename($fileName);
         return $this->mount->putStream($path, $stream, ['ContentType' => $mimeType]);
     }
