@@ -2,26 +2,18 @@
 
 namespace Kronos\FileSystem\File;
 
+use League\Flysystem\File as FlysystemFile;
 
 class File
 {
+    private FlysystemFile $file;
 
-    /**
-     * @var \League\Flysystem\File
-     */
-    private $file;
-
-    public function __construct(\League\Flysystem\File $file)
+    public function __construct(FlysystemFile $file)
     {
         $this->file = $file;
     }
 
-    /**
-     * Read the file.
-     *
-     * @return string file contents
-     */
-    public function read()
+    public function read(): string|false
     {
         return $this->file->read();
     }
@@ -29,7 +21,7 @@ class File
     /**
      * Read the file as a stream.
      *
-     * @return resource file stream
+     * @return resource|false
      */
     public function readStream()
     {

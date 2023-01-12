@@ -13,6 +13,7 @@ use Throwable;
 
 abstract class FlySystemBaseMount implements MountInterface
 {
+    public const MOUNT_TYPE = '';
 
     /**
      * @var Filesystem
@@ -71,6 +72,7 @@ abstract class FlySystemBaseMount implements MountInterface
     public function get($uuid, $fileName)
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
+        /** @var \League\Flysystem\File $flySystemFile */
         $flySystemFile = $this->mount->get($path);
         return new File($flySystemFile);
     }
@@ -177,7 +179,7 @@ abstract class FlySystemBaseMount implements MountInterface
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMountType()
     {
@@ -229,14 +231,14 @@ abstract class FlySystemBaseMount implements MountInterface
         }
 
         if ($charset != 'UTF-8') {
-            $utf8Filename = iconv($charset, 'UTF-8//IGNORE', $filename);
+            $utf8Filename = iconv($charset, 'UTF-8//IGNORE', $filename) ?: $filename;
         } else {
             $utf8Filename = $filename;
         }
 
         //Include a "filename*" parameter where the desired filename cannot be expressed faithfully using the "filename" form.
         //Use UTF-8 as the encoding of the "filename*" parameter, when present, because at least one existing implementation only implements that encoding.
-        $header .= ';' . self::encodeRFC5987("filename", $utf8Filename, 'UTF-8', 'fr');
+        $header .= ';' . ($this->encodeRFC5987("filename", $utf8Filename, 'UTF-8', 'fr') ?: '');
 
         return $header;
     }
@@ -272,7 +274,7 @@ abstract class FlySystemBaseMount implements MountInterface
      * Convert $string to ASCII.  This function deprecate replaceFrenchAccents.
      * @param string $string
      * @param string $charset UTF-8|ISO-8859-1|charset
-     * @return string|false
+     * @return string
      */
     private function toAscii($string, $charset = 'UTF-8')
     {
@@ -310,7 +312,7 @@ abstract class FlySystemBaseMount implements MountInterface
      * @param string $value
      * @param string $charset
      * @param string $lang
-     * @return string
+     * @return string|false
      * @example filename*=UTF-8'fr'Test%20%C3%A7%20accents%20%C3%A4%20encore%20%C3%AB%20encore%20%20%C3%AF%20encore%20%20%5D.doc
      */
     private function encodeRFC5987($name, $value, $charset, $lang)
@@ -329,7 +331,7 @@ abstract class FlySystemBaseMount implements MountInterface
      * @param string $charset Field charset
      * @param string $lang Language
      * @param integer $ll Line Length (for line Continuations)
-     * @return string Encoded field
+     * @return string|false Encoded field
      * @example filename*0*=UTF-8'fr'Encore%20%C3%A8%20des%20%C3%A0%20accents%20%C3%B9%20plei;
      *            filename*1*=n%20%C3%88%20plein%20%20%C3%80%20plein%20%20%C3%99%20encore%20{.d;
      *            filename*2*=oc
@@ -358,7 +360,7 @@ abstract class FlySystemBaseMount implements MountInterface
             $sections = array();
             $section = 0;
             for ($i = 0, $j = 0; $i < $vlen; $i += $j) {
-                $j = $ll - $nlen - strlen($section) - 4;
+                $j = $ll - $nlen - strlen((string)$section) - 4;
                 $sections[$section++] = substr($value, $i, $j);
             }
             for ($i = 0, $n = $section; $i < $n; $i++) {

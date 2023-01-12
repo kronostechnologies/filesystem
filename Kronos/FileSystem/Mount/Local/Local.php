@@ -77,7 +77,7 @@ class Local extends FlySystemBaseMount
     /**
      * @param string $uuid
      * @param $fileName
-     * @return bool|Metadata
+     * @return Metadata|false
      */
     public function getMetadata($uuid, $fileName)
     {
@@ -88,7 +88,10 @@ class Local extends FlySystemBaseMount
 
             $metadata->size = isset($localMetadata['size']) ? $localMetadata['size'] : 0;
             $metadata->lastModifiedDate = new DateTime('@' . $localMetadata['timestamp']);
-            $metadata->mimetype = $this->mount->getMimetype($path);
+
+            if ($mimeType = $this->mount->getMimetype($path)) {
+                $metadata->mimetype = $mimeType;
+            }
 
             return $metadata;
         }

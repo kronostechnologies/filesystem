@@ -12,7 +12,7 @@ class ConfigToOptionsTranslator
 
         $supportedOptions = SupportedOptionsEnum::values();
         foreach($supportedOptions as $supportedOption) {
-            $value = $config->get($supportedOption);
+            $value = $config->get((string)$supportedOption);
             if ($value !== null) {
                 $options[$supportedOption] = $value;
             }

@@ -6,6 +6,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
+use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\FileNotFoundException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
@@ -73,10 +74,16 @@ class FileSystem implements FileSystemInterface
      * @param string $fileName
      * @return string
      * @throws FileCantBeWrittenException
+     * @throws MountNotFoundException
      */
     public function put($filePath, $fileName)
     {
         $mount = $this->mountSelector->getImportationMount();
+
+        if ($mount === null) {
+            throw new MountNotFoundException($this->mountSelector->getImportationMountType());
+        }
+
         $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
 
         if (!$mount->put($fileUuid, $filePath, $fileName)) {
@@ -87,9 +94,20 @@ class FileSystem implements FileSystemInterface
         return $fileUuid;
     }
 
+    /**
+     * @param string $filePath
+     * @param string $fileName
+     * @return PromiseInterface
+     * @throws MountNotFoundException
+     */
     public function putAsync($filePath, $fileName): PromiseInterface
     {
         $mount = $this->mountSelector->getImportationMount();
+
+        if ($mount === null) {
+            throw new MountNotFoundException($this->mountSelector->getImportationMountType());
+        }
+
         $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
 
         $promise = $mount->putAsync($fileUuid, $filePath, $fileName);
@@ -113,10 +131,16 @@ class FileSystem implements FileSystemInterface
      * @param string $fileName
      * @return string
      * @throws FileCantBeWrittenException
+     * @throws MountNotFoundException
      */
     public function putStream($stream, $fileName)
     {
         $mount = $this->mountSelector->getImportationMount();
+
+        if ($mount === null) {
+            throw new MountNotFoundException($this->mountSelector->getImportationMountType());
+        }
+
         $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
 
         if (!$mount->putStream($fileUuid, $stream, $fileName)) {
@@ -127,9 +151,20 @@ class FileSystem implements FileSystemInterface
         return $fileUuid;
     }
 
+    /**
+     * @param resource $stream
+     * @param string $fileName
+     * @return PromiseInterface
+     * @throws MountNotFoundException
+     */
     public function putStreamAsync($stream, $fileName): PromiseInterface
     {
         $mount = $this->mountSelector->getImportationMount();
+
+        if ($mount === null) {
+            throw new MountNotFoundException($this->mountSelector->getImportationMountType());
+        }
+
         $fileUuid = $this->fileRepository->addNewFile($mount->getMountType(), $fileName);
 
         $promise = $mount->putStreamAsync($fileUuid, $stream, $fileName);
@@ -151,6 +186,7 @@ class FileSystem implements FileSystemInterface
     /**
      * @param string $id
      * @return File
+     * @throws MountNotFoundException
      */
     public function get($id)
     {
@@ -189,6 +225,7 @@ class FileSystem implements FileSystemInterface
      * @param string $id
      * @return Metadata
      * @throws MountNotFoundException
+     * @throws FileNotFoundException
      */
     public function getMetadata($id)
     {
@@ -196,6 +233,11 @@ class FileSystem implements FileSystemInterface
         $fileName = $this->fileRepository->getFileName($id);
 
         $metadata = $mount->getMetadata($id, $fileName);
+
+        if ($metadata === false) {
+            throw new FileNotFoundException($id);
+        }
+
         $metadata->name = $fileName;
 
         return $this->metadataTranslator->translateInternalToExposed($metadata);
@@ -253,6 +295,7 @@ class FileSystem implements FileSystemInterface
     /**
      * @param string $id
      * @throws FileNotFoundException
+     * @throws MountNotFoundException
      */
     public function delete($id)
     {
@@ -292,6 +335,7 @@ class FileSystem implements FileSystemInterface
     /**
      * @param string $id
      * @throws MountNotFoundException
+     * @throws CantRetreiveFileException
      */
     public function retrieve($id)
     {
@@ -303,6 +347,7 @@ class FileSystem implements FileSystemInterface
     /**
      * @param string $id
      * @return bool
+     * @throws MountNotFoundException
      */
     public function has($id)
     {
@@ -313,7 +358,8 @@ class FileSystem implements FileSystemInterface
 
     /**
      * @param string $id
-     * @return bool
+     * @return PromiseInterface
+     * @throws MountNotFoundException
      */
     public function hasAsync($id): PromiseInterface
     {
@@ -337,7 +383,7 @@ class FileSystem implements FileSystemInterface
      * @return MountInterface
      * @throws MountNotFoundException
      */
-    private function getMountForId($id)
+    private function getMountForId($id): MountInterface
     {
         $mountType = $this->fileRepository->getFileMountType($id);
         $mount = $this->mountSelector->selectMount($mountType);

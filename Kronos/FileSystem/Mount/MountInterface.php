@@ -38,7 +38,7 @@ interface MountInterface
      */
     public function copy($sourceUuid, $targetUuid, $fileName);
 
-    public function copyAsync($sourceUUid, $targetUuid, $filename): PromiseInterface;
+    public function copyAsync($sourceUuid, $targetUuid, $fileName): PromiseInterface;
 
     /**
      * Delete a file.
@@ -99,7 +99,7 @@ interface MountInterface
     /**
      * @param string $uuid
      * @param $fileName
-     * @return Metadata
+     * @return Metadata|false
      */
     public function getMetadata($uuid, $fileName);
 
