@@ -2,12 +2,10 @@
 
 namespace Kronos\FileSystem;
 
-use Kronos\FileSystem\File\File;
-use Kronos\FileSystem\File\Metadata;
+use Kronos\FileSystem\Exception\InvalidFilenameException;
 
 interface FileRepositoryInterface
 {
-
     /**
      * @param string $mountType
      * @param string $fileName
@@ -24,6 +22,7 @@ interface FileRepositoryInterface
     /**
      * @param string $uuid
      * @return string
+     * @throws InvalidFilenameException
      */
     public function getFileName($uuid);
 
