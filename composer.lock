@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4864f55ce21791f313860fb6d04ce02d",
+    "content-hash": "165f42caef5adfbfb54a8ddfd1301a11",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -2145,6 +2145,35 @@
                 }
             ],
             "time": "2022-12-16T22:01:02+00:00"
+        },
+        {
+            "name": "kronostechnologies/php-coding-standard",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kronostechnologies/php-coding-standard.git",
+                "reference": "70bf30561122cd7d6c108feba5b9e0622aeb9a64"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kronostechnologies/php-coding-standard/zipball/70bf30561122cd7d6c108feba5b9e0622aeb9a64",
+                "reference": "70bf30561122cd7d6c108feba5b9e0622aeb9a64",
+                "shasum": ""
+            },
+            "require": {
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Equisoft PHP coding standard",
+            "support": {
+                "issues": "https://github.com/kronostechnologies/php-coding-standard/issues",
+                "source": "https://github.com/kronostechnologies/php-coding-standard/tree/v2.0.0"
+            },
+            "time": "2021-03-10T20:44:53+00:00"
         },
         {
             "name": "myclabs/deep-copy",
