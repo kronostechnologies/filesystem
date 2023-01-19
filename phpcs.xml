@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ruleset>
+    <rule ref="./vendor/kronostechnologies/php-coding-standard/phpcs.xml"/>
+
+    <exclude-pattern>Kronos/FileSystem/Exception/MountNotFoundException.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Exception/InvalidOperationException.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/S3/ConfigToOptionsTranslator.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Exception/WrongFileSystemTypeException.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Copy/DestinationChooserFactory.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Exception/FileCantBeWrittenException.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/File/Translator/MetadataTranslator.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Copy/Factory.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/FileSystemInterface.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/MountInterface.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/File/Internal/Metadata.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/GetterInterface.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/PathGeneratorInterface.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/Local/Local.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/ReferenceMount.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/Selector.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/S3/AsyncAdapter.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/FileSystem.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Exception/FileNotFoundException.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/S3/S3.php</exclude-pattern>
+    <exclude-pattern>Kronos/FileSystem/Mount/FlySystemBaseMount.php</exclude-pattern>
+
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/S3/ConfigToOptionsTranslatorTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/ExtensionListTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/SelectorTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/File/Translator/MetadataTranslatorTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Copy/DestinationChooserBuilderTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/Local/LocalTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/S3/AsyncAdapterTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/ReferenceMountTest.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/Mount/S3/S3Test.php</exclude-pattern>
+    <exclude-pattern>tests/Kronos/Tests/FileSystem/FileSystemTest.php</exclude-pattern>
+</ruleset>
