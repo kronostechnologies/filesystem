@@ -6,7 +6,6 @@ use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Response;
@@ -206,7 +205,7 @@ class AsyncAdapterTest extends TestCase
 
     public function test_aclInOptions_upload_shouldSetAclToOptionsValue(): void
     {
-        $options = $this->givenOptions([SupportedOptionsEnum::ACL => self::PUBLIC_READ]);
+        $options = $this->givenOptions([SupportedOptionsEnum::ACL->value => self::PUBLIC_READ]);
         $this->givenFullSetup();
         $this->configToOptionsTranslator
             ->method('translate')
@@ -242,8 +241,8 @@ class AsyncAdapterTest extends TestCase
                 self::PRIVATE,
                 [
                     'params' => [
-                        SupportedOptionsEnum::CONTENT_TYPE => self::TEXT_PLAIN,
-                        SupportedOptionsEnum::CONTENT_LENGTH => strlen(self::CONTENTS),
+                        SupportedOptionsEnum::CONTENT_TYPE->value => self::TEXT_PLAIN,
+                        SupportedOptionsEnum::CONTENT_LENGTH->value => strlen(self::CONTENTS),
                     ]
                 ]
             );
@@ -501,7 +500,7 @@ class AsyncAdapterTest extends TestCase
         $promise = $this->asyncAdapter->has(self::PATH);
 
         $called = false;
-        $promise->then(null, function($reason) use (&$called) {
+        $promise->then(null, function($reason) use (&$called, $exception) {
             $called = true;
             self::assertSame($exception, $reason);
         });
@@ -564,8 +563,8 @@ class AsyncAdapterTest extends TestCase
     {
         return array_merge(
             [
-                SupportedOptionsEnum::CONTENT_TYPE => self::TEXT_PLAIN,
-                SupportedOptionsEnum::CONTENT_LENGTH => strlen(self::CONTENTS)
+                SupportedOptionsEnum::CONTENT_TYPE->value => self::TEXT_PLAIN,
+                SupportedOptionsEnum::CONTENT_LENGTH->value => strlen(self::CONTENTS)
             ],
             $options
         );

@@ -10,11 +10,11 @@ class ConfigToOptionsTranslator
     {
         $options = [];
 
-        $supportedOptions = SupportedOptionsEnum::values();
-        foreach($supportedOptions as $supportedOption) {
-            $value = $config->get((string)$supportedOption);
+        foreach (SupportedOptionsEnum::cases() as $supportedOption) {
+            $value = $config->get($supportedOption->value);
+
             if ($value !== null) {
-                $options[$supportedOption] = $value;
+                $options[$supportedOption->value] = $value;
             }
         }
 

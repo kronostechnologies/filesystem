@@ -48,7 +48,7 @@ class AsyncAdapter
             unset($options['ContentLength']);
         }
 
-         $acl = $options[SupportedOptionsEnum::ACL] ?? 'private';
+         $acl = $options[SupportedOptionsEnum::ACL->value] ?? 'private';
 
          return $this->s3Client->uploadAsync(
             $this->s3Adapter->getBucket(),
