@@ -28,14 +28,14 @@ class ConfigToOptionsTranslatorTest extends TestCase
 
     public function test_config_translate_shouldGetAllSupportedOptions(): void
     {
-        $supportedOptions = SupportedOptionsEnum::values();
+        $supportedOptions = SupportedOptionsEnum::cases();
         $this->config
             ->expects(self::exactly(count($supportedOptions)))
             ->method('get')
             ->withConsecutive(
                 ...array_map(
                     function ($option) {
-                        return [$option];
+                        return [$option->value];
                     },
                     $supportedOptions
                 )
@@ -50,14 +50,14 @@ class ConfigToOptionsTranslatorTest extends TestCase
             ->method('get')
             ->willReturnCallback(
                 function ($optionName) {
-                    return $optionName === SupportedOptionsEnum::STORAGE_CLASS ? self::STORAGE_CLASS_VALUE : null;
+                    return $optionName === SupportedOptionsEnum::STORAGE_CLASS->value ? self::STORAGE_CLASS_VALUE : null;
                 }
             );
 
         $options = $this->translator->translate($this->config);
 
         self::assertCount(1, $options);
-        self::assertArrayHasKey(SupportedOptionsEnum::STORAGE_CLASS, $options);
-        self::assertEquals(self::STORAGE_CLASS_VALUE, $options[SupportedOptionsEnum::STORAGE_CLASS]);
+        self::assertArrayHasKey(SupportedOptionsEnum::STORAGE_CLASS->value, $options);
+        self::assertEquals(self::STORAGE_CLASS_VALUE, $options[SupportedOptionsEnum::STORAGE_CLASS->value]);
     }
 }
