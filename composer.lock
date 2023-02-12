@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9cbb23ac826107fabf21379cf9e2199",
+    "content-hash": "57af779d4549f62081e15bb36ac1015a",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1643,16 +1643,16 @@
         },
         {
             "name": "cyclonedx/cyclonedx-php-composer",
-            "version": "v3.10.2",
+            "version": "v3.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-composer.git",
-                "reference": "091c90fcd3a1149832f2ef248d2027476d3fc7ca"
+                "reference": "9d223d368aa2d0346266ec90e8bb3d53e5643165"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/091c90fcd3a1149832f2ef248d2027476d3fc7ca",
-                "reference": "091c90fcd3a1149832f2ef248d2027476d3fc7ca",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/9d223d368aa2d0346266ec90e8bb3d53e5643165",
+                "reference": "9d223d368aa2d0346266ec90e8bb3d53e5643165",
                 "shasum": ""
             },
             "require": {
@@ -1663,7 +1663,7 @@
             },
             "require-dev": {
                 "composer/composer": "^2.0.0",
-                "phpunit/phpunit": "9.5.24",
+                "phpunit/phpunit": "9.5.28",
                 "roave/security-advisories": "dev-latest"
             },
             "type": "composer-plugin",
@@ -1713,7 +1713,7 @@
                 "issues": "https://github.com/CycloneDX/cyclonedx-php-composer/issues",
                 "source": "https://github.com/CycloneDX/cyclonedx-php-composer/"
             },
-            "time": "2022-09-15T14:48:11+00:00"
+            "time": "2023-02-11T11:09:27+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -4371,16 +4371,16 @@
         },
         {
             "name": "swaggest/json-diff",
-            "version": "v3.9.0",
+            "version": "v3.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swaggest/json-diff.git",
-                "reference": "ff3a7921e9f1aa096067eb541fcfd0e7611c558c"
+                "reference": "f4e511708060ff7511a3743fab4aa484a062bcfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swaggest/json-diff/zipball/ff3a7921e9f1aa096067eb541fcfd0e7611c558c",
-                "reference": "ff3a7921e9f1aa096067eb541fcfd0e7611c558c",
+                "url": "https://api.github.com/repos/swaggest/json-diff/zipball/f4e511708060ff7511a3743fab4aa484a062bcfb",
+                "reference": "f4e511708060ff7511a3743fab4aa484a062bcfb",
                 "shasum": ""
             },
             "require": {
@@ -4408,9 +4408,9 @@
             "description": "JSON diff/rearrange/patch/pointer library for PHP",
             "support": {
                 "issues": "https://github.com/swaggest/json-diff/issues",
-                "source": "https://github.com/swaggest/json-diff/tree/v3.9.0"
+                "source": "https://github.com/swaggest/json-diff/tree/v3.10.4"
             },
-            "time": "2022-08-29T15:04:08+00:00"
+            "time": "2022-11-09T13:21:05+00:00"
         },
         {
             "name": "swaggest/json-schema",
