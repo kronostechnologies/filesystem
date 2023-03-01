@@ -8,6 +8,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Promise\Utils;
 use Kronos\FileSystem\Copy\DestinationChooser;
 use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
@@ -23,13 +24,9 @@ use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-use function GuzzleHttp\Promise\queue;
-
-class FileSystemTest extends TestCase
+class FileSystemTest extends ExtendedTestCase
 {
-
     const A_FILE_PATH = 'A_FILE_PATH';
     const FILE_NAME = 'FILE_NAME';
     const MOUNT_TYPE = 'MOUNT_TYPE';
@@ -44,70 +41,19 @@ class FileSystemTest extends TestCase
     const DESTINATION_MOUNT_TYPE = 'destination mount type';
     const FILE_STREAM = 'file stream';
 
-    /**
-     * @var File & MockObject
-     */
-    private $file;
-
-    /**
-     * @var Metadata & MockObject
-     */
-    private $metadata;
-
-    /**
-     * @var Selector & MockObject
-     */
-    private $mountSelector;
-
-    /**
-     * @var FileRepositoryInterface & MockObject
-     */
-    private $fileRepository;
-
-    /**
-     * @var FileSystem
-     */
-    private $fileSystem;
-
-    /**
-     * @var MountInterface & MockObject
-     */
-    private $mount;
-
-    /**
-     * @var MountInterface & MockObject
-     */
-    private $sourceMount;
-
-    /**
-     * @var MountInterface & MockObject
-     */
-    private $importationMount;
-
-    /**
-     * @var MetadataTranslator & MockObject
-     */
-    private $metadataTranslator;
-
-    /**
-     * @var PromiseFactory & MockObject
-     */
-    private $promiseFactory;
-
-    /**
-     * @var CopyFactory & MockObject
-     */
-    private $copyFactory;
-
-    /**
-     * @var DestinationChooserFactory & MockObject
-     */
-    private $destinationChooserFactory;
-
-    /**
-     * @var DestinationChooser & MockObject
-     */
-    private $destinationChooser;
+    private File|MockObject $file;
+    private Metadata|MockObject$metadata;
+    private Selector&MockObject $mountSelector;
+    private FileRepositoryInterface&MockObject $fileRepository;
+    private FileSystem $fileSystem;
+    private MountInterface&MockObject $mount;
+    private MountInterface&MockObject  $sourceMount;
+    private MountInterface&MockObject  $importationMount;
+    private MetadataTranslator&MockObject $metadataTranslator;
+    private PromiseFactory&MockObject $promiseFactory;
+    private CopyFactory&MockObject $copyFactory;
+    private DestinationChooserFactory&MockObject $destinationChooserFactory;
+    private DestinationChooser&MockObject $destinationChooser;
 
     public function setUp(): void
     {
@@ -320,7 +266,7 @@ class FileSystemTest extends TestCase
             $called = true;
             $calledWith = $value;
         });
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertEquals(self::UUID, $calledWith);
@@ -515,7 +461,7 @@ class FileSystemTest extends TestCase
             $called = true;
             $calledWith = $value;
         });
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertEquals(self::UUID, $calledWith);
@@ -750,7 +696,7 @@ class FileSystemTest extends TestCase
             ->expects(self::never())
             ->method('delete');
 
-        $this->fileSystem->delete(self::UUID, self::FILE_NAME);
+        $this->fileSystem->delete(self::UUID);
     }
 
     public function test_givenId_deleteAsync_shouldGetFileName()
@@ -845,12 +791,11 @@ class FileSystemTest extends TestCase
             ->with(self::UUID, self::FILE_NAME);
 
         $this->fileSystem->deleteAsync(self::UUID);
-        queue()->run();
+        Utils::queue()->run();
     }
 
     public function test_didDelete_deleteAsync_ShouldDeleteInRepository()
     {
-        $didDelete = true;
         $promise = new Promise();
         $this->givenMountSelected();
         $this->givenFileName();
@@ -864,13 +809,12 @@ class FileSystemTest extends TestCase
             ->with(self::UUID);
         $this->fileSystem->deleteAsync(self::UUID);
 
-        $promise->resolve($didDelete);
-        queue()->run();
+        $promise->resolve(true);
+        Utils::queue()->run();
     }
 
     public function test_didNotDelete_deleteAsync_ShouldNotDeleteInRepository()
     {
-        $didDelete = false;
         $promise = new Promise();
         $this->givenMountSelected();
         $this->givenFileName();
@@ -883,8 +827,8 @@ class FileSystemTest extends TestCase
             ->method('delete');
         $this->fileSystem->deleteAsync(self::UUID);
 
-        $promise->resolve($didDelete);
-        queue()->run();
+        $promise->resolve(false);
+        Utils::queue()->run();
     }
 
     public function test_fileNotInMount_deleteAsync_ShouldNotDeleteAsyncInMount()
@@ -899,7 +843,7 @@ class FileSystemTest extends TestCase
             ->method('deleteAsync');
 
         $this->fileSystem->deleteAsync(self::UUID);
-        queue()->run();
+        Utils::queue()->run();
     }
 
     public function test_fileNotInMount_deleteAsync_ShouldDeleteInRepository()
@@ -915,7 +859,7 @@ class FileSystemTest extends TestCase
             ->with(self::UUID);
 
         $this->fileSystem->deleteAsync(self::UUID);
-        queue()->run();
+        Utils::queue()->run();
     }
 
     public function test_mountCouldNotBeSelected_deleteAsync_shouldReturnRejectedPromise()
@@ -954,9 +898,9 @@ class FileSystemTest extends TestCase
                 $actualReason = $reason;
             }
         );
-        queue()->run();
+        Utils::queue()->run();
 
-        $this->assertEquals(Promise::REJECTED, $actualPromise->getState());
+        $this->assertEquals(PromiseInterface::REJECTED, $actualPromise->getState());
         $this->assertSame($actualReason, $exception);
     }
 
@@ -1284,9 +1228,11 @@ class FileSystemTest extends TestCase
         $this->mountSelector
             ->expects(self::exactly(2))
             ->method('selectMount')
-            ->withConsecutive(
-                [self::SOURCE_MOUNT_TYPE],
-                [self::IMPORTATION_MOUNT_TYPE]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_MOUNT_TYPE],
+                    [self::IMPORTATION_MOUNT_TYPE]
+                )
             );
 
         $this->fileSystem->copy(self::UUID);
@@ -1570,7 +1516,7 @@ class FileSystemTest extends TestCase
             $called = true;
             $fulfilledValue = $value;
         });
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertEquals(self::NEW_FILE_UUID, $fulfilledValue);
@@ -1710,16 +1656,15 @@ class FileSystemTest extends TestCase
 
     public function test_mount_useDirectDownload_shouldReturnMountUseDirectDownload()
     {
-        $expectedValue = true;
         $this->givenMountSelected();
         $this->mount
             ->expects(self::once())
             ->method('useDirectDownload')
-            ->willReturn($expectedValue);
+            ->willReturn(true);
 
         $actualValue = $this->fileSystem->useDirectDownload(self::UUID);
 
-        $this->assertSame($expectedValue, $actualValue);
+        $this->assertSame(true, $actualValue);
     }
 
     private function givenWillReturnFile()
@@ -1787,10 +1732,7 @@ class FileSystemTest extends TestCase
         $this->mount->method('hasAsync')->willReturn(new FulfilledPromise(true));
     }
 
-    /**
-     * @return PromiseInterface&MockObject
-     */
-    protected function buildMountPutAsyncPromiseChain()
+    protected function buildMountPutAsyncPromiseChain(): PromiseInterface&MockObject
     {
         $mountPromise = $this->createMock(PromiseInterface::class);
         $chainedPromise = $this->createMock(PromiseInterface::class);
@@ -1803,10 +1745,7 @@ class FileSystemTest extends TestCase
         return $mountPromise;
     }
 
-    /**
-     * @return PromiseInterface&MockObject
-     */
-    protected function buildMountPutStreamAsyncPromiseChain()
+    protected function buildMountPutStreamAsyncPromiseChain(): PromiseInterface&MockObject
     {
         $mountPromise = $this->createMock(PromiseInterface::class);
         $chainedPromise = $this->createMock(PromiseInterface::class);

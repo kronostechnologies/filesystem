@@ -5,23 +5,24 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 use Aws\CommandInterface;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Closure;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Promise\Utils;
 use Kronos\FileSystem\Mount\S3\AsyncAdapter;
 use Kronos\FileSystem\Mount\S3\ConfigToOptionsTranslator;
 use Kronos\FileSystem\Mount\S3\SupportedOptionsEnum;
+use Kronos\Tests\FileSystem\ExtendedTestCase;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Config;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
-use function GuzzleHttp\Promise\queue;
-
-class AsyncAdapterTest extends TestCase
+class AsyncAdapterTest extends ExtendedTestCase
 {
     const PATH = 'path';
     const CONTENTS = 'contents';
@@ -36,35 +37,13 @@ class AsyncAdapterTest extends TestCase
     const TARGET_PATH = 'target path';
     const PREFIXED_TARGET_PATH = 'prefixed target path';
     const REASON = "REASON";
-    /**
-     * @var Filesystem|MockObject
-     */
-    private $mount;
 
-    /**
-     * @var Config|MockObject
-     */
-    private $config;
-
-    /**
-     * @var AwsS3Adapter|MockObject
-     */
-    private $s3Adapter;
-
-    /**
-     * @var S3Client|MockObject
-     */
-    private $s3Client;
-
-    /**
-     * @var ConfigToOptionsTranslator|MockObject
-     */
-    private $configToOptionsTranslator;
-
-    /**
-     * @var AsyncAdapter
-     */
-    private $asyncAdapter;
+    private Filesystem&MockObject $mount;
+    private Config|MockObject $config;
+    private AwsS3Adapter&MockObject $s3Adapter;
+    private S3Client&MockObject $s3Client;
+    private ConfigToOptionsTranslator&MockObject $configToOptionsTranslator;
+    private AsyncAdapter $asyncAdapter;
 
     protected function setUp(): void
     {
@@ -104,7 +83,7 @@ class AsyncAdapterTest extends TestCase
         $this->mount
             ->method('getAdapter')
             ->willReturn($nonS3Adaptor);
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $this->asyncAdapter = new AsyncAdapter($this->mount);
     }
@@ -283,9 +262,11 @@ class AsyncAdapterTest extends TestCase
         $this->s3Adapter
             ->expects(self::exactly(2))
             ->method('applyPathPrefix')
-            ->withConsecutive(
-                [self::SOURCE_PATH],
-                [self::TARGET_PATH]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_PATH],
+                    [self::TARGET_PATH]
+                )
             )
             ->willReturnMap([
                 [self::SOURCE_PATH, self::PREFIXED_SOURCE_PATH],
@@ -426,8 +407,8 @@ class AsyncAdapterTest extends TestCase
             ->expects(self::once())
             ->method('then')
             ->with(
-                $this->isInstanceOf(\Closure::class),
-                $this->isInstanceOf(\Closure::class)
+                $this->isInstanceOf(Closure::class),
+                $this->isInstanceOf(Closure::class)
             )
             ->willReturn($expectedPromise);
 
@@ -454,7 +435,7 @@ class AsyncAdapterTest extends TestCase
             self::assertTrue($value);
         });
 
-        queue()->run();
+        Utils::queue()->run();
         self::assertTrue($called);
     }
 
@@ -480,7 +461,7 @@ class AsyncAdapterTest extends TestCase
             self::assertFalse($value);
         });
 
-        queue()->run();
+        Utils::queue()->run();
         self::assertTrue($called);
     }
 
@@ -505,7 +486,7 @@ class AsyncAdapterTest extends TestCase
             self::assertSame($exception, $reason);
         });
 
-        queue()->run();
+        Utils::queue()->run();
         self::assertTrue($called);
     }
 
@@ -526,7 +507,7 @@ class AsyncAdapterTest extends TestCase
             self::assertEquals(self::REASON, $reason);
         });
 
-        queue()->run();
+        Utils::queue()->run();
         self::assertTrue($called);
     }
 
