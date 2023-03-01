@@ -4,20 +4,16 @@ namespace Kronos\Tests\FileSystem\Mount\S3;
 
 use Kronos\FileSystem\Mount\S3\ConfigToOptionsTranslator;
 use Kronos\FileSystem\Mount\S3\SupportedOptionsEnum;
+use Kronos\Tests\FileSystem\ExtendedTestCase;
 use League\Flysystem\Config;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class ConfigToOptionsTranslatorTest extends TestCase
+class ConfigToOptionsTranslatorTest extends ExtendedTestCase
 {
     const STORAGE_CLASS_VALUE = 'storage class value';
-    /**
-     * @var Config|MockObject
-     */
-    private $config;
 
-    /** @var ConfigToOptionsTranslator */
-    private $translator;
+    private Config&MockObject $config;
+    private ConfigToOptionsTranslator $translator;
 
     protected function setUp(): void
     {
@@ -32,12 +28,14 @@ class ConfigToOptionsTranslatorTest extends TestCase
         $this->config
             ->expects(self::exactly(count($supportedOptions)))
             ->method('get')
-            ->withConsecutive(
-                ...array_map(
-                    function ($option) {
-                        return [$option->value];
-                    },
-                    $supportedOptions
+            ->with(
+                ...self::withConsecutive(
+                    ...array_map(
+                        function ($option) {
+                            return [$option->value];
+                        },
+                        $supportedOptions
+                    )
                 )
             );
 

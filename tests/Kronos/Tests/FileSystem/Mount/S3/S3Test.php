@@ -9,6 +9,7 @@ use Closure;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\Psr7\Response;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
@@ -18,19 +19,16 @@ use Kronos\FileSystem\Mount\S3\S3Factory;
 use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use Kronos\FileSystem\Mount\S3\S3;
+use Kronos\Tests\FileSystem\ExtendedTestCase;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Util\MimeType;
 use League\MimeTypeDetection\MimeTypeDetector;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 
-use function GuzzleHttp\Promise\queue;
-
-class S3Test extends TestCase
+class S3Test extends ExtendedTestCase
 {
-
     const UUID = 'UUID';
     const A_PATH = 'A_PATH';
     const A_FILE_NAME = 'A_FILE_NAME';
@@ -51,51 +49,15 @@ class S3Test extends TestCase
     const PREFIXED_PATH = 'prefixed path';
     const MIME_TYPE = 'mime/type';
 
-    /**
-     * @var PathGeneratorInterface&MockObject
-     */
-    private $pathGenerator;
-
-    /**
-     * @var AwsS3Adapter&MockObject
-     */
-    private $s3Adapter;
-
-    /**
-     * @var FileSystem&MockObject
-     */
-    private $fileSystem;
-
-    /**
-     * @var S3Client&MockObject
-     */
-    private $s3Client;
-
-    /**
-     * @var S3
-     */
-    private $s3mount;
-
-    /**
-     * @var PromiseFactory&MockObject
-     */
-    private $promiseFactory;
-
-    /**
-     * @var S3Factory&MockObject
-     */
-    private $factory;
-
-    /**
-     * @var AsyncAdapter&MockObject
-     */
-    private $asyncAdapter;
-
-    /**
-     * @var MimeTypeDetector&MockObject
-     */
-    private $mimeTypeDetector;
-
+    private PathGeneratorInterface&MockObject $pathGenerator;
+    private AwsS3Adapter&MockObject $s3Adapter;
+    private FileSystem&MockObject $fileSystem;
+    private S3Client&MockObject $s3Client;
+    private S3 $s3mount;
+    private PromiseFactory&MockObject $promiseFactory;
+    private S3Factory&MockObject $factory;
+    private AsyncAdapter&MockObject $asyncAdapter;
+    private MimeTypeDetector&MockObject $mimeTypeDetector;
 
     public function setUp(): void
     {
@@ -589,7 +551,7 @@ class S3Test extends TestCase
         });
 
         $clientPromise->resolve($this->createMock(Response::class));
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertTrue($fulfilledValue);
@@ -668,7 +630,7 @@ class S3Test extends TestCase
         });
 
         $adaptorPromise->resolve($this->createMock(Response::class));
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertTrue($fulfilledValue);
@@ -747,7 +709,7 @@ class S3Test extends TestCase
         });
 
         $adaptorPromise->resolve($this->createMock(Response::class));
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertTrue($fulfilledValue);
@@ -893,9 +855,11 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->expects(self::exactly(2))
             ->method('generatePath')
-            ->withConsecutive(
-                [self::SOURCE_UUID, self::A_FILE_NAME],
-                [self::TARGET_UUID, self::A_FILE_NAME]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_UUID, self::A_FILE_NAME],
+                    [self::TARGET_UUID, self::A_FILE_NAME]
+                )
             );
 
         $this->s3mount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
@@ -921,9 +885,11 @@ class S3Test extends TestCase
         $this->pathGenerator
             ->expects(self::exactly(2))
             ->method('generatePath')
-            ->withConsecutive(
-                [self::SOURCE_UUID, self::A_FILE_NAME],
-                [self::TARGET_UUID, self::A_FILE_NAME]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_UUID, self::A_FILE_NAME],
+                    [self::TARGET_UUID, self::A_FILE_NAME]
+                )
             )
             ->willReturn(self::A_PATH);
         $adaptorPromise = $this->createMock(PromiseInterface::class);
@@ -997,7 +963,7 @@ class S3Test extends TestCase
         });
 
         $adaptorPromise->resolve($this->createMock(Response::class));
-        queue()->run();
+        Utils::queue()->run();
 
         self::assertTrue($called);
         self::assertTrue($fulfilledValue);
@@ -1082,12 +1048,10 @@ class S3Test extends TestCase
     }
 }
 
-class s3MountTestable extends \Kronos\FileSystem\Mount\S3\S3
+class s3MountTestable extends S3
 {
-
-    protected function getFileContent($path)
+    protected function getFileContent($path): string
     {
         return S3Test::A_FILE_CONTENT;
     }
-
 }

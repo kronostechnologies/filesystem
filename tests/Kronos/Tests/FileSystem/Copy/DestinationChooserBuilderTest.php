@@ -8,43 +8,21 @@ use Kronos\FileSystem\Copy\Factory;
 use Kronos\FileSystem\FileRepositoryInterface;
 use Kronos\FileSystem\Mount\MountInterface;
 use Kronos\FileSystem\Mount\Selector;
+use Kronos\Tests\FileSystem\ExtendedTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class DestinationChooserBuilderTest extends TestCase
+class DestinationChooserBuilderTest extends ExtendedTestCase
 {
     const FILE_ID = 'file id';
     const SOURCE_MOUNT_TYPE = 'source mount';
     const IMPORTATION_MOUNT_TYPE = 'importation mount';
-    /**
-     * @var FileRepositoryInterface & MockObject
-     */
-    private $fileRepository;
 
-    /**
-     * @var Selector & MockObject
-     */
-    private $selector;
-
-    /**
-     * @var Factory & MockObject
-     */
-    private $factory;
-
-    /**
-     * @var MountInterface & MockObject
-     */
-    private $sourceMount;
-
-    /**
-     * @var MountInterface & MockObject
-     */
-    private $importationMount;
-
-    /**
-     * @var DestinationChooserTest
-     */
-    private $builder;
+    private FileRepositoryInterface&MockObject $fileRepository;
+    private Selector&MockObject $selector;
+    private Factory&MockObject $factory;
+    private MountInterface&MockObject $sourceMount;
+    private MountInterface&MockObject $importationMount;
+    private DestinationChooserFactory $builder;
 
     public function setUp(): void
     {
@@ -77,9 +55,11 @@ class DestinationChooserBuilderTest extends TestCase
         $this->selector
             ->expects(self::exactly(2))
             ->method('selectMount')
-            ->withConsecutive(
-                [self::SOURCE_MOUNT_TYPE],
-                [self::IMPORTATION_MOUNT_TYPE]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_MOUNT_TYPE],
+                    [self::IMPORTATION_MOUNT_TYPE]
+                )
             );
 
         $this->builder->getChooserForFileId(self::FILE_ID);

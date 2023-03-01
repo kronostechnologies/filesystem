@@ -4,20 +4,18 @@ namespace Kronos\Tests\FileSystem\Mount\Local;
 
 use Exception;
 use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
+use Kronos\Tests\FileSystem\ExtendedTestCase;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 
-class LocalTest extends TestCase
+class LocalTest extends ExtendedTestCase
 {
-
     const UUID = 'UUID';
     const A_PATH = 'A_PATH';
     const A_FILE_NAME = 'A_FILE_NAME';
@@ -34,41 +32,21 @@ class LocalTest extends TestCase
     const COPY_RESULT = self::HAS_RESULT;
     const HAS_RESULT = true;
 
-    /**
-     * @var PathGeneratorInterface|MockObject
-     */
-    private $pathGenerator;
-
-    /**
-     * @var Local|MockObject
-     */
-    private $localAdaptor;
-
-    /**
-     * @var FileSystem|MockObject
-     */
-    private $fileSystem;
-
-    /**
-     * @var PromiseFactory|MockObject
-     */
-    private $promiseFactory;
-
-    /**
-     * @var \Kronos\FileSystem\Mount\Local\Local
-     */
-    private $localMount;
+    private PathGeneratorInterface&MockObject $pathGenerator;
+    private FileSystem&MockObject $fileSystem;
+    private PromiseFactory&MockObject $promiseFactory;
+    private \Kronos\FileSystem\Mount\Local\Local $localMount;
 
     const FORCE_DOWNLOAD_PARAMETER = '&force=1';
 
     public function setUp(): void
     {
         $this->fileSystem = $this->createMock(Filesystem::class);
-        $this->localAdaptor = $this->createMock(Local::class);
+        $localAdaptor = $this->createMock(Local::class);
         $this->pathGenerator = $this->createMock(PathGeneratorInterface::class);
         $this->promiseFactory = $this->createMock(PromiseFactory::class);
 
-        $this->fileSystem->method('getAdapter')->willReturn($this->localAdaptor);
+        $this->fileSystem->method('getAdapter')->willReturn($localAdaptor);
 
         $this->localMount = new localMountTestable($this->pathGenerator, $this->fileSystem, $this->promiseFactory);
     }
@@ -462,9 +440,11 @@ class LocalTest extends TestCase
         $this->pathGenerator
             ->expects(self::exactly(2))
             ->method('generatePath')
-            ->withConsecutive(
-                [self::SOURCE_UUID, self::A_FILE_NAME],
-                [self::TARGET_UUID, self::A_FILE_NAME]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_UUID, self::A_FILE_NAME],
+                    [self::TARGET_UUID, self::A_FILE_NAME]
+                )
             );
 
         $this->localMount->copy(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
@@ -490,9 +470,11 @@ class LocalTest extends TestCase
         $this->pathGenerator
             ->expects(self::exactly(2))
             ->method('generatePath')
-            ->withConsecutive(
-                [self::SOURCE_UUID, self::A_FILE_NAME],
-                [self::TARGET_UUID, self::A_FILE_NAME]
+            ->with(
+                ...self::withConsecutive(
+                    [self::SOURCE_UUID, self::A_FILE_NAME],
+                    [self::TARGET_UUID, self::A_FILE_NAME]
+                )
             );
 
         $this->localMount->copyAsync(self::SOURCE_UUID, self::TARGET_UUID, self::A_FILE_NAME);
@@ -582,10 +564,8 @@ class LocalTest extends TestCase
 
 class localMountTestable extends \Kronos\FileSystem\Mount\Local\Local
 {
-
-    protected function getFileContent($path)
+    protected function getFileContent($path): string
     {
         return LocalTest::A_FILE_CONTENT;
     }
-
 }
