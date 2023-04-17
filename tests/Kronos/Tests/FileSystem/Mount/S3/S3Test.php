@@ -11,6 +11,7 @@ use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Uri;
 use Kronos\FileSystem\Exception\CantRetreiveFileException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
@@ -269,11 +270,12 @@ class S3Test extends ExtendedTestCase
 
     public function test_uri_getSignedUrl_shouldReturnUri()
     {
+        $uri = new Uri(self::AN_URI);
         $request = $this->createMock(RequestInterface::class);
         $this->s3Adapter->method('getClient')->willReturn($this->s3Client);
         $this->s3Client->method('getCommand')->willReturn($this->createMock(CommandInterface::class));
         $this->s3Client->method('createPresignedRequest')->willReturn($request);
-        $request->method('getUri')->willReturn(self::AN_URI);
+        $request->method('getUri')->willReturn($uri);
 
         $actualUri = $this->s3mount->getUrl(self::UUID, self::A_FILE_NAME);
 
