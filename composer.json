@@ -37,7 +37,7 @@
     "aws/aws-sdk-php": "^3.241"
   },
   "require-dev": {
-    "phpunit/phpunit": "10.2.4",
+    "phpunit/phpunit": "10.2.5",
     "dealerdirect/phpcodesniffer-composer-installer": "1.0.0",
     "phpcompatibility/php-compatibility": "9.3.5",
     "vimeo/psalm": "5.13.1",
