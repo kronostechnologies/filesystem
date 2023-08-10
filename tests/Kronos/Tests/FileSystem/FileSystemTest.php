@@ -13,6 +13,7 @@ use Kronos\FileSystem\Copy\DestinationChooserFactory;
 use Kronos\FileSystem\Copy\Factory as CopyFactory;
 use Kronos\FileSystem\Exception\FileCantBeWrittenException;
 use Kronos\FileSystem\Exception\MountNotFoundException;
+use Kronos\FileSystem\Exception\WrongTypeException;
 use Kronos\FileSystem\ExtensionList;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\File\Internal\Metadata;
@@ -1159,6 +1160,16 @@ class FileSystemTest extends TestCase
         self::assertInstanceOf(File::class, $this->file);
     }
 
+    public function test_wrongTypeException_mountGet_shouldThrowException()
+    {
+        $this->givenWillThrowWrongTypeException();
+        $this->givenMountSelected();
+
+        $this->expectException(WrongTypeException::class);
+
+        $this->file = $this->fileSystem->get(self::UUID);
+    }
+
     public function test_copy_shouldGetFileMountType()
     {
         $this->givenMountSelected();
@@ -1728,6 +1739,14 @@ class FileSystemTest extends TestCase
         $this->mount->method('getMetadata')->willReturn($this->metadata);
         $this->file = $this->createMock(File::class);
         $this->mount->method('get')->willReturn($this->file);
+    }
+
+    private function givenWillThrowWrongTypeException()
+    {
+        $this->metadata = new Metadata();
+        $this->mount->method('getMetadata')->willReturn($this->metadata);
+        $this->file = $this->createMock(File::class);
+        $this->mount->method('get')->willThrowException(new WrongTypeException('expected', 'actual'));
     }
 
     protected function givenImporationMountType()
