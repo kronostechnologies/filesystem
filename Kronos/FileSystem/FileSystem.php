@@ -205,7 +205,7 @@ class FileSystem implements FileSystemInterface
     {
         $mount = $this->getMountForId($id);
         $fileName = $this->fileRepository->getFileName($id);
-        return $mount->getUrl($id, $fileName, $this->shouldForceDownload($fileName));;
+        return $mount->getUrl($id, $fileName, $this->shouldForceDownload($fileName));
     }
 
     /**
