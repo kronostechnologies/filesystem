@@ -6,11 +6,13 @@ use Exception;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
+use Kronos\FileSystem\Exception\WrongTypeException;
 use Kronos\FileSystem\File\Internal\Metadata;
 use Kronos\FileSystem\PromiseFactory;
 use Kronos\FileSystem\Mount\PathGeneratorInterface;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\File;
+use League\Flysystem\Directory;
 use League\Flysystem\Filesystem;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -88,6 +90,21 @@ class LocalTest extends TestCase
     {
         $this->fileSystem->method('get')->willReturn($this->createMock(File::class));
         $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+        $this->fileSystem
+            ->expects(self::once())
+            ->method('get')
+            ->with(self::A_PATH);
+
+        $this->localMount->get(self::UUID, self::A_FILE_NAME);
+    }
+
+    public function test_getDirectory_shouldThrowException()
+    {
+        $this->fileSystem->method('get')->willReturn($this->createMock(Directory::class));
+        $this->pathGenerator->method('generatePath')->willReturn(self::A_PATH);
+
+        $this->expectException(WrongTypeException::class);
 
         $this->fileSystem
             ->expects(self::once())

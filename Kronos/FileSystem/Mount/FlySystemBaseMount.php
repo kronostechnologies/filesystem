@@ -4,12 +4,13 @@ namespace Kronos\FileSystem\Mount;
 
 
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use Kronos\FileSystem\Exception\WrongFileSystemTypeException;
+use Kronos\FileSystem\Exception\WrongTypeException;
 use Kronos\FileSystem\File\File;
 use Kronos\FileSystem\PromiseFactory;
 use League\Flysystem\Filesystem;
 use Throwable;
+use TypeError;
 
 abstract class FlySystemBaseMount implements MountInterface
 {
@@ -68,13 +69,19 @@ abstract class FlySystemBaseMount implements MountInterface
      * @param string $uuid
      * @param $fileName
      * @return File
+     * @throws WrongTypeException
      */
     public function get($uuid, $fileName)
     {
         $path = $this->pathGenerator->generatePath($uuid, $fileName);
         /** @var \League\Flysystem\File $flySystemFile */
         $flySystemFile = $this->mount->get($path);
-        return new File($flySystemFile);
+        try {
+            $file = new File($flySystemFile);
+        } catch (TypeError) {
+            throw new WrongTypeException(File::class, get_class($flySystemFile));
+        }
+        return $file;
     }
 
     /**
