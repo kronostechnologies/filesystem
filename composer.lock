@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6523419d3f868aad4e0cec849981994a",
+    "content-hash": "58598d2c3e8220f1b65d3423bcbf9ef8",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.298.2",
+            "version": "3.298.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "626f731c38e06ea483025334512f4c2afea1739d"
+                "reference": "b4d98bfc70df146774bf9b04f5ac5b39955fbad2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/626f731c38e06ea483025334512f4c2afea1739d",
-                "reference": "626f731c38e06ea483025334512f4c2afea1739d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b4d98bfc70df146774bf9b04f5ac5b39955fbad2",
+                "reference": "b4d98bfc70df146774bf9b04f5ac5b39955fbad2",
                 "shasum": ""
             },
             "require": {
@@ -151,9 +151,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.298.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.298.7"
             },
-            "time": "2024-02-02T19:05:34+00:00"
+            "time": "2024-02-09T19:07:04+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1034,16 +1034,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.28.0",
+            "version": "v1.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "42292d99c55abe617799667f454222c54c60e229"
+                "reference": "9773676c8a1bb1f8d4340a62efe641cf76eda7ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/42292d99c55abe617799667f454222c54c60e229",
-                "reference": "42292d99c55abe617799667f454222c54c60e229",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/9773676c8a1bb1f8d4340a62efe641cf76eda7ec",
+                "reference": "9773676c8a1bb1f8d4340a62efe641cf76eda7ec",
                 "shasum": ""
             },
             "require": {
@@ -1057,9 +1057,6 @@
             },
             "type": "library",
             "extra": {
-                "branch-alias": {
-                    "dev-main": "1.28-dev"
-                },
                 "thanks": {
                     "name": "symfony/polyfill",
                     "url": "https://github.com/symfony/polyfill"
@@ -1097,7 +1094,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.28.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.29.0"
             },
             "funding": [
                 {
@@ -1113,7 +1110,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-07-28T09:04:16+00:00"
+            "time": "2024-01-29T20:11:03+00:00"
         }
     ],
     "packages-dev": [
@@ -1656,16 +1653,16 @@
         },
         {
             "name": "cyclonedx/cyclonedx-library",
-            "version": "v3.1.0",
+            "version": "v3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-library.git",
-                "reference": "3ce5e917fe76a5843bb47e9c55a95856edd2d5ed"
+                "reference": "d30f707d97bed6fae4b9d3a480aae70fa92c326a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/3ce5e917fe76a5843bb47e9c55a95856edd2d5ed",
-                "reference": "3ce5e917fe76a5843bb47e9c55a95856edd2d5ed",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/d30f707d97bed6fae4b9d3a480aae70fa92c326a",
+                "reference": "d30f707d97bed6fae4b9d3a480aae70fa92c326a",
                 "shasum": ""
             },
             "require": {
@@ -1735,28 +1732,24 @@
             },
             "funding": [
                 {
-                    "url": "https://github.com/sponsors/jkowalleck",
-                    "type": "github"
-                },
-                {
                     "url": "https://owasp.org/donate/?reponame=www-project-cyclonedx&title=OWASP+CycloneDX",
                     "type": "other"
                 }
             ],
-            "time": "2023-12-02T09:10:05+00:00"
+            "time": "2024-02-05T11:43:17+00:00"
         },
         {
             "name": "cyclonedx/cyclonedx-php-composer",
-            "version": "v5.0.0",
+            "version": "v5.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-composer.git",
-                "reference": "a2a5ee1f3cd3233850137b9f55c222c82072b1a3"
+                "reference": "b5ff6da5c81452537244e42791b831bf40a0bab8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/a2a5ee1f3cd3233850137b9f55c222c82072b1a3",
-                "reference": "a2a5ee1f3cd3233850137b9f55c222c82072b1a3",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-composer/zipball/b5ff6da5c81452537244e42791b831bf40a0bab8",
+                "reference": "b5ff6da5c81452537244e42791b831bf40a0bab8",
                 "shasum": ""
             },
             "require": {
@@ -1816,15 +1809,11 @@
             },
             "funding": [
                 {
-                    "url": "https://github.com/sponsors/jkowalleck",
-                    "type": "github"
-                },
-                {
                     "url": "https://owasp.org/donate/?reponame=www-project-cyclonedx&title=OWASP+CycloneDX",
                     "type": "other"
                 }
             ],
-            "time": "2023-12-03T13:01:06+00:00"
+            "time": "2024-02-05T11:56:38+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
@@ -2537,16 +2526,16 @@
         },
         {
             "name": "package-url/packageurl-php",
-            "version": "1.1.1",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/package-url/packageurl-php.git",
-                "reference": "31bc8df35f628bf495529af3351f454deac82a54"
+                "reference": "32058ad61f0d8b457fa26e7860bbd8b903196d3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/package-url/packageurl-php/zipball/31bc8df35f628bf495529af3351f454deac82a54",
-                "reference": "31bc8df35f628bf495529af3351f454deac82a54",
+                "url": "https://api.github.com/repos/package-url/packageurl-php/zipball/32058ad61f0d8b457fa26e7860bbd8b903196d3f",
+                "reference": "32058ad61f0d8b457fa26e7860bbd8b903196d3f",
                 "shasum": ""
             },
             "require": {
@@ -2554,7 +2543,7 @@
             },
             "require-dev": {
                 "ext-json": "*",
-                "phpunit/phpunit": "9.6.13",
+                "phpunit/phpunit": "9.6.16",
                 "roave/security-advisories": "dev-latest"
             },
             "type": "library",
@@ -2591,7 +2580,7 @@
             ],
             "support": {
                 "issues": "https://github.com/package-url/packageurl-php/issues",
-                "source": "https://github.com/package-url/packageurl-php/tree/1.1.1"
+                "source": "https://github.com/package-url/packageurl-php/tree/1.1.2"
             },
             "funding": [
                 {
@@ -2599,7 +2588,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-11-27T09:22:51+00:00"
+            "time": "2024-02-05T11:20:07+00:00"
         },
         {
             "name": "phar-io/manifest",
